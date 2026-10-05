@@ -13,6 +13,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:suicun/features/security/data/security_providers.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
+import 'package:suicun/shared/theme/app_theme.dart';
+import 'package:suicun/shared/theme/theme_providers.dart';
 
 /// Wraps the app; shows [child] only when unlocked.
 class AppLockGate extends ConsumerStatefulWidget {
@@ -86,7 +88,17 @@ class _AppLockGateState extends ConsumerState<AppLockGate>
     }
     final locked = ref.watch(appLockControllerProvider);
     if (!locked) return widget.child;
+    // The gate sits outside SuicunApp's MaterialApp.router, so the lock
+    // screen needs its own fully-configured MaterialApp: without the
+    // localization delegates AppLocalizations.of() returns null and the
+    // lock screen crashes to a blank screen on startup.
+    final themeMode = ref.watch(resolvedThemeModeProvider);
     return MaterialApp(
+      themeMode: themeMode,
+      theme: AppTheme.lightTheme(),
+      darkTheme: AppTheme.darkTheme(),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       home: _LockScreen(
         onUnlocked: () =>
             ref.read(appLockControllerProvider.notifier).unlock(),

@@ -1,5 +1,7 @@
 package com.suicun.suicun
 
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 
-class MainActivity : FlutterActivity()
+// Stage B: local_auth (biometric / device credential) requires
+// FlutterFragmentActivity; plain FlutterActivity breaks it.
+class MainActivity : FlutterFragmentActivity()
