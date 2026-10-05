@@ -200,5 +200,40 @@
   "webdavSync": "WebDAV Sync",
   "webdavUrl": "WebDAV URL",
   "webdavUrlInvalid": "WebDAV URL is invalid",
-  "webdavUrlRequired": "WebDAV URL is required"
+  "webdavUrlRequired": "WebDAV URL is required",
+  "appLock": "App lock",
+  "enableAppLock": "Enable app lock",
+  "setPin": "Set PIN",
+  "changePin": "Change PIN",
+  "pinNotSet": "Not set",
+  "pinSet": "Set",
+  "useBiometric": "Unlock with biometrics",
+  "lockTimeout": "Lock after background",
+  "timeoutImmediately": "Immediately",
+  "timeout1Min": "1 minute",
+  "timeout5Min": "5 minutes",
+  "encryptedBackup": "Encrypted backup",
+  "exportEncryptedBackup": "Export encrypted backup",
+  "importEncryptedBackup": "Import encrypted backup",
+  "backupPassword": "Backup password",
+  "backupPasswordHint": "Needed to restore on a new device. Keep it safe.",
+  "confirmPassword": "Confirm password",
+  "passwordMismatch": "Passwords do not match",
+  "passwordTooShort": "Password must be at least 8 characters",
+  "unlockApp": "Unlock Suicun",
+  "appLocked": "Suicun is locked",
+  "enterPin": "Enter PIN to unlock",
+  "wrongPin": "Wrong PIN, try again",
+  "pinTooShort": "PIN must be at least 4 digits",
+  "pinSaved": "PIN saved",
+  "securityPageTitle": "Security",
+  "encryptionOn": "Local database is encrypted",
+  "encryptionOnDesc": "Encrypted with a random key stored in system secure storage",
+  "lockoutTryLater": "Too many attempts, try again in {seconds}s",
+  "@lockoutTryLater": {
+    "placeholders": {
+      "seconds": {}
+    }
+  },
+  "pinLabel": "PIN"
 }

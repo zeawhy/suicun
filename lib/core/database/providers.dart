@@ -11,7 +11,15 @@ import 'package:suicun/features/tags/data/tag_repository.dart';
 part 'providers.g.dart';
 
 @Riverpod(keepAlive: true)
-AppDatabase appDatabase(Ref ref) => AppDatabase();
+AppDatabase appDatabase(Ref ref) {
+  // Stage B: the real database is opened encrypted in main() and injected
+  // via appDatabaseProvider.overrideWithValue. Failing closed here so a
+  // missing override can never silently open a plaintext database.
+  throw StateError(
+    'appDatabaseProvider must be overridden (main() with the encrypted '
+    'database, tests with an in-memory database).',
+  );
+}
 
 @Riverpod(keepAlive: true)
 RecordRepository recordRepository(Ref ref) =>

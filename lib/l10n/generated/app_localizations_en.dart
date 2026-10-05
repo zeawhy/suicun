@@ -445,4 +445,98 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get webdavUrlRequired => 'WebDAV URL is required';
+
+  @override
+  String get appLock => 'App lock';
+
+  @override
+  String get enableAppLock => 'Enable app lock';
+
+  @override
+  String get setPin => 'Set PIN';
+
+  @override
+  String get changePin => 'Change PIN';
+
+  @override
+  String get pinNotSet => 'Not set';
+
+  @override
+  String get pinSet => 'Set';
+
+  @override
+  String get useBiometric => 'Unlock with biometrics';
+
+  @override
+  String get lockTimeout => 'Lock after background';
+
+  @override
+  String get timeoutImmediately => 'Immediately';
+
+  @override
+  String get timeout1Min => '1 minute';
+
+  @override
+  String get timeout5Min => '5 minutes';
+
+  @override
+  String get encryptedBackup => 'Encrypted backup';
+
+  @override
+  String get exportEncryptedBackup => 'Export encrypted backup';
+
+  @override
+  String get importEncryptedBackup => 'Import encrypted backup';
+
+  @override
+  String get backupPassword => 'Backup password';
+
+  @override
+  String get backupPasswordHint =>
+      'Needed to restore on a new device. Keep it safe.';
+
+  @override
+  String get confirmPassword => 'Confirm password';
+
+  @override
+  String get passwordMismatch => 'Passwords do not match';
+
+  @override
+  String get passwordTooShort => 'Password must be at least 8 characters';
+
+  @override
+  String get unlockApp => 'Unlock Suicun';
+
+  @override
+  String get appLocked => 'Suicun is locked';
+
+  @override
+  String get enterPin => 'Enter PIN to unlock';
+
+  @override
+  String get wrongPin => 'Wrong PIN, try again';
+
+  @override
+  String get pinTooShort => 'PIN must be at least 4 digits';
+
+  @override
+  String get pinSaved => 'PIN saved';
+
+  @override
+  String get securityPageTitle => 'Security';
+
+  @override
+  String get encryptionOn => 'Local database is encrypted';
+
+  @override
+  String get encryptionOnDesc =>
+      'Encrypted with a random key stored in system secure storage';
+
+  @override
+  String lockoutTryLater(Object seconds) {
+    return 'Too many attempts, try again in ${seconds}s';
+  }
+
+  @override
+  String get pinLabel => 'PIN';
 }

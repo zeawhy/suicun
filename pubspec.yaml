@@ -37,7 +37,10 @@ dependencies:
   # Icons
   cupertino_icons: ^2.0.0
   http: ^1.6.0
+  sqlite3: ^3.7.0
   flutter_secure_storage: ^11.2.0
+  local_auth: ^3.0.2
+  cryptography: ^2.9.0
 
 dev_dependencies:
   flutter_test:
@@ -57,3 +60,20 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   generate: true  # enables l10n generation
+
+hooks:
+  user_defines:
+    sqlite3:
+      # Stage B: sqlite3 3.x ships SQLCipher via native assets
+      # (sqlcipher_flutter_libs is discontinued).
+      # - Desktop/test (default): download upstream prebuilt SQLCipher.
+      # - Android: the hook's downloader can't authenticate to this build
+      #   environment's egress proxy (HTTP 407), so SQLCipher .so files are
+      #   vendored under android/app/src/main/jniLibs/<abi>/libsqlcipher.so
+      #   (from the sqlite3.dart sqlite3-3.7.0 GitHub release) and resolved
+      #   at runtime with dlopen("libsqlcipher.so").
+      source:
+        android: system
+        default: sqlcipher
+      name:
+        android: sqlcipher

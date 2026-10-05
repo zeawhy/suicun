@@ -4,6 +4,7 @@ import 'package:suicun/features/records/presentation/home_page.dart';
 import 'package:suicun/features/records/presentation/edit_record_page.dart';
 import 'package:suicun/features/settings/presentation/settings_page.dart';
 import 'package:suicun/features/settings/presentation/webdav_sync_page.dart';
+import 'package:suicun/features/security/presentation/security_page.dart';
 import 'package:suicun/features/trash/presentation/trash_page.dart';
 import 'package:suicun/features/settings/presentation/backup_page.dart';
 import 'package:suicun/features/categories/presentation/categories_page.dart';
@@ -50,6 +51,10 @@ GoRouter appRouter(Ref ref) {
               GoRoute(
                 path: 'webdav',
                 builder: (context, state) => const WebdavSyncPage(),
+              ),
+              GoRoute(
+                path: 'security',
+                builder: (context, state) => const SecurityPage(),
               ),
             ],
           ),

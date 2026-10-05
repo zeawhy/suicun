@@ -1,12 +1,7 @@
 // lib/core/database/app_database.dart
 // Drift database definition for 随存
 
-import 'dart:io';
-
 import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 
 import 'tables.dart';
 
@@ -25,7 +20,14 @@ part 'app_database.g.dart';
   Conflicts,
 ])
 class AppDatabase extends _$AppDatabase {
-  AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
+  /// The executor must be provided by the caller.
+  ///
+  /// In production, main() opens the SQLCipher-encrypted database via
+  /// [DatabaseEncryptionService.openEncryptedDatabase] and passes the
+  /// connection here. There is intentionally no plaintext fallback:
+  /// a missing executor is a compile-time error, and a failure to open
+  /// the encrypted database is a fatal startup error (see main.dart).
+  AppDatabase(super.executor);
 
   @override
   int get schemaVersion => 2;
@@ -325,11 +327,6 @@ class RecordWithDetails {
   });
 }
 
-/// Opens the SQLite database file from the app documents directory.
-LazyDatabase _openConnection() {
-  return LazyDatabase(() async {
-    final dbFolder = await getApplicationDocumentsDirectory();
-    final file = File(p.join(dbFolder.path, 'suicun.db'));
-    return NativeDatabase.createInBackground(file, logStatements: false);
-  });
-}
+/// NOTE: the old plaintext `_openConnection()` was removed in stage B.
+/// The database is always opened encrypted via
+/// DatabaseEncryptionService.openEncryptedDatabase() in main().

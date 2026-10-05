@@ -925,6 +925,186 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'请填写 WebDAV 地址'**
   String get webdavUrlRequired;
+
+  /// No description provided for @appLock.
+  ///
+  /// In zh, this message translates to:
+  /// **'应用锁'**
+  String get appLock;
+
+  /// No description provided for @enableAppLock.
+  ///
+  /// In zh, this message translates to:
+  /// **'启用应用锁'**
+  String get enableAppLock;
+
+  /// No description provided for @setPin.
+  ///
+  /// In zh, this message translates to:
+  /// **'设置 PIN'**
+  String get setPin;
+
+  /// No description provided for @changePin.
+  ///
+  /// In zh, this message translates to:
+  /// **'修改 PIN'**
+  String get changePin;
+
+  /// No description provided for @pinNotSet.
+  ///
+  /// In zh, this message translates to:
+  /// **'未设置'**
+  String get pinNotSet;
+
+  /// No description provided for @pinSet.
+  ///
+  /// In zh, this message translates to:
+  /// **'已设置'**
+  String get pinSet;
+
+  /// No description provided for @useBiometric.
+  ///
+  /// In zh, this message translates to:
+  /// **'生物识别解锁'**
+  String get useBiometric;
+
+  /// No description provided for @lockTimeout.
+  ///
+  /// In zh, this message translates to:
+  /// **'后台锁定超时'**
+  String get lockTimeout;
+
+  /// No description provided for @timeoutImmediately.
+  ///
+  /// In zh, this message translates to:
+  /// **'立即'**
+  String get timeoutImmediately;
+
+  /// No description provided for @timeout1Min.
+  ///
+  /// In zh, this message translates to:
+  /// **'1 分钟'**
+  String get timeout1Min;
+
+  /// No description provided for @timeout5Min.
+  ///
+  /// In zh, this message translates to:
+  /// **'5 分钟'**
+  String get timeout5Min;
+
+  /// No description provided for @encryptedBackup.
+  ///
+  /// In zh, this message translates to:
+  /// **'加密备份'**
+  String get encryptedBackup;
+
+  /// No description provided for @exportEncryptedBackup.
+  ///
+  /// In zh, this message translates to:
+  /// **'导出加密备份'**
+  String get exportEncryptedBackup;
+
+  /// No description provided for @importEncryptedBackup.
+  ///
+  /// In zh, this message translates to:
+  /// **'导入加密备份'**
+  String get importEncryptedBackup;
+
+  /// No description provided for @backupPassword.
+  ///
+  /// In zh, this message translates to:
+  /// **'备份密码'**
+  String get backupPassword;
+
+  /// No description provided for @backupPasswordHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'换设备恢复需要此密码，请妥善保存'**
+  String get backupPasswordHint;
+
+  /// No description provided for @confirmPassword.
+  ///
+  /// In zh, this message translates to:
+  /// **'确认密码'**
+  String get confirmPassword;
+
+  /// No description provided for @passwordMismatch.
+  ///
+  /// In zh, this message translates to:
+  /// **'两次输入的密码不一致'**
+  String get passwordMismatch;
+
+  /// No description provided for @passwordTooShort.
+  ///
+  /// In zh, this message translates to:
+  /// **'密码至少 8 位'**
+  String get passwordTooShort;
+
+  /// No description provided for @unlockApp.
+  ///
+  /// In zh, this message translates to:
+  /// **'解锁随存'**
+  String get unlockApp;
+
+  /// No description provided for @appLocked.
+  ///
+  /// In zh, this message translates to:
+  /// **'随存已锁定'**
+  String get appLocked;
+
+  /// No description provided for @enterPin.
+  ///
+  /// In zh, this message translates to:
+  /// **'输入 PIN 解锁'**
+  String get enterPin;
+
+  /// No description provided for @wrongPin.
+  ///
+  /// In zh, this message translates to:
+  /// **'PIN 错误，请重试'**
+  String get wrongPin;
+
+  /// No description provided for @pinTooShort.
+  ///
+  /// In zh, this message translates to:
+  /// **'PIN 至少 4 位'**
+  String get pinTooShort;
+
+  /// No description provided for @pinSaved.
+  ///
+  /// In zh, this message translates to:
+  /// **'PIN 已保存'**
+  String get pinSaved;
+
+  /// No description provided for @securityPageTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'安全'**
+  String get securityPageTitle;
+
+  /// No description provided for @encryptionOn.
+  ///
+  /// In zh, this message translates to:
+  /// **'本地数据库已加密'**
+  String get encryptionOn;
+
+  /// No description provided for @encryptionOnDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'数据库使用随机密钥加密，密钥保存在系统安全存储'**
+  String get encryptionOnDesc;
+
+  /// No description provided for @lockoutTryLater.
+  ///
+  /// In zh, this message translates to:
+  /// **'尝试次数过多，请 {seconds} 秒后再试'**
+  String lockoutTryLater(Object seconds);
+
+  /// No description provided for @pinLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'PIN'**
+  String get pinLabel;
 }
 
 class _AppLocalizationsDelegate

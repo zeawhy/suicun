@@ -309,3 +309,159 @@ test/
 
 - 命令：同 §4 环境变量，`flutter build apk --release`（release 用 debug 签名，模板默认）。
 - 产物：`build/app/outputs/flutter-apk/app-release.apk`（62.3MB / 62268778 字节，远小于 debug 的 170MB；构建时间 2026-10-05 ~22:21 CST）。
+
+---
+
+## 8. 阶段 B 隐私保护（分支 `antigravity/stage-b`，2026-10-06）
+
+> 执行者说明：用户指示"功能用 Claude、UI 用 Gemini"，但 agy 上 Claude/Gemini 额度在
+> 2026-10-05 23:30 起全部耗尽（约 156–162h 后重置）。阶段 B 的实质性代码先由本子智能体
+> 直接编写；后按用户新指示，用 Gemini（`gemini_ask.py`，直连 API）对三份加密核心代码
+> 做了安全评审，评审指出的 4 个有效问题（见 §8.6）已修复并回归测试。
+> 2026-10-06 凌晨 agy 额度恢复后，用户确定"Claude 优先、Gemini 3.8 兜底"：由
+> **claude-sonnet-5-5-medium**（经 agy）对阶段 B 加密代码做了第二轮安全评审并直接
+> 编写了 5 处修复（见 §8.6.1）；子智能体负责 review、跑测试与构建。
+> **第一版主体不是 Claude 做的；§8.6.1 的 5 处修复是 Claude 写的。**
+
+### 8.1 加密驱动验证（先验证，后实现）
+
+- 路线：`sqlcipher_flutter_libs` 已被官方标记 EOL（0.7.0+eol，描述写明"update to
+  version 3.x of package:sqlite3 instead"），改用 `sqlite3 ^3.7.0` 的 hooks 路线，
+  pubspec 加 `hooks: user_defines: {sqlite3: {source: sqlcipher}}`。
+- drift 2.35.1 已依赖 `sqlite3 ^3.4.0`，无冲突。
+- 验证：`test/unit/sqlcipher_driver_test.dart`（5 tests，**真实 SQLCipher 库，非 mock**，
+  经 hook 从 GitHub releases 下载 Linux 构建，代理可达）：
+  1. `PRAGMA cipher_version` 可查 → 驱动加载成功
+  2. 正确密钥加解密 round-trip；文件头非 `SQLite format 3` 明文头
+  3. 错密钥被拒绝（HMAC 校验失败）
+  4. `sqlcipher_export` 明文→加密迁移成功，数据完整
+  5. WAL 文件中无明文秘密残留
+- 结果：**5/5 通过**。驱动验证通过，继续 B 阶段。
+- **构建环境注记（2026-10-06）**：Linux 目标的 hook 下载经代理成功，但 Android 目标
+  的 hook 下载失败——Dart HttpClient 不向 egress 代理发送 Proxy-Authorization，
+  返回 `407 Proxy Authentication Required`
+  （`libsqlcipher.arm.android.so` 等）。解决：按 sqlite3 hook 文档的按 OS 分开配置，
+  Android 改用 `source: system` + `name: sqlcipher`，SQLCipher `.so`（4 个 ABI：
+  armeabi-v7a/arm64-v8a/x86_64/x86，取自 sqlite3.dart sqlite3-3.7.0 GitHub release，
+  已验 `sqlcipher_export`/`sqlite3_key` 符号）vendored 到
+  `android/app/src/main/jniLibs/<abi>/libsqlcipher.so`，运行时 `dlopen("libsqlcipher.so")`
+  加载。桌面/测试目标仍走 `default: sqlcipher` 下载。
+
+### 8.2 本地数据库加密
+
+- `lib/core/crypto/database_encryption_service.dart`：
+  - 256 位随机数据库密钥（`Random.secure()`），存平台安全存储
+   （`suicun.crypto.dbKey.v1`，flutter_secure_storage 11.x 默认 AES-256-GCM + Keystore）。
+    **不从 PIN 派生**（规格 §9）。
+  - `PRAGMA key = "x'<64 hex>'"` 十六进制字面量形式；字面量经正则断言防注入。
+  - 明文库迁移：`ATTACH … KEY` + `sqlcipher_export` → 校验 → 原子 rename 替换原文件
+    → 再删明文 sidecar（顺序经评审修正：先 rename 后删，避免崩溃丢 WAL）。
+  - 打开流程：`openEncryptedDatabase()` 先在短命 raw 连接上显式校验密钥
+    （fail-fast；`createInBackground` 的 setup 在后台 isolate 懒执行，try/catch 抓不到，
+    故单独校验），再交 drift 后台连接。
+  - 密钥错误/文件损坏 → `DatabaseEncryptionError`，main() 显示致命错误屏，
+    **无明文回退**。
+- `AppDatabase` 构造器改为必需 `QueryExecutor`；`providers.dart` 默认实现改为抛
+  `StateError`（fail-closed）；main() 异步初始化加密库后 `overrideWithValue` 注入。
+- SQLCipher 下 WAL 同样加密（§8.1 测试 5 验证）。
+
+### 8.3 应用锁
+
+- `lib/features/security/data/app_lock_service.dart`：
+  - PIN（≥4 位）+ 生物识别/设备凭据（local_auth 3.0.2，`biometricOnly: false` 允许系统 PIN 回退，
+    已在文档说明其安全性不高于系统锁屏）。
+  - PIN **只做 UI 解锁**，存 Argon2id 哈希（m=16MB, t=2, p=1；PHC-like 格式），
+    连续 5 次失败锁定 30 秒。经 Gemini 评审：初版用的 SHA-256（4 位 PIN 可毫秒级暴力破解）
+    已改为 Argon2id。
+  - 后台超时重锁：立即 / 1 分钟（默认）/ 5 分钟，可配置。
+- `AppLockGate`：启动检查 + `WidgetsBindingObserver` 前后台切换；锁屏含 PIN 键盘与指纹按钮。
+- 设置 → 安全页可开关、设 PIN、生物识别、超时。
+
+### 8.4 加密备份
+
+- `lib/core/crypto/backup_crypto.dart`：自包含容器（规格 §12，不依赖设备安全存储，
+  换设备凭密码可恢复）：
+  `{"format":"suicun-encrypted-backup","version":1,"kdf":{argon2id v19 参数+salt},"nonce_b64","ciphertext_b64"}`。
+  Argon2id（m=64MB, t=3, p=1，RFC 9106 首选）→ AES-256-GCM，独立随机 salt/nonce。
+- `BackupService.exportEncryptedBackup(password)` / `importEncryptedBackup(file, password)`：
+  密码错误/篡改报"认证失败"，与格式错误区分；导入走原有单事务（失败回滚）。
+- 备份密码 ≥8 位，**不存储**。
+
+### 8.5 密钥恢复设计
+
+- `docs/key-recovery.md`：四种密钥的丢失后果与自救路径；明确不承诺：
+  数据库密钥无 escrow（丢了就永久不可恢复）、备份密码无重置、PIN 遗忘无找回、
+  明文升级文件的闪存残留无法保证擦除、生物识别降级说明。
+
+### 8.6 Gemini 安全评审（2026-10-06，用 `gemini_ask.py`）
+
+对三份加密核心代码评审，采纳并修复 4 项：
+1. `createInBackground` 的 setup 异常抓不到 → 改为显式 `_validateKey` 预校验（另有两个单测失败同根因，已修）。
+2. 迁移先删 sidecar 后 rename → 改为先 rename 后删。
+3. PIN 用 SHA-256 → 改为 Argon2id。
+4. `utf8.decode` 的 FormatException 与解密失败混淆 → 分开处理。
+未采纳：字符串内存残留（Dart/Flutter 下优化有限，已在文档列为已知局限）；
+生物识别降级改为文档说明（主流做法，威胁模型内可接受）。
+
+### 8.6.1 Claude 安全评审（2026-10-06，`claude-sonnet-5-5-medium` 经 agy）
+
+额度恢复后按"Claude 优先"指示做的第二轮评审，Claude 直接编写了 5 处修复（子智能体
+review 后跑 `flutter analyze` 零问题、`flutter test` 137/137 全过）：
+1. **高** `ensureKey()`：安全存储中密钥损坏时静默生成并覆盖新密钥 → 旧加密库永久打不开。
+   改为抛 `DatabaseEncryptionError`，永不覆盖损坏条目（fail-closed）。
+2. **高** `openEncryptedDatabase()`：加密库存在但密钥丢失时，先生成并持久化新密钥再报错
+   → 下次启动仍失败且原密钥线索被覆盖。改为打开前先检查，直接失败、不写新密钥。
+3. **高** 未确认链接的 SQLite 真的是 SQLCipher：普通 SQLite 会静默忽略 `PRAGMA key`，
+   数据明文写盘却不报错。新增 `_requireSqlCipher`（查 `PRAGMA cipher_version`），用于
+   `_validateKey` 与迁移的源/目标库；迁移验证还检查临时文件不是明文头。
+4. **中** `backup_crypto.dart`：解密 KDF 参数取自不可信备份文件，`memory_kb` 上限
+   2³⁰ KB（约 1 TiB），恶意文件可耗尽内存/CPU。上限改为内存 256 MiB、迭代 16、并行度 16。
+5. **中** `app_lock_service.dart`：`verifyPin` 失败计数先读后写，并发可绕过 5 次锁定；
+   固定 30 秒锁定挡不住 4 位 PIN 穷举（约 16 小时）。改为 Future 链串行化校验；
+   锁定指数退避（首次 30 秒，每多 5 次失败翻倍，上限 1 小时）。
+附带：迁移 `ATTACH` 路径单引号转义。
+未修（低）：备份容器头部未进 AEAD AAD（改格式，现有测试无法确认兼容性；篡改参数只导致
+解密失败不泄露数据）；锁定依赖系统时钟（回拨可提前解锁，需单调时钟，改动大）；
+备份密码强度是 UI 层策略；迁移后旧明文块的闪存残留（平台限制，文档已注明）。
+
+### 8.7 平台备份与日志检查
+
+- `android/app/src/main/res/xml/backup_rules.xml` + manifest `android:fullBackupContent`：
+  排除 `suicun.db*` 及 `FlutterSecureStorage*` sharedpref，不进 Google 自动备份。
+- 代码 grep 确认：crypto/security 路径无 `print`/`log`/`debugPrint` 密钥输出；
+  错误 message 只含操作描述。
+
+### 8.8 测试（2026-10-06，`antigravity/stage-b` 分支）
+
+- `flutter analyze`：**No issues found!**
+- 新增单测：
+  - `test/unit/sqlcipher_driver_test.dart`（5，真实 SQLCipher，见 §8.1）
+  - `test/unit/database_encryption_service_test.dart`（9：密钥生命周期/持久化/删除、
+    header 检测、迁移 no-op/真实迁移、错密钥 fail-fast、经真实 AppDatabase+drift 的加密读写）
+  - `test/unit/backup_crypto_test.dart`（6：round-trip、错密码认证失败、篡改拒绝、
+    salt/nonce 随机性、畸形容器、KDF 参数 round-trip）
+  - `test/unit/app_lock_service_test.dart`（11：开关/超时/生物识别标记、PIN 设置校验/
+    哈希格式/清除/修改、5 次失败锁定、成功重置计数器）
+- 新增集成：`test/integration/encrypted_backup_roundtrip_test.dart`（2：
+  加密导出→新库导入全字段一致且文件无明文；错密码导入失败）
+- 全量 `flutter test`：**137/137 通过**（原 101 + 新增 36）
+- 未验证（无真机，如实列出）：真机上 SQLCipher .so 加载与加密库打开、真机安全存储读写、
+  生物识别原生链路、真机 Argon2id 耗时、v1 明文旧库在真机的实际迁移、深色/锁屏 UI 真机目检。
+
+### 8.9 构建
+
+- 命令：同 §4 环境变量（`JAVA_HOME=~/jdk17`、`_JAVA_OPTIONS` 含 preferIPv4Stack 与 TLSv1.2），
+  `flutter build apk --release`。
+- 新增依赖：`sqlite3: ^3.7.0`（direct）、`local_auth: ^3.0.2`、`cryptography: ^2.9.0`；
+  `flutter_secure_storage: ^11.2.0`（API 变更：`AndroidOptions()` 默认即安全选项，
+  `encryptedSharedPreferences` 参数已移除，代码已适配）。
+- 产物：`build/app/outputs/flutter-apk/app-release.apk`
+  （73.4MB / 73380450 字节，构建时间 2026-10-06 ~01:04 CST，含 Claude §8.6.1 修复后的重打）。
+- `aapt dump badging` 确认：包名 `com.suicun.suicun`、`android.permission.INTERNET`、
+  `USE_BIOMETRIC`/`USE_FINGERPRINT` 均在；`libsqlcipher.so` 已打进
+  arm64-v8a/armeabi-v7a/x86_64 三个 ABI。
+- 构建波折（2026-10-06，如实记录）：首次 release 构建因 sqlite hook 的 Android .so
+  下载报代理 407 失败（见 §8.1 注记）改用 jniLibs vendored 方案；第二次因
+  `dl.google.com` 读超时（`androidx.biometric`/`androidx.fragment`，local_auth 新依赖）
+  失败——按 §1 要求补跑 `~/workspace/suicun-env/gradle-proxy.sh` 刷新代理配置并重启
+  daemon 后成功。

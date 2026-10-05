@@ -200,5 +200,40 @@
   "webdavSync": "WebDAV 同步",
   "webdavUrl": "WebDAV 地址",
   "webdavUrlInvalid": "WebDAV 地址格式不正确",
-  "webdavUrlRequired": "请填写 WebDAV 地址"
+  "webdavUrlRequired": "请填写 WebDAV 地址",
+  "appLock": "应用锁",
+  "enableAppLock": "启用应用锁",
+  "setPin": "设置 PIN",
+  "changePin": "修改 PIN",
+  "pinNotSet": "未设置",
+  "pinSet": "已设置",
+  "useBiometric": "生物识别解锁",
+  "lockTimeout": "后台锁定超时",
+  "timeoutImmediately": "立即",
+  "timeout1Min": "1 分钟",
+  "timeout5Min": "5 分钟",
+  "encryptedBackup": "加密备份",
+  "exportEncryptedBackup": "导出加密备份",
+  "importEncryptedBackup": "导入加密备份",
+  "backupPassword": "备份密码",
+  "backupPasswordHint": "换设备恢复需要此密码，请妥善保存",
+  "confirmPassword": "确认密码",
+  "passwordMismatch": "两次输入的密码不一致",
+  "passwordTooShort": "密码至少 8 位",
+  "unlockApp": "解锁随存",
+  "appLocked": "随存已锁定",
+  "enterPin": "输入 PIN 解锁",
+  "wrongPin": "PIN 错误，请重试",
+  "pinTooShort": "PIN 至少 4 位",
+  "pinSaved": "PIN 已保存",
+  "securityPageTitle": "安全",
+  "encryptionOn": "本地数据库已加密",
+  "encryptionOnDesc": "数据库使用随机密钥加密，密钥保存在系统安全存储",
+  "lockoutTryLater": "尝试次数过多，请 {seconds} 秒后再试",
+  "@lockoutTryLater": {
+    "placeholders": {
+      "seconds": {}
+    }
+  },
+  "pinLabel": "PIN"
 }

@@ -10,6 +10,7 @@ import 'package:drift/drift.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import 'package:suicun/core/crypto/backup_crypto.dart';
 import 'package:suicun/core/database/app_database.dart';
 import 'package:suicun/core/errors/app_errors.dart';
 import 'package:suicun/features/categories/data/category_repository.dart';
@@ -37,51 +38,56 @@ class BackupService {
 
   // ── Export: Full JSON ────────────────────────────────────────────────────
 
+  /// Builds the full backup payload (schema_version, categories, tags,
+  /// records, relationships). Shared by plaintext and encrypted exports.
+  Future<Map<String, dynamic>> buildBackupData() async {
+    final categories = await categoryRepo.getAllCategories();
+    final tags = await tagRepo.getAllTags();
+    final records = await recordRepo.searchRecords(limit: _maxImportRecords);
+
+    // Build tag lookup for each record
+    final allRecordTags = await (db.select(db.recordTags)).get();
+    final tagsByRecord = <String, List<String>>{};
+    for (final rt in allRecordTags) {
+      tagsByRecord.putIfAbsent(rt.recordId, () => []).add(rt.tagId);
+    }
+
+    return {
+      'schema_version': _schemaVersion,
+      'exported_at': DateTime.now().toUtc().toIso8601String(),
+      'categories': categories
+          .map((c) => {
+                'id': c.id,
+                'name': c.name,
+                'color': c.color,
+              })
+          .toList(),
+      'tags': tags
+          .map((t) => {
+                'id': t.id,
+                'name': t.name,
+              })
+          .toList(),
+      'records': records
+          .map((r) => {
+                'id': r.id,
+                'title': r.title,
+                'body': r.body,
+                'category_id': r.categoryId,
+                'is_favorite': r.isFavorite,
+                'created_at': r.createdAt.toIso8601String(),
+                'updated_at': r.updatedAt.toIso8601String(),
+                // Sorted for deterministic backups
+                'tag_ids': (tagsByRecord[r.id] ?? [])..sort(),
+              })
+          .toList(),
+    };
+  }
+
   /// Exports all non-deleted records (+ categories, tags, relationships) as JSON.
   Future<File> exportJson() async {
     try {
-      final categories = await categoryRepo.getAllCategories();
-      final tags = await tagRepo.getAllTags();
-      final records = await recordRepo.searchRecords(limit: _maxImportRecords);
-
-      // Build tag lookup for each record
-      final allRecordTags = await (db.select(db.recordTags)).get();
-      final tagsByRecord = <String, List<String>>{};
-      for (final rt in allRecordTags) {
-        tagsByRecord.putIfAbsent(rt.recordId, () => []).add(rt.tagId);
-      }
-
-      final data = {
-        'schema_version': _schemaVersion,
-        'exported_at': DateTime.now().toUtc().toIso8601String(),
-        'categories': categories
-            .map((c) => {
-                  'id': c.id,
-                  'name': c.name,
-                  'color': c.color,
-                })
-            .toList(),
-        'tags': tags
-            .map((t) => {
-                  'id': t.id,
-                  'name': t.name,
-                })
-            .toList(),
-        'records': records
-            .map((r) => {
-                  'id': r.id,
-                  'title': r.title,
-                  'body': r.body,
-                  'category_id': r.categoryId,
-                  'is_favorite': r.isFavorite,
-                  'created_at': r.createdAt.toIso8601String(),
-                  'updated_at': r.updatedAt.toIso8601String(),
-                  // Sorted for deterministic backups
-                  'tag_ids': (tagsByRecord[r.id] ?? [])..sort(),
-                })
-            .toList(),
-      };
-
+      final data = await buildBackupData();
       final dir = await getApplicationDocumentsDirectory();
       final ts = DateTime.now().toUtc().toIso8601String().replaceAll(':', '-');
       final file = File(p.join(dir.path, 'suicun_backup_$ts.json'));
@@ -92,6 +98,36 @@ class BackupService {
       return file;
     } catch (e) {
       throw ExportError('JSON export failed', e);
+    }
+  }
+
+  /// Exports an encrypted, self-contained backup container (spec §12).
+  ///
+  /// The container holds its own Argon2id parameters and AES-256-GCM
+  /// authentication data; it does NOT depend on this device's secure
+  /// storage, so it restores on a new device with only [password].
+  /// The password is never stored.
+  /// [kdfParams] is test-only (weaker KDF for speed); production callers
+  /// must leave the default.
+  Future<File> exportEncryptedBackup(
+    String password, {
+    BackupKdfParams kdfParams = const BackupKdfParams(),
+  }) async {
+    try {
+      final data = await buildBackupData();
+      final plaintext =
+          const JsonEncoder.withIndent('  ').convert(data);
+      final container = await BackupCrypto()
+          .encryptContainer(plaintext, password, params: kdfParams);
+      final dir = await getApplicationDocumentsDirectory();
+      final ts = DateTime.now().toUtc().toIso8601String().replaceAll(':', '-');
+      final file = File(p.join(dir.path, 'suicun_backup_$ts.encrypted.json'));
+      await file.writeAsString(container, flush: true);
+      return file;
+    } on BackupCryptoError catch (e) {
+      throw ExportError('Encrypted backup failed: ${e.message}');
+    } catch (e) {
+      throw ExportError('Encrypted backup failed', e);
     }
   }
 
@@ -205,7 +241,38 @@ class BackupService {
   /// Returns the count of imported records.
   Future<int> importJson(File file) async {
     final data = await _parseAndValidateJson(file);
+    return _importValidatedData(data);
+  }
 
+  /// Validates and previews an encrypted backup file. Returns the count of
+  /// records. Throws [ImportError] on wrong password or bad container.
+  Future<int> previewEncryptedImport(File file, String password) async {
+    final data = await _parseAndValidateEncrypted(file, password);
+    final recordList = data['records'] as List;
+    return recordList.length;
+  }
+
+  /// Imports an encrypted backup in a single transaction. On failure rolls
+  /// back. Returns the count of imported records.
+  Future<int> importEncryptedBackup(File file, String password) async {
+    final data = await _parseAndValidateEncrypted(file, password);
+    return _importValidatedData(data);
+  }
+
+  Future<Map<String, dynamic>> _parseAndValidateEncrypted(
+      File file, String password) async {
+    final raw = await file.readAsString();
+    late final String plaintext;
+    try {
+      plaintext = await BackupCrypto().decryptContainer(raw, password);
+    } on BackupCryptoError catch (e) {
+      throw ImportError('Encrypted backup: ${e.message}');
+    }
+    return _parseAndValidateJsonString(plaintext);
+  }
+
+  /// Shared transactional import for validated backup payloads.
+  Future<int> _importValidatedData(Map<String, dynamic> data) async {
     final catList = data['categories'] as List;
     final tagList = data['tags'] as List;
     final recordList = data['records'] as List;
@@ -315,6 +382,10 @@ class BackupService {
 
   Future<Map<String, dynamic>> _parseAndValidateJson(File file) async {
     final raw = await file.readAsString();
+    return _parseAndValidateJsonString(raw);
+  }
+
+  Future<Map<String, dynamic>> _parseAndValidateJsonString(String raw) async {
     final dynamic decoded;
     try {
       decoded = jsonDecode(raw);

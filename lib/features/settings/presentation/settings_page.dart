@@ -77,11 +77,11 @@ class SettingsPage extends ConsumerWidget {
             onTap: () => context.push('/settings/webdav'),
           ),
           _buildSectionHeader(context, l10n.security),
-          ListTile(
-            leading: const Icon(Icons.lock_outline),
-            title: Text(l10n.security),
-            subtitle: Text(l10n.securityNotImplemented),
-            enabled: false,
+          _navTile(
+            context,
+            icon: Icons.lock_outline,
+            title: l10n.security,
+            onTap: () => context.push('/settings/security'),
           ),
           _buildSectionHeader(context, l10n.about),
           ListTile(

@@ -439,4 +439,96 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get webdavUrlRequired => '请填写 WebDAV 地址';
+
+  @override
+  String get appLock => '应用锁';
+
+  @override
+  String get enableAppLock => '启用应用锁';
+
+  @override
+  String get setPin => '设置 PIN';
+
+  @override
+  String get changePin => '修改 PIN';
+
+  @override
+  String get pinNotSet => '未设置';
+
+  @override
+  String get pinSet => '已设置';
+
+  @override
+  String get useBiometric => '生物识别解锁';
+
+  @override
+  String get lockTimeout => '后台锁定超时';
+
+  @override
+  String get timeoutImmediately => '立即';
+
+  @override
+  String get timeout1Min => '1 分钟';
+
+  @override
+  String get timeout5Min => '5 分钟';
+
+  @override
+  String get encryptedBackup => '加密备份';
+
+  @override
+  String get exportEncryptedBackup => '导出加密备份';
+
+  @override
+  String get importEncryptedBackup => '导入加密备份';
+
+  @override
+  String get backupPassword => '备份密码';
+
+  @override
+  String get backupPasswordHint => '换设备恢复需要此密码，请妥善保存';
+
+  @override
+  String get confirmPassword => '确认密码';
+
+  @override
+  String get passwordMismatch => '两次输入的密码不一致';
+
+  @override
+  String get passwordTooShort => '密码至少 8 位';
+
+  @override
+  String get unlockApp => '解锁随存';
+
+  @override
+  String get appLocked => '随存已锁定';
+
+  @override
+  String get enterPin => '输入 PIN 解锁';
+
+  @override
+  String get wrongPin => 'PIN 错误，请重试';
+
+  @override
+  String get pinTooShort => 'PIN 至少 4 位';
+
+  @override
+  String get pinSaved => 'PIN 已保存';
+
+  @override
+  String get securityPageTitle => '安全';
+
+  @override
+  String get encryptionOn => '本地数据库已加密';
+
+  @override
+  String get encryptionOnDesc => '数据库使用随机密钥加密，密钥保存在系统安全存储';
+
+  @override
+  String lockoutTryLater(Object seconds) {
+    return '尝试次数过多，请 $seconds 秒后再试';
+  }
+
+  @override
+  String get pinLabel => 'PIN';
 }
