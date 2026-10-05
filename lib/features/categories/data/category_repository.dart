@@ -4,7 +4,6 @@ import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:suicun/core/database/app_database.dart';
-import 'package:suicun/core/database/tables.dart';
 import 'package:suicun/core/errors/app_errors.dart';
 import 'package:suicun/features/categories/domain/category_model.dart';
 

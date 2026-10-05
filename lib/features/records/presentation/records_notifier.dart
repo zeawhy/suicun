@@ -47,8 +47,8 @@ class RecordsFilterNotifier extends _$RecordsFilterNotifier {
 }
 
 @riverpod
-Future<List<RecordDetail>> recordsList(RecordsListRef ref) async {
-  final filter = ref.watch(recordsFilterNotifierProvider);
+Future<List<RecordDetail>> recordsList(Ref ref) async {
+  final filter = ref.watch(recordsFilterProvider);
   final repo = ref.watch(recordRepositoryProvider);
   return repo.searchRecords(
     query: filter.query,
@@ -59,7 +59,7 @@ Future<List<RecordDetail>> recordsList(RecordsListRef ref) async {
 }
 
 @riverpod
-Future<List<RecordDetail>> trashList(TrashListRef ref) async {
+Future<List<RecordDetail>> trashList(Ref ref) async {
   final repo = ref.watch(recordRepositoryProvider);
   return repo.searchRecords(includeDeleted: true);
 }

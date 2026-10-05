@@ -47,7 +47,7 @@ class AppDatabase extends _$AppDatabase {
             // placeholder for future version 2 migration
           }
         },
-        beforeOpen: (OpenedDatabase details) async {
+        beforeOpen: (OpeningDetails details) async {
           // Ensure foreign keys are on for every connection
           await customStatement('PRAGMA foreign_keys = ON');
         },
@@ -159,7 +159,14 @@ class AppDatabase extends _$AppDatabase {
       conditions.add('r.is_favorite = 1');
     }
 
-    // Build per-token conditions (AND across tokens, OR across fields per token)
+    // Build per-token conditions (AND across tokens, OR across fields per token).
+    //
+    // IMPORTANT: parameter binding is positional, following the textual order
+    // of placeholders in the final SQL. The score expression sits in the
+    // SELECT clause (before WHERE), so score params must precede condition
+    // params in the bound list. They are collected separately for this reason.
+    final scoreParams = <Object?>[];
+    final condParams = <Object?>[];
     final tokenScoreExprs = <String>[];
     for (final token in tokens) {
       final escaped = _escapeLike(token.toLowerCase());
@@ -182,7 +189,7 @@ class AppDatabase extends _$AppDatabase {
             AND LOWER(c.name) LIKE ? ESCAPE '\\'
         ))
       )''');
-      params.addAll([likePattern, likePattern, likePattern, likePattern]);
+      condParams.addAll([likePattern, likePattern, likePattern, likePattern]);
 
       // Ranking contribution of this token
       tokenScoreExprs.add('''(
@@ -201,7 +208,8 @@ class AppDatabase extends _$AppDatabase {
              WHEN LOWER(r.body) LIKE ? ESCAPE '\\' THEN 1
              ELSE 0 END
       )''');
-      params.addAll([exactPattern, likePattern, likePattern, likePattern, likePattern]);
+      scoreParams
+          .addAll([exactPattern, likePattern, likePattern, likePattern, likePattern]);
     }
 
     final whereClause =
@@ -221,11 +229,14 @@ class AppDatabase extends _$AppDatabase {
                r.updated_at DESC
       LIMIT ? OFFSET ?
     ''';
-    params.add(limit);
-    params.add(offset);
+    // Textual placeholder order: [categoryId?] then score params (SELECT),
+    // then condition params (WHERE), then LIMIT/OFFSET.
+    final allParams = <Object?>[...params, ...scoreParams, ...condParams];
+    allParams.add(limit);
+    allParams.add(offset);
 
     final result = await customSelect(sql, variables: [
-      for (final p in params)
+      for (final p in allParams)
         if (p is String)
           Variable.withString(p)
         else if (p is int)

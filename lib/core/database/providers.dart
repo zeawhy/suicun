@@ -11,16 +11,16 @@ import 'package:suicun/features/tags/data/tag_repository.dart';
 part 'providers.g.dart';
 
 @Riverpod(keepAlive: true)
-AppDatabase appDatabase(AppDatabaseRef ref) => AppDatabase();
+AppDatabase appDatabase(Ref ref) => AppDatabase();
 
 @Riverpod(keepAlive: true)
-RecordRepository recordRepository(RecordRepositoryRef ref) =>
+RecordRepository recordRepository(Ref ref) =>
     RecordRepository(ref.watch(appDatabaseProvider));
 
 @Riverpod(keepAlive: true)
-CategoryRepository categoryRepository(CategoryRepositoryRef ref) =>
+CategoryRepository categoryRepository(Ref ref) =>
     CategoryRepository(ref.watch(appDatabaseProvider));
 
 @Riverpod(keepAlive: true)
-TagRepository tagRepository(TagRepositoryRef ref) =>
+TagRepository tagRepository(Ref ref) =>
     TagRepository(ref.watch(appDatabaseProvider));

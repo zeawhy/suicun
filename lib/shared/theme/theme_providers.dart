@@ -26,8 +26,8 @@ class ThemeModeNotifier extends _$ThemeModeNotifier {
 ///
 /// Consume this when passing a value to [MaterialApp.themeMode].
 @riverpod
-ThemeMode themeMode(Ref ref) {
-  final mode = ref.watch(themeModeNotifierProvider);
+ThemeMode resolvedThemeMode(Ref ref) {
+  final mode = ref.watch(themeModeProvider);
   return switch (mode) {
     AppThemeMode.light => ThemeMode.light,
     AppThemeMode.dark => ThemeMode.dark,

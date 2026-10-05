@@ -6,11 +6,11 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:archive/archive_io.dart';
+import 'package:drift/drift.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 import 'package:suicun/core/database/app_database.dart';
-import 'package:suicun/core/database/tables.dart';
 import 'package:suicun/core/errors/app_errors.dart';
 import 'package:suicun/features/categories/data/category_repository.dart';
 import 'package:suicun/features/records/data/record_repository.dart';
@@ -76,7 +76,8 @@ class BackupService {
                   'is_favorite': r.isFavorite,
                   'created_at': r.createdAt.toIso8601String(),
                   'updated_at': r.updatedAt.toIso8601String(),
-                  'tag_ids': tagsByRecord[r.id] ?? [],
+                  // Sorted for deterministic backups
+                  'tag_ids': (tagsByRecord[r.id] ?? [])..sort(),
                 })
             .toList(),
       };
@@ -104,15 +105,21 @@ class BackupService {
       final catMap = {for (final c in categories) c.id: c.name};
 
       final archive = Archive();
+      var totalBytes = 0;
+      var skippedByLimit = 0;
 
       for (final r in records) {
+        if (archive.length >= _maxZipFiles) {
+          skippedByLimit++;
+          continue;
+        }
         final idShort = r.id.substring(0, 8);
         final safeTitle = r.title
             .replaceAll(RegExp(r'[\\/:*?"<>|]'), '_')
-            .replaceAll(RegExp(r'\s+'), '_')
-            .substring(0, r.title.length.clamp(0, 40));
+            .replaceAll(RegExp(r'\s+'), '_');
+        final truncated = safeTitle.substring(0, safeTitle.length.clamp(0, 40));
         final filename =
-            safeTitle.isEmpty ? '$idShort.md' : '${safeTitle}_$idShort.md';
+            truncated.isEmpty ? '$idShort.md' : '${truncated}_$idShort.md';
 
         final catName =
             r.categoryId != null ? catMap[r.categoryId!] ?? '' : '';
@@ -130,7 +137,19 @@ class BackupService {
         sb.write(r.body);
 
         final bytes = utf8.encode(sb.toString());
+        if (totalBytes + bytes.length > _maxZipTotalBytes) {
+          skippedByLimit++;
+          continue;
+        }
+        totalBytes += bytes.length;
         archive.addFile(ArchiveFile(filename, bytes.length, bytes));
+      }
+
+      if (skippedByLimit > 0) {
+        final note =
+            'NOTE: $skippedByLimit record(s) skipped due to ZIP size/count limits.\n';
+        final noteBytes = utf8.encode(note);
+        archive.addFile(ArchiveFile('_skipped.txt', noteBytes.length, noteBytes));
       }
 
       final dir = await getApplicationDocumentsDirectory();
@@ -138,7 +157,7 @@ class BackupService {
       final zipFile = File(p.join(dir.path, 'suicun_markdown_$ts.zip'));
 
       final encoder = ZipEncoder();
-      await zipFile.writeAsBytes(encoder.encode(archive)!, flush: true);
+      await zipFile.writeAsBytes(encoder.encode(archive), flush: true);
       return zipFile;
     } catch (e) {
       throw ExportError('Markdown ZIP export failed', e);
@@ -283,7 +302,7 @@ class BackupService {
         }
       }
 
-      return recordRepo.createRecord(
+      return await recordRepo.createRecord(
         title: title.isEmpty ? name : title,
         body: body,
       );
