@@ -8,7 +8,11 @@ part 'categories_notifier.g.dart';
 class CategoriesNotifier extends _$CategoriesNotifier {
   @override
   FutureOr<List<CategoryModel>> build() async {
-    return ref.watch(categoryRepositoryProvider).getAllCategories();
+    final repo = ref.watch(categoryRepositoryProvider);
+    // First-run seeding so the auto-category engine has keywords to match.
+    // Idempotent — safe to run on every build.
+    await repo.ensureDefaultCategories();
+    return repo.getAllCategories();
   }
 
   Future<void> addCategory(String name, String color) async {

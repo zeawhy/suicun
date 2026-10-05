@@ -118,6 +118,83 @@ class CategoryRepository {
 
   // ── Auto-category keywords (stored as JSON string array in categories.keywords) ──
 
+  /// Default categories seeded on first use, each with starter keywords so
+  /// the auto-category engine works out of the box instead of silently
+  /// doing nothing until the user configures keywords by hand.
+  static const List<({String name, String color, List<String> keywords})>
+      defaultCategories = [
+    (
+      name: '工作',
+      color: '#4A7DDC',
+      keywords: [
+        '会议', '项目', '需求', '方案', '汇报', '总结', '邮件', '客户',
+        '同事', '任务', '计划', '报告', '加班', '面试', '周报', 'deadline',
+      ],
+    ),
+    (
+      name: '学习',
+      color: '#7C5CD6',
+      keywords: [
+        '学习', '课程', '笔记', '考试', '论文', '阅读', '读书', '单词',
+        '英语', '教程', '知识', '复习', '作业', '讲座',
+      ],
+    ),
+    (
+      name: '生活',
+      color: '#3FA76A',
+      keywords: [
+        '生活', '购物', '菜谱', '做饭', '旅行', '酒店', '机票', '健康',
+        '运动', '跑步', '健身', '电影', '朋友', '聚会',
+      ],
+    ),
+    (
+      name: '灵感',
+      color: '#E8A33D',
+      keywords: ['灵感', '想法', '创意', '点子', '思考', '随笔', '感悟'],
+    ),
+    (
+      name: '待办',
+      color: '#D9534F',
+      keywords: [
+        '待办', '任务', '提醒', '记得', '缴费', '预约', '截止', '购买', '办理',
+      ],
+    ),
+  ];
+
+  /// Idempotent first-run seeding for the auto-category engine.
+  ///
+  /// - Fresh install (no categories): creates [defaultCategories] with
+  ///   their starter keywords.
+  /// - Upgrade (user already has categories): backfills keywords for
+  ///   default-named categories that have none yet.
+  ///
+  /// Never touches user-created categories or existing keyword lists.
+  Future<void> ensureDefaultCategories() async {
+    try {
+      final existing = await getAllCategories();
+      final byName = <String, CategoryModel>{
+        for (final c in existing) c.name.trim().toLowerCase(): c,
+      };
+      for (final def in defaultCategories) {
+        final match = byName[def.name.toLowerCase()];
+        if (match == null) {
+          await _db.into(_db.categories).insert(
+                CategoriesCompanion.insert(
+                  id: _uuid.v4(),
+                  name: def.name,
+                  color: Value(def.color),
+                  keywords: Value(encodeKeywords(def.keywords)),
+                ),
+              );
+        } else if ((await getKeywords(match.id)).isEmpty) {
+          await setKeywords(match.id, def.keywords);
+        }
+      }
+    } catch (e) {
+      throw DatabaseError('Failed to seed default categories', e);
+    }
+  }
+
   /// Decodes a stored keywords JSON string into a keyword list.
   /// Returns an empty list for null, empty, or malformed values.
   static List<String> decodeKeywords(String? stored) {
