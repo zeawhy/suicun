@@ -194,8 +194,7 @@ void main() {
       }
     });
 
-    test('sends a real PROPFIND with Depth: 1 and Basic auth', () async {
-      http.BaseRequest? captured;
+    test('sends a real PROPFIND with Depth: 1 and Basic auth', () async {      http.BaseRequest? captured;
       final service = serviceWith(onRequest: (r) => captured = r);
       final result = await service.testConnection(_validConfig);
       expect(result.ok, isTrue);
@@ -211,6 +210,24 @@ void main() {
       expect(captured!.url.toString(), 'https://dav.example.com/suicun/');
     });
 
+    test('strips invisible characters copied from chat apps', () async {
+      // Zero-width space (U+200B) inside the host: invisible on screen,
+      // breaks DNS resolution, and is NOT removed by String.trim().
+      const dirty = 'https://dav.ex\u200bample.com/dav/';
+      expect(WebdavService.sanitizeUrl(dirty), 'https://dav.example.com/dav/');
+
+      http.BaseRequest? captured;
+      final service = serviceWith(onRequest: (r) => captured = r);
+      final config = WebdavConfig(
+        serverUrl: dirty,
+        username: 'user',
+        password: 'secret',
+        directory: '/suicun/',
+      );
+      final result = await service.testConnection(config);
+      expect(result.ok, isTrue);
+      expect(captured!.url.host, 'dav.example.com');
+    });
     test('401/403 map to unauthorized', () async {
       for (final code in [401, 403]) {
         final result =

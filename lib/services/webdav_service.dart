@@ -93,6 +93,20 @@ class WebdavService {
 
   static const Duration probeTimeout = Duration(seconds: 15);
 
+  /// Invisible characters that frequently sneak into URLs when copying from
+  /// chat apps / web pages (zero-width spaces, BOM, word joiners, ...).
+  /// They are not removed by [String.trim] but break DNS resolution while
+  /// remaining invisible on screen.
+  static final RegExp _invisibleChars = RegExp(
+    '[\u200b\u200c\u200d\u2060\ufeff\u00ad\u061c\u115f\u1160\u17b4\u17b5'
+    '\u180e\u2000-\u200a\u202a-\u202e\u2061-\u2064\u2066-\u206f\u3164\uffa0]',
+  );
+
+  /// Removes invisible/control characters from a user-supplied URL and
+  /// trims surrounding whitespace. Use before any parsing or request.
+  static String sanitizeUrl(String url) =>
+      url.replaceAll(_invisibleChars, '').trim();
+
   // Keys used in secure storage. Never log their values.
   static const _kServerUrl = 'suicun.webdav.serverUrl';
   static const _kUsername = 'suicun.webdav.username';
@@ -108,7 +122,7 @@ class WebdavService {
   List<String> validateConfig(WebdavConfig config) {
     final errors = <String>[];
 
-    final url = config.serverUrl.trim();
+    final url = sanitizeUrl(config.serverUrl);
     if (url.isEmpty) {
       errors.add('请输入 WebDAV 服务器地址');
     } else if (!url.toLowerCase().startsWith('https://')) {
@@ -154,7 +168,7 @@ class WebdavService {
   ///   timeout -> timeout; other 5xx -> serverError; network errors -> network.
   /// - Never throws; the password never appears in [WebdavProbeResult.detail].
   Future<WebdavProbeResult> testConnection(WebdavConfig config) async {
-    final url = config.serverUrl.trim();
+    final url = sanitizeUrl(config.serverUrl);
     if (!url.toLowerCase().startsWith('https://')) {
       return const WebdavProbeResult(
         ok: false,
@@ -244,7 +258,7 @@ class WebdavService {
   /// platform secure storage.
   Future<void> saveConfig(WebdavConfig config) async {
     await Future.wait([
-      _storage.write(key: _kServerUrl, value: config.serverUrl.trim()),
+      _storage.write(key: _kServerUrl, value: sanitizeUrl(config.serverUrl)),
       _storage.write(key: _kUsername, value: config.username),
       _storage.write(key: _kPassword, value: config.password),
       _storage.write(
