@@ -27,11 +27,16 @@
 2. **代理 TLS MITM 只吃纯 TLS 1.2 ClientHello**：Java 默认带 TLS 1.3 的 ClientHello 会被降级到 1.2
    然后晾住直到读超时；强制只发 1.3 则被 `protocol_version` alert 拒绝；curl（TLS 1.3）正常。
    解：`-Djdk.tls.client.protocols=TLSv1.2`（Java 发纯 1.2 ClientHello 即 200 OK）。
-3. **JDK 不信任代理 MITM CA**：`SSL_CERT_FILE=/run/hatch/egress-tls/ca-bundle.pem`
-   （`Hatch Sandbox Egress CA`，122 个证书）只对 curl/node/git 有效；`keytool -importcert`
-   一次只导入 bundle 中的第一个证书，需拆成 122 个逐个导入 `~/jdk17/lib/security/cacerts`
-   （JDK 重装后需重导）。注：代理对不同域名用了不同的中间证书，只导一个会遇到
-   `PKIX path building failed`（如 dl.google.com）。
+3. **JDK 不信任代理 MITM CA（构建依赖下载失败的根因）**：VM 出站经
+   `hatch-egress-proxy:3128` 做 TLS 中间人，`~/jdk17` 默认信任库无代理 CA，
+   Gradle 下载依赖时报 `CertPathValidatorException: signature check failed`。
+   修复：复制 JDK 的 `cacerts` 到 `/home/hatch/.gradle/hatch-cacerts` 并导入
+   `/usr/local/share/ca-certificates/hatch-egress-ca.crt`，再在
+   `android/gradle.properties` 的 `org.gradle.jvmargs` 追加
+   `-Djavax.net.ssl.trustStore=/home/hatch/.gradle/hatch-cacerts`
+   `-Djavax.net.ssl.trustStorePassword=changeit`（2026-10-05 由 parent 完成）。
+   注：此前曾尝试向 `~/jdk17/lib/security/cacerts` 导入 bundle 内 122 个证书，
+   方向正确但不如独立 trustStore 干净，已废弃该做法。
 4. **Gradle 传参不可靠**：`GRADLE_OPTS` 只影响 client，`systemProp.*` 给 daemon 传参在本环境不稳定；
    改用 `_JAVA_OPTIONS` 环境变量，所有 JVM 进程（client + daemon）自动生效。
 5. **Flutter 3.47.6 模板 pin 了不存在的 AGP 版本**：`settings.gradle.kts` 里
@@ -161,8 +166,19 @@
 - 命令（依次执行）：
   1. `bash ~/workspace/suicun-env/gradle-proxy.sh`
   2. `flutter build apk --debug`
-- 产物：`build/app/outputs/flutter-apk/app-debug.apk`（构建成功后填入大小/SHA）
-- 构建状态：（构建进行中 / 成功 / 失败见下）
+- 产物：`build/app/outputs/flutter-apk/app-debug.apk`
+  - 大小：170MB
+  - SHA1：`452586629fd0ce874a6f9345dba9f779907610b`
+  - SHA256：`83a74b68c1fd8f2c8eb5e5219c8764247bda2b928a96ba867b15c62d361cf964f`
+  - 构建时间：2026-10-05 12:56 CST
+- 构建状态：**成功** ✅
+  - TLS 根因修复：`android/gradle.properties` 中 `org.gradle.jvmargs` 追加
+    `-Djavax.net.ssl.trustStore=/home/hatch/.gradle/hatch-cacerts`
+    `-Djavax.net.ssl.trustStorePassword=changeit`（该 trustStore 系 JDK cacerts
+    复制后导入 hatch-egress-ca 代理 CA；此前 Gradle/Java 经 hatch-egress-proxy:3128
+    下载依赖时报 `CertPathValidatorException: signature check failed`）。
+  - 另接受 Android SDK 许可证（`sdkmanager --licenses`），自动安装了
+    build-tools;36.0.0 与 CMake 3.22.1。
 
 ---
 
