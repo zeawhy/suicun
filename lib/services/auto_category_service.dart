@@ -67,21 +67,33 @@ class AutoCategoryService {
     String? title,
     String? body,
   }) async {
+    final suggestions = await suggestCategories(title: title, body: body);
+    return suggestions.isEmpty ? null : suggestions.first;
+  }
+
+  /// Suggests up to [limit] best-matching categories, ranked by confidence
+  /// (highest first). Only categories reaching [suggestionThreshold] are
+  /// returned, so the list may be shorter than [limit] (or empty).
+  ///
+  /// Used by the editor to present 1–2 tappable candidates for the user to
+  /// choose from, instead of silently auto-applying a single category.
+  Future<List<CategorySuggestion>> suggestCategories({
+    String? title,
+    String? body,
+    int limit = 2,
+  }) async {
     final titleText = (title ?? '').trim();
     final bodyText = (body ?? '').trim();
-    if (titleText.isEmpty && bodyText.isEmpty) return null;
+    if (titleText.isEmpty && bodyText.isEmpty) return const [];
 
     final categories = await _categoryRepository.getAllCategories();
-    if (categories.isEmpty) return null;
+    if (categories.isEmpty) return const [];
     final keywordMap = await _categoryRepository.getAllKeywords();
 
     final titleLower = titleText.toLowerCase();
     final bodyLower = bodyText.toLowerCase();
 
-    String? bestId;
-    String? bestName;
-    double bestConfidence = 0;
-
+    final candidates = <CategorySuggestion>[];
     for (final category in categories) {
       final keywords = keywordMap[category.id];
       if (keywords == null || keywords.isEmpty) continue;
@@ -98,20 +110,17 @@ class AutoCategoryService {
       final score = titleWeight * titleHits + bodyWeight * bodyHits;
       if (score <= 0) continue;
       final confidence = score / (score + confidenceDamping);
+      if (confidence < suggestionThreshold) continue;
 
-      if (confidence > bestConfidence) {
-        bestConfidence = confidence;
-        bestId = category.id;
-        bestName = category.name;
-      }
+      candidates.add(CategorySuggestion(
+        categoryId: category.id,
+        categoryName: category.name,
+        confidence: confidence,
+      ));
     }
 
-    if (bestId == null || bestConfidence < suggestionThreshold) return null;
-    return CategorySuggestion(
-      categoryId: bestId,
-      categoryName: bestName!,
-      confidence: bestConfidence,
-    );
+    candidates.sort((a, b) => b.confidence.compareTo(a.confidence));
+    return candidates.take(limit).toList();
   }
 
   /// Learns from a user correction: extracts keywords from [title]/[body]

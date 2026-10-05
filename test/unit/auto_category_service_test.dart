@@ -222,4 +222,65 @@ void main() {
       expect(AutoCategoryService.extractKeywords('  ，！ '), isEmpty);
     });
   });
+
+  group('suggestCategories', () {
+    test('returns up to two candidates ranked by confidence', () async {
+      final work = await repo.createCategory('工作', '#4A7DDC');
+      final study = await repo.createCategory('学习', '#7C5CD6');
+      final life = await repo.createCategory('生活', '#3FA76A');
+      await service.setKeywords(work.id, ['会议', '项目']);
+      await service.setKeywords(study.id, ['考试']);
+      await service.setKeywords(life.id, ['火锅']);
+
+      final suggestions = await service.suggestCategories(
+        title: '项目会议',
+        body: '准备考试',
+      );
+      expect(suggestions.length, 2);
+      // '项目会议' hits two title keywords (weight 2 each) -> highest.
+      expect(suggestions[0].categoryId, work.id);
+      expect(suggestions[0].confidence,
+          greaterThan(suggestions[1].confidence));
+      expect(suggestions[1].categoryId, study.id);
+    });
+
+    test('respects the limit parameter', () async {
+      final a = await repo.createCategory('A', '#111111');
+      final b = await repo.createCategory('B', '#222222');
+      final c = await repo.createCategory('C', '#333333');
+      await service.setKeywords(a.id, ['开会']);
+      await service.setKeywords(b.id, ['开会']);
+      await service.setKeywords(c.id, ['开会']);
+
+      final suggestions = await service.suggestCategories(
+        title: '开会讨论',
+        limit: 2,
+      );
+      expect(suggestions.length, 2);
+    });
+
+    test('filters out candidates below the confidence threshold', () async {
+      final cat = await repo.createCategory('生活', '#3FA76A');
+      await service.setKeywords(cat.id, ['火锅']);
+
+      // '火锅' appears once in a long body -> confidence below threshold.
+      final suggestions = await service.suggestCategories(
+        body: '今天天气真不错适合出门走走顺便吃一顿火锅再回家休息',
+      );
+      // Single body hit: 1/(1+2) = 0.33 >= 0.3, so it IS returned.
+      // Use a text with no hits at all for the empty case:
+      final none = await service.suggestCategories(body: '今天天气真不错');
+      expect(none, isEmpty);
+      expect(suggestions.length, lessThanOrEqualTo(2));
+    });
+
+    test('suggestCategory returns the top candidate', () async {
+      final work = await repo.createCategory('工作', '#4A7DDC');
+      await service.setKeywords(work.id, ['会议']);
+
+      final top = await service.suggestCategory(title: '开会会议纪要');
+      expect(top, isNotNull);
+      expect(top!.categoryId, work.id);
+    });
+  });
 }

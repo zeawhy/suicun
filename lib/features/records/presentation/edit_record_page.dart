@@ -36,10 +36,12 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
   /// Body shows rich text when not editing; tap to edit.
   late bool _bodyEditing;
 
-  /// Smart-suggestion wiring.
+  /// Smart-suggestion wiring: up to two candidate categories are offered
+  /// as tappable chips for the user to choose from (never auto-applied).
   Timer? _suggestTimer;
   bool _userPickedCategory = false;
-  bool _smartSuggested = false;
+  List<CategorySuggestion> _suggestions = const [];
+  Map<String, String> _suggestionColors = const {};
 
   bool get _isNew => widget.recordId == null;
 
@@ -89,20 +91,118 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
     final body = _bodyController.text.trim();
     if (title.isEmpty && body.isEmpty) return;
     try {
-      final suggestion = await ref
+      final suggestions = await ref
           .read(autoCategoryServiceProvider)
-          .suggestCategory(title: title, body: body);
-      if (!mounted || suggestion == null) return;
+          .suggestCategories(title: title, body: body, limit: 2);
+      if (!mounted) return;
       final currentId =
           ref.read(editRecordProvider(widget.recordId)).record?.categoryId;
-      if (currentId == suggestion.categoryId) return;
-      await ref
-          .read(editRecordProvider(widget.recordId).notifier)
-          .setCategory(suggestion.categoryId);
-      if (mounted) setState(() => _smartSuggested = true);
+      final visible =
+          suggestions.where((s) => s.categoryId != currentId).toList();
+      Map<String, String> colors = const {};
+      if (visible.isNotEmpty) {
+        final cats =
+            await ref.read(categoryRepositoryProvider).getAllCategories();
+        colors = {for (final c in cats) c.id: c.color};
+      }
+      if (mounted) {
+        setState(() {
+          _suggestions = visible;
+          _suggestionColors = colors;
+        });
+      }
     } catch (_) {
       // Suggestion is best-effort; never break editing.
     }
+  }
+
+  /// Applies a tapped suggestion: sets the category, learns keywords from
+  /// the current text, and dismisses the suggestion chips.
+  Future<void> _applySuggestion(CategorySuggestion suggestion) async {
+    await ref
+        .read(editRecordProvider(widget.recordId).notifier)
+        .setCategory(suggestion.categoryId);
+    try {
+      await ref.read(autoCategoryServiceProvider).learnFromCorrection(
+            title: _titleController.text,
+            body: _bodyController.text,
+            categoryId: suggestion.categoryId,
+          );
+    } catch (_) {}
+    if (mounted) {
+      setState(() {
+        _suggestions = const [];
+        _suggestionColors = const {};
+        _userPickedCategory = true;
+      });
+    }
+  }
+
+  /// Tappable suggestion chips ("智能推荐：工作 / 学习") shown under the
+  /// category row. The user picks one; nothing is applied automatically.
+  Widget _buildSuggestionRow(
+    AppLocalizations l10n,
+    ThemeData theme,
+    ColorScheme colorScheme,
+  ) {
+    if (_suggestions.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
+      child: Row(
+        children: [
+          Icon(Icons.auto_awesome_outlined,
+              size: 18, color: colorScheme.primary),
+          const SizedBox(width: 8),
+          Text(
+            l10n.smartRecommend,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: colorScheme.primary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final s in _suggestions)
+                  InkWell(
+                    onTap: () => _applySuggestion(s),
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      constraints: const BoxConstraints(minHeight: 40),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _ColorDot(
+                            color: _parseColor(
+                              _suggestionColors[s.categoryId] ?? '#4866D5',
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            s.categoryName,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: colorScheme.onPrimaryContainer,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _pickCategory(
@@ -155,7 +255,8 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
     if (mounted) {
       setState(() {
         _userPickedCategory = true;
-        _smartSuggested = false;
+        _suggestions = const [];
+        _suggestionColors = const {};
       });
     }
   }
@@ -424,6 +525,7 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
               ),
               const Divider(height: 1),
               _buildCategoryRow(l10n, theme, colorScheme, record),
+              _buildSuggestionRow(l10n, theme, colorScheme),
               const Divider(height: 1, indent: 20, endIndent: 20),
               _buildTagRow(l10n, theme, colorScheme, record),
               const Divider(height: 1),
@@ -580,23 +682,6 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
               const SizedBox(width: 12),
               Text(l10n.category, style: theme.textTheme.titleMedium),
               const Spacer(),
-              if (_smartSuggested)
-                Container(
-                  margin: const EdgeInsets.only(right: 8),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: colorScheme.primary,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Text(
-                    l10n.smartRecommend,
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: colorScheme.onPrimary,
-                      fontSize: 11,
-                    ),
-                  ),
-                ),
               if (category != null) ...[
                 _ColorDot(color: _parseColor(category.color)),
                 const SizedBox(width: 6),
