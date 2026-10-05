@@ -1,3 +1,8 @@
+// lib/shared/widgets/record_list_tile.dart
+// Home/trash list row, restyled to match the design mockups:
+// colored rounded icon block, bold title, 2-line gray body preview,
+// "category · yyyy/MM/dd" meta line, gold star (favorites only) + ⋮ menu.
+
 import 'package:flutter/material.dart';
 import 'package:suicun/features/records/domain/record_model.dart';
 import 'package:suicun/shared/utils/date_formatter.dart';
@@ -12,6 +17,10 @@ class RecordListTile extends StatelessWidget {
     required this.onLongPress,
     required this.onFavoriteToggle,
     required this.untitledLabel,
+    this.favoriteTooltip,
+    this.unfavoriteTooltip,
+    this.deleteLabel,
+    this.onDelete,
   });
 
   final RecordDetail record;
@@ -22,14 +31,29 @@ class RecordListTile extends StatelessWidget {
   final VoidCallback onFavoriteToggle;
   final String untitledLabel;
 
+  /// Shown on the gold star (favorites only). Falls back to a generic label.
+  final String? favoriteTooltip;
+
+  /// Shown in the ⋮ menu for the favorite/unfavorite action.
+  final String? unfavoriteTooltip;
+
+  /// Shown in the ⋮ menu for the delete action. When null the menu item
+  /// still appears with a generic label.
+  final String? deleteLabel;
+
+  /// Called from the ⋮ menu. When null, the delete menu item is hidden.
+  final VoidCallback? onDelete;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final locale = Localizations.localeOf(context).languageCode;
-    
-    final displayTitle = record.title.isNotEmpty ? record.title : untitledLabel;
-    
-    // Get the first two non-empty lines of the body for the preview
+    final colorScheme = theme.colorScheme;
+
+    final displayTitle =
+        record.title.isNotEmpty ? record.title : untitledLabel;
+    final titleColor =
+        record.title.isNotEmpty ? colorScheme.onSurface : colorScheme.onSurfaceVariant;
+
     final bodyLines = record.body
         .split('\n')
         .map((e) => e.trim())
@@ -38,112 +62,132 @@ class RecordListTile extends StatelessWidget {
         .toList();
     final bodyPreview = bodyLines.join('\n');
 
-    final dateStr = DateFormatter.formatRelative(record.updatedAt, locale);
+    final categoryColor = record.category != null
+        ? _parseColor(record.category!.color)
+        : colorScheme.primary;
+    final dateStr = DateFormatter.formatYmd(record.updatedAt);
+    final metaStr = record.category != null
+        ? '${record.category!.name} · $dateStr'
+        : dateStr;
 
-    return Card(
-      color: isSelected ? theme.colorScheme.primaryContainer : theme.cardTheme.color,
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        onLongPress: onLongPress,
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (isMultiSelectMode)
-                Padding(
-                  padding: const EdgeInsets.only(right: 12.0),
-                  child: Checkbox(
-                    value: isSelected,
-                    onChanged: (_) => onTap(),
-                  ),
-                ),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            displayTitle,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                            semanticsLabel: displayTitle,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        IconButton(
-                          icon: Icon(
-                            record.isFavorite ? Icons.star : Icons.star_border,
-                            color: record.isFavorite ? Colors.amber : theme.colorScheme.onSurfaceVariant,
-                          ),
-                          onPressed: onFavoriteToggle,
-                          constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
-                          padding: EdgeInsets.zero,
-                          tooltip: record.isFavorite ? 'Unfavorite' : 'Favorite',
-                        ),
-                      ],
-                    ),
-                    if (bodyPreview.isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        bodyPreview,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                        semanticsLabel: bodyPreview,
-                      ),
-                    ],
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        if (record.category != null) ...[
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: _parseColor(record.category!.color).withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              record.category!.name,
-                              style: theme.textTheme.labelSmall?.copyWith(
-                                color: _parseColor(record.category!.color),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                        ],
-                        ...record.tags.take(2).map((t) => Padding(
-                          padding: const EdgeInsets.only(right: 8.0),
-                          child: Text(
-                            '#${t.name}',
-                            style: theme.textTheme.labelSmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        )),
-                        const Spacer(),
-                        Text(
-                          dateStr,
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+    return InkWell(
+      onTap: onTap,
+      onLongPress: onLongPress,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (isMultiSelectMode)
+              Padding(
+                padding: const EdgeInsets.only(right: 12.0, top: 4.0),
+                child: Checkbox(
+                  value: isSelected,
+                  onChanged: (_) => onTap(),
+                  materialTapTargetSize: MaterialTapTargetSize.padded,
                 ),
               ),
-            ],
-          ),
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: categoryColor.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                record.category != null
+                    ? Icons.folder_outlined
+                    : Icons.note_outlined,
+                color: categoryColor,
+                size: 24,
+                semanticLabel: record.category?.name,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          displayTitle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: titleColor,
+                          ),
+                        ),
+                      ),
+                      if (record.isFavorite)
+                        IconButton(
+                          icon: const Icon(Icons.star, color: Colors.amber),
+                          onPressed: onFavoriteToggle,
+                          tooltip: favoriteTooltip ?? 'Favorite',
+                          constraints: const BoxConstraints(
+                              minWidth: 48, minHeight: 48),
+                          padding: EdgeInsets.zero,
+                          visualDensity: VisualDensity.compact,
+                        ),
+                      SizedBox(
+                        width: 40,
+                        height: 48,
+                        child: PopupMenuButton<String>(
+                          icon: const Icon(Icons.more_vert),
+                          tooltip: 'More',
+                          padding: EdgeInsets.zero,
+                          onSelected: (value) {
+                            switch (value) {
+                              case 'favorite':
+                                onFavoriteToggle();
+                              case 'delete':
+                                onDelete?.call();
+                            }
+                          },
+                          itemBuilder: (ctx) => [
+                            PopupMenuItem(
+                              value: 'favorite',
+                              child: Text(record.isFavorite
+                                  ? (unfavoriteTooltip ?? 'Unfavorite')
+                                  : (favoriteTooltip ?? 'Favorite')),
+                            ),
+                            if (onDelete != null)
+                              PopupMenuItem(
+                                value: 'delete',
+                                child: Text(deleteLabel ?? 'Delete'),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (bodyPreview.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      bodyPreview,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 6),
+                  Text(
+                    metaStr,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -25,4 +25,11 @@ class DateFormatter {
     final local = utcTime.toLocal();
     return DateFormat.yMMMd(locale).add_Hm().format(local);
   }
+
+  /// Formats as yyyy/MM/dd in local time (used by the home list).
+  static String formatYmd(DateTime utcTime) {
+    final local = utcTime.toLocal();
+    String two(int n) => n.toString().padLeft(2, '0');
+    return '${local.year}/${two(local.month)}/${two(local.day)}';
+  }
 }

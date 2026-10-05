@@ -26,6 +26,12 @@ class $CategoriesTable extends Categories
       type: DriftSqlType.string,
       requiredDuringInsert: false,
       defaultValue: const Constant('#4866D5'));
+  static const VerificationMeta _keywordsMeta =
+      const VerificationMeta('keywords');
+  @override
+  late final GeneratedColumn<String> keywords = GeneratedColumn<String>(
+      'keywords', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _deletedAtMeta =
       const VerificationMeta('deletedAt');
   @override
@@ -33,7 +39,7 @@ class $CategoriesTable extends Categories
       'deleted_at', aliasedName, true,
       type: DriftSqlType.dateTime, requiredDuringInsert: false);
   @override
-  List<GeneratedColumn> get $columns => [id, name, color, deletedAt];
+  List<GeneratedColumn> get $columns => [id, name, color, keywords, deletedAt];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -59,6 +65,10 @@ class $CategoriesTable extends Categories
       context.handle(
           _colorMeta, color.isAcceptableOrUnknown(data['color']!, _colorMeta));
     }
+    if (data.containsKey('keywords')) {
+      context.handle(_keywordsMeta,
+          keywords.isAcceptableOrUnknown(data['keywords']!, _keywordsMeta));
+    }
     if (data.containsKey('deleted_at')) {
       context.handle(_deletedAtMeta,
           deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta));
@@ -78,6 +88,8 @@ class $CategoriesTable extends Categories
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
       color: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}color'])!,
+      keywords: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}keywords']),
       deletedAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}deleted_at']),
     );
@@ -93,11 +105,13 @@ class Category extends DataClass implements Insertable<Category> {
   final String id;
   final String name;
   final String color;
+  final String? keywords;
   final DateTime? deletedAt;
   const Category(
       {required this.id,
       required this.name,
       required this.color,
+      this.keywords,
       this.deletedAt});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -105,6 +119,9 @@ class Category extends DataClass implements Insertable<Category> {
     map['id'] = Variable<String>(id);
     map['name'] = Variable<String>(name);
     map['color'] = Variable<String>(color);
+    if (!nullToAbsent || keywords != null) {
+      map['keywords'] = Variable<String>(keywords);
+    }
     if (!nullToAbsent || deletedAt != null) {
       map['deleted_at'] = Variable<DateTime>(deletedAt);
     }
@@ -116,6 +133,9 @@ class Category extends DataClass implements Insertable<Category> {
       id: Value(id),
       name: Value(name),
       color: Value(color),
+      keywords: keywords == null && nullToAbsent
+          ? const Value.absent()
+          : Value(keywords),
       deletedAt: deletedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(deletedAt),
@@ -129,6 +149,7 @@ class Category extends DataClass implements Insertable<Category> {
       id: serializer.fromJson<String>(json['id']),
       name: serializer.fromJson<String>(json['name']),
       color: serializer.fromJson<String>(json['color']),
+      keywords: serializer.fromJson<String?>(json['keywords']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
     );
   }
@@ -139,6 +160,7 @@ class Category extends DataClass implements Insertable<Category> {
       'id': serializer.toJson<String>(id),
       'name': serializer.toJson<String>(name),
       'color': serializer.toJson<String>(color),
+      'keywords': serializer.toJson<String?>(keywords),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
     };
   }
@@ -147,11 +169,13 @@ class Category extends DataClass implements Insertable<Category> {
           {String? id,
           String? name,
           String? color,
+          Value<String?> keywords = const Value.absent(),
           Value<DateTime?> deletedAt = const Value.absent()}) =>
       Category(
         id: id ?? this.id,
         name: name ?? this.name,
         color: color ?? this.color,
+        keywords: keywords.present ? keywords.value : this.keywords,
         deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
       );
   Category copyWithCompanion(CategoriesCompanion data) {
@@ -159,6 +183,7 @@ class Category extends DataClass implements Insertable<Category> {
       id: data.id.present ? data.id.value : this.id,
       name: data.name.present ? data.name.value : this.name,
       color: data.color.present ? data.color.value : this.color,
+      keywords: data.keywords.present ? data.keywords.value : this.keywords,
       deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
     );
   }
@@ -169,13 +194,14 @@ class Category extends DataClass implements Insertable<Category> {
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('color: $color, ')
+          ..write('keywords: $keywords, ')
           ..write('deletedAt: $deletedAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, name, color, deletedAt);
+  int get hashCode => Object.hash(id, name, color, keywords, deletedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -183,6 +209,7 @@ class Category extends DataClass implements Insertable<Category> {
           other.id == this.id &&
           other.name == this.name &&
           other.color == this.color &&
+          other.keywords == this.keywords &&
           other.deletedAt == this.deletedAt);
 }
 
@@ -190,12 +217,14 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
   final Value<String> id;
   final Value<String> name;
   final Value<String> color;
+  final Value<String?> keywords;
   final Value<DateTime?> deletedAt;
   final Value<int> rowid;
   const CategoriesCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
     this.color = const Value.absent(),
+    this.keywords = const Value.absent(),
     this.deletedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -203,6 +232,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     required String id,
     required String name,
     this.color = const Value.absent(),
+    this.keywords = const Value.absent(),
     this.deletedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   })  : id = Value(id),
@@ -211,6 +241,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     Expression<String>? id,
     Expression<String>? name,
     Expression<String>? color,
+    Expression<String>? keywords,
     Expression<DateTime>? deletedAt,
     Expression<int>? rowid,
   }) {
@@ -218,6 +249,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
       if (id != null) 'id': id,
       if (name != null) 'name': name,
       if (color != null) 'color': color,
+      if (keywords != null) 'keywords': keywords,
       if (deletedAt != null) 'deleted_at': deletedAt,
       if (rowid != null) 'rowid': rowid,
     });
@@ -227,12 +259,14 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
       {Value<String>? id,
       Value<String>? name,
       Value<String>? color,
+      Value<String?>? keywords,
       Value<DateTime?>? deletedAt,
       Value<int>? rowid}) {
     return CategoriesCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
       color: color ?? this.color,
+      keywords: keywords ?? this.keywords,
       deletedAt: deletedAt ?? this.deletedAt,
       rowid: rowid ?? this.rowid,
     );
@@ -250,6 +284,9 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     if (color.present) {
       map['color'] = Variable<String>(color.value);
     }
+    if (keywords.present) {
+      map['keywords'] = Variable<String>(keywords.value);
+    }
     if (deletedAt.present) {
       map['deleted_at'] = Variable<DateTime>(deletedAt.value);
     }
@@ -265,6 +302,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('color: $color, ')
+          ..write('keywords: $keywords, ')
           ..write('deletedAt: $deletedAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -2705,6 +2743,7 @@ typedef $$CategoriesTableCreateCompanionBuilder = CategoriesCompanion Function({
   required String id,
   required String name,
   Value<String> color,
+  Value<String?> keywords,
   Value<DateTime?> deletedAt,
   Value<int> rowid,
 });
@@ -2712,6 +2751,7 @@ typedef $$CategoriesTableUpdateCompanionBuilder = CategoriesCompanion Function({
   Value<String> id,
   Value<String> name,
   Value<String> color,
+  Value<String?> keywords,
   Value<DateTime?> deletedAt,
   Value<int> rowid,
 });
@@ -2752,6 +2792,9 @@ class $$CategoriesTableFilterComposer
 
   ColumnFilters<String> get color => $composableBuilder(
       column: $table.color, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get keywords => $composableBuilder(
+      column: $table.keywords, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<DateTime> get deletedAt => $composableBuilder(
       column: $table.deletedAt, builder: (column) => ColumnFilters(column));
@@ -2796,6 +2839,9 @@ class $$CategoriesTableOrderingComposer
   ColumnOrderings<String> get color => $composableBuilder(
       column: $table.color, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get keywords => $composableBuilder(
+      column: $table.keywords, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
       column: $table.deletedAt, builder: (column) => ColumnOrderings(column));
 }
@@ -2817,6 +2863,9 @@ class $$CategoriesTableAnnotationComposer
 
   GeneratedColumn<String> get color =>
       $composableBuilder(column: $table.color, builder: (column) => column);
+
+  GeneratedColumn<String> get keywords =>
+      $composableBuilder(column: $table.keywords, builder: (column) => column);
 
   GeneratedColumn<DateTime> get deletedAt =>
       $composableBuilder(column: $table.deletedAt, builder: (column) => column);
@@ -2869,6 +2918,7 @@ class $$CategoriesTableTableManager extends RootTableManager<
             Value<String> id = const Value.absent(),
             Value<String> name = const Value.absent(),
             Value<String> color = const Value.absent(),
+            Value<String?> keywords = const Value.absent(),
             Value<DateTime?> deletedAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
@@ -2876,6 +2926,7 @@ class $$CategoriesTableTableManager extends RootTableManager<
             id: id,
             name: name,
             color: color,
+            keywords: keywords,
             deletedAt: deletedAt,
             rowid: rowid,
           ),
@@ -2883,6 +2934,7 @@ class $$CategoriesTableTableManager extends RootTableManager<
             required String id,
             required String name,
             Value<String> color = const Value.absent(),
+            Value<String?> keywords = const Value.absent(),
             Value<DateTime?> deletedAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
@@ -2890,6 +2942,7 @@ class $$CategoriesTableTableManager extends RootTableManager<
             id: id,
             name: name,
             color: color,
+            keywords: keywords,
             deletedAt: deletedAt,
             rowid: rowid,
           ),

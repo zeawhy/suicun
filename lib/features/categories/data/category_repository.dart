@@ -1,5 +1,7 @@
 // lib/features/categories/data/category_repository.dart
 
+import 'dart:convert';
+
 import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
 
@@ -112,5 +114,74 @@ class CategoryRepository {
     return cats.any((c) =>
         c.name.toLowerCase() == lower &&
         (excludeId == null || c.id != excludeId));
+  }
+
+  // ── Auto-category keywords (stored as JSON string array in categories.keywords) ──
+
+  /// Decodes a stored keywords JSON string into a keyword list.
+  /// Returns an empty list for null, empty, or malformed values.
+  static List<String> decodeKeywords(String? stored) {
+    if (stored == null || stored.trim().isEmpty) return const [];
+    try {
+      final decoded = jsonDecode(stored);
+      if (decoded is List) {
+        return decoded
+            .whereType<String>()
+            .map((s) => s.trim())
+            .where((s) => s.isNotEmpty)
+            .toList();
+      }
+    } catch (_) {
+      // Malformed JSON — treat as no keywords rather than failing.
+    }
+    return const [];
+  }
+
+  /// Encodes a keyword list as a JSON string array for storage.
+  static String encodeKeywords(Iterable<String> keywords) {
+    final unique = <String>{};
+    for (final kw in keywords) {
+      final trimmed = kw.trim();
+      if (trimmed.isNotEmpty) unique.add(trimmed);
+    }
+    return jsonEncode(unique.toList());
+  }
+
+  /// Keywords of a single category (empty list if none configured).
+  Future<List<String>> getKeywords(String id) async {
+    try {
+      final row = await (_db.select(_db.categories)
+            ..where((c) => c.id.equals(id)))
+          .getSingleOrNull();
+      return decodeKeywords(row?.keywords);
+    } catch (e) {
+      throw DatabaseError('Failed to load keywords for category $id', e);
+    }
+  }
+
+  /// Keywords for all non-deleted categories, keyed by category id.
+  Future<Map<String, List<String>>> getAllKeywords() async {
+    try {
+      final rows = await (_db.select(_db.categories)
+            ..where((c) => c.deletedAt.isNull()))
+          .get();
+      return {
+        for (final row in rows) row.id: decodeKeywords(row.keywords),
+      };
+    } catch (e) {
+      throw DatabaseError('Failed to load category keywords', e);
+    }
+  }
+
+  /// Replaces the keyword list of a category.
+  Future<void> setKeywords(String id, List<String> keywords) async {
+    try {
+      await (_db.update(_db.categories)..where((c) => c.id.equals(id)))
+          .write(CategoriesCompanion(
+        keywords: Value(encodeKeywords(keywords)),
+      ));
+    } catch (e) {
+      throw DatabaseError('Failed to save keywords for category $id', e);
+    }
   }
 }

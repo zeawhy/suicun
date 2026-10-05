@@ -1,6 +1,7 @@
 // lib/core/database/tables.dart
 // Drift table definitions for 随存 Stage A
-// Schema version 1 — migration mechanism must be maintained
+// Schema version 2 — migration mechanism must be maintained
+// v2 added: Categories.keywords (nullable TEXT, JSON string array)
 
 import 'package:drift/drift.dart';
 
@@ -27,6 +28,9 @@ class Categories extends Table {
   TextColumn get name => text()();
   // Color stored as hex string e.g. "#4866D5"
   TextColumn get color => text().withDefault(const Constant('#4866D5'))();
+  // Auto-category keywords stored as a JSON string array, e.g. '["美食","餐厅"]'.
+  // Nullable: null (or empty array) means "no keywords configured yet".
+  TextColumn get keywords => text().nullable()();
   DateTimeColumn get deletedAt => dateTime().nullable()();
 
   @override

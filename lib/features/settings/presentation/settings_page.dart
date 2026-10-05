@@ -1,3 +1,6 @@
+// lib/features/settings/presentation/settings_page.dart
+// Settings grouped per spec §4.5: Appearance / Data / Sync / Security / About.
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -20,53 +23,92 @@ class SettingsPage extends ConsumerWidget {
         children: [
           _buildSectionHeader(context, l10n.appearance),
           ListTile(
-            leading: const Icon(Icons.brightness_medium),
+            leading: const Icon(Icons.brightness_medium_outlined),
             title: Text(l10n.theme),
             trailing: DropdownButton<AppThemeMode>(
               value: themeMode,
+              underline: const SizedBox.shrink(),
               onChanged: (mode) {
                 if (mode != null) {
                   ref.read(themeModeProvider.notifier).setMode(mode);
                 }
               },
               items: [
-                DropdownMenuItem(value: AppThemeMode.system, child: Text(l10n.themeSystem)),
-                DropdownMenuItem(value: AppThemeMode.light, child: Text(l10n.themeLight)),
-                DropdownMenuItem(value: AppThemeMode.dark, child: Text(l10n.themeDark)),
+                DropdownMenuItem(
+                    value: AppThemeMode.system,
+                    child: Text(l10n.themeSystem)),
+                DropdownMenuItem(
+                    value: AppThemeMode.light, child: Text(l10n.themeLight)),
+                DropdownMenuItem(
+                    value: AppThemeMode.dark, child: Text(l10n.themeDark)),
               ],
             ),
           ),
-          const Divider(),
           _buildSectionHeader(context, l10n.data),
-          ListTile(
-            leading: const Icon(Icons.folder),
-            title: Text(l10n.categories),
+          _navTile(
+            context,
+            icon: Icons.folder_outlined,
+            title: l10n.categories,
             onTap: () => context.push('/settings/categories'),
           ),
-          ListTile(
-            leading: const Icon(Icons.label),
-            title: Text(l10n.tags),
+          _navTile(
+            context,
+            icon: Icons.label_outlined,
+            title: l10n.tags,
             onTap: () => context.push('/settings/tags'),
           ),
-          ListTile(
-            leading: const Icon(Icons.delete_outline),
-            title: Text(l10n.trash),
-            onTap: () => context.push('/trash'),
-          ),
-          ListTile(
-            leading: const Icon(Icons.backup),
-            title: Text(l10n.backup),
+          _navTile(
+            context,
+            icon: Icons.backup_outlined,
+            title: l10n.backup,
             onTap: () => context.push('/settings/backup'),
           ),
-          const Divider(),
+          _navTile(
+            context,
+            icon: Icons.delete_outline,
+            title: l10n.trash,
+            onTap: () => context.push('/trash'),
+          ),
+          _buildSectionHeader(context, l10n.sync),
+          _navTile(
+            context,
+            icon: Icons.cloud_outlined,
+            title: l10n.webdavSync,
+            onTap: () => context.push('/settings/webdav'),
+          ),
+          _buildSectionHeader(context, l10n.security),
+          ListTile(
+            leading: const Icon(Icons.lock_outline),
+            title: Text(l10n.security),
+            subtitle: Text(l10n.securityNotImplemented),
+            enabled: false,
+          ),
           _buildSectionHeader(context, l10n.about),
           ListTile(
             leading: const Icon(Icons.info_outline),
             title: Text(l10n.version),
             subtitle: const Text('0.1.0 (Stage A)'),
           ),
+          const SizedBox(height: 24),
         ],
       ),
+    );
+  }
+
+  Widget _navTile(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      leading: Icon(icon),
+      title: Text(title),
+      trailing: Icon(
+        Icons.chevron_right,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+      ),
+      onTap: onTap,
     );
   }
 

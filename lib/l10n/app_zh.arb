@@ -1,114 +1,204 @@
 {
   "@@locale": "zh",
+  "@connectionFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@exportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@importFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@importPreview": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@importSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@lastSyncToday": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@modified": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@recordCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@selectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "about": "关于",
+  "addCategory": "新增分类",
+  "addKeyword": "添加关键词",
+  "addTag": "新增标签",
+  "addTags": "添加标签",
+  "all": "全部",
   "appName": "随存",
   "appTagline": "保存以后还要找的信息",
-  "newRecord": "新建记录",
-  "searchHint": "搜索保存的信息",
-  "all": "全部",
-  "favorites": "收藏",
-  "uncategorized": "未分类",
-  "untitledRecord": "未命名记录",
-  "saving": "保存中",
-  "saved": "已保存",
-  "saveFailed": "保存失败，重试",
-  "settings": "设置",
   "appearance": "外观",
-  "data": "数据",
-  "about": "关于",
-  "theme": "主题",
-  "themeLight": "浅色",
-  "themeDark": "深色",
-  "themeSystem": "跟随系统",
+  "autoSaveHint": "自动保存，无需手动点击保存。",
+  "backup": "备份",
+  "batchCategorize": "批量分类",
+  "batchDelete": "批量删除",
+  "batchFavorite": "批量收藏",
+  "bodyHint": "写下以后还要找的信息……",
+  "bodyLimit": "正文较长（超过 1 MiB），建议拆分",
+  "cancel": "取消",
   "categories": "分类",
-  "tags": "标签",
-  "addCategory": "新增分类",
-  "editCategory": "编辑分类",
+  "categoriesEmpty": "还没有分类",
+  "category": "分类",
+  "categoryColor": "分类颜色",
+  "categoryName": "分类名称",
+  "clearFilter": "清除筛选",
+  "configSaved": "配置已保存",
+  "confirm": "确认",
+  "connectionFailed": "连接失败：{error}",
+  "connectionSuccess": "连接成功",
+  "data": "数据",
+  "delete": "删除",
   "deleteCategory": "删除分类",
   "deleteCategoryConfirm": "删除后，该分类下的记录将转为未分类。确认删除吗？",
-  "categoryName": "分类名称",
-  "categoryColor": "分类颜色",
-  "addTag": "新增标签",
-  "editTag": "编辑标签",
   "deleteTag": "删除标签",
   "deleteTagConfirm": "删除后，相关记录仍然保留，只解除标签关联。确认删除吗？",
-  "tagName": "标签名称",
-  "favorite": "收藏",
-  "unfavorite": "取消收藏",
-  "delete": "删除",
-  "restore": "恢复",
-  "permanentDelete": "彻底删除",
-  "permanentDeleteConfirm": "彻底删除后无法恢复。确认吗？",
-  "trash": "回收站",
-  "trashEmpty": "回收站为空",
-  "recordsEmpty": "还没有记录",
-  "recordsEmptyHint": "点击右下角新建记录",
-  "searchEmpty": "没有找到相关记录",
-  "searchEmptyHint": "试试其他关键词，或清除筛选条件",
-  "clearFilter": "清除筛选",
-  "backup": "备份",
+  "directoryInvalid": "同步目录须以 / 开头",
+  "duplicateName": "该名称已存在",
+  "e2eDesc": "内容加密后上传到你的存储空间。",
+  "e2eEnabled": "已开启",
+  "e2eEncryption": "端到端加密",
+  "e2eWipDialog": "端到端加密将在同步引擎（阶段 C）上线时启用。",
+  "editCategory": "编辑分类",
+  "editInfo": "编辑信息",
+  "editTag": "编辑标签",
   "export": "导出",
-  "importData": "导入",
+  "exportFailed": "导出失败：{error}",
   "exportJson": "导出 JSON 备份",
   "exportMarkdownZip": "导出 Markdown ZIP",
+  "exportSuccess": "导出成功",
   "exportTxt": "导出 TXT",
+  "favorite": "收藏",
+  "favorites": "收藏",
+  "filterEmpty": "该筛选下没有记录",
+  "filterEmptyHint": "试试其他分类，或清除筛选条件",
+  "hidePassword": "隐藏密码",
+  "importData": "导入",
+  "importFailed": "导入失败：{error}",
   "importJson": "从 JSON 恢复",
   "importMarkdown": "导入 Markdown/TXT",
   "importPreview": "即将导入 {count} 条记录",
-  "@importPreview": {
-    "placeholders": {
-      "count": { "type": "int" }
-    }
-  },
   "importSuccess": "成功导入 {count} 条记录",
-  "@importSuccess": {
-    "placeholders": {
-      "count": { "type": "int" }
-    }
-  },
-  "importFailed": "导入失败：{error}",
-  "@importFailed": {
-    "placeholders": {
-      "error": { "type": "String" }
-    }
-  },
-  "exportSuccess": "导出成功",
-  "exportFailed": "导出失败：{error}",
-  "@exportFailed": {
-    "placeholders": {
-      "error": { "type": "String" }
-    }
-  },
-  "cancel": "取消",
-  "confirm": "确认",
-  "save": "保存",
-  "rename": "改名",
+  "keywordHint": "输入关键词，回车添加",
+  "keywords": "关键词",
+  "keywordsEmpty": "暂无关键词，添加后可自动推荐分类",
+  "lastSync": "上次同步",
+  "lastSyncToday": "今天 {time}",
+  "linkCopied": "已复制链接",
+  "maxTagsReached": "最多添加 10 个标签",
+  "modified": "修改于 {time}",
+  "newInfo": "新建信息",
+  "newRecord": "新建记录",
+  "notYetInput": "尚未输入",
   "ok": "确定",
-  "titleHint": "标题（可不填）",
-  "bodyHint": "正文",
+  "password": "密码",
+  "passwordRequired": "请填写密码",
+  "pendingUpload": "待上传",
+  "permanentDelete": "彻底删除",
+  "permanentDeleteConfirm": "彻底删除后无法恢复。确认吗？",
+  "probeInvalidConfig": "配置不完整",
+  "probeNotFound": "服务器上找不到该目录",
+  "probeNotHttps": "仅支持 HTTPS 地址",
+  "probeServerError": "服务器错误",
+  "probeTimeout": "连接超时",
+  "probeTls": "TLS 握手失败，请检查地址或证书",
+  "probeUnauthorized": "用户名或密码错误",
+  "probeUnknown": "未知错误",
+  "probeUnreachable": "无法连接到服务器",
+  "recordCount": "{count} 条记录",
+  "recordDeleted": "已移至回收站",
+  "recordsEmpty": "还没有记录",
+  "recordsEmptyHint": "点击右下角新建记录",
+  "rename": "改名",
+  "restore": "恢复",
+  "save": "保存",
+  "saveFailed": "保存失败，重试",
+  "saved": "已保存",
+  "saving": "保存中",
+  "searchEmpty": "没有找到相关记录",
+  "searchEmptyHint": "试试其他关键词，或清除筛选条件",
+  "searchHint": "搜索保存的信息",
+  "security": "安全",
+  "securityNotImplemented": "安全功能将在后续版本推出",
+  "selectAll": "全选",
   "selectCategory": "选择分类",
   "selectTags": "选择标签",
-  "maxTagsReached": "最多添加 10 个标签",
-  "duplicateName": "该名称已存在",
-  "recordDeleted": "已移至回收站",
-  "undoDelete": "撤销",
-  "selectAll": "全选",
-  "batchFavorite": "批量收藏",
-  "batchDelete": "批量删除",
-  "batchCategorize": "批量分类",
   "selectedCount": "已选 {count} 条",
-  "@selectedCount": {
-    "placeholders": {
-      "count": { "type": "int" }
-    }
-  },
+  "settings": "设置",
+  "showPassword": "显示密码",
+  "smartRecommend": "智能推荐",
+  "sync": "同步",
+  "syncCompleted": "同步已完成",
+  "syncDirectory": "同步目录",
+  "syncEngineWip": "同步引擎开发中（阶段 C）",
+  "syncNever": "未同步",
+  "syncNotConfigured": "尚未配置同步",
   "syncNotImplemented": "同步功能将在后续版本推出",
-  "securityNotImplemented": "安全功能将在后续版本推出",
+  "syncNow": "立即同步",
+  "synced": "已同步",
+  "tagName": "标签名称",
+  "tags": "标签",
+  "tagsEmpty": "还没有标签",
+  "testConnection": "测试连接",
+  "theme": "主题",
+  "themeDark": "深色",
+  "themeLight": "浅色",
+  "themeSystem": "跟随系统",
+  "titleHint": "标题（可选）",
+  "trash": "回收站",
+  "trashEmpty": "回收站为空",
+  "uncategorized": "未分类",
+  "undoDelete": "撤销",
+  "unfavorite": "取消收藏",
+  "untitledRecord": "未命名记录",
+  "username": "用户名",
+  "usernameRequired": "请填写用户名",
   "version": "版本",
-  "bodyLimit": "正文较长（超过 1 MiB），建议拆分",
-  "modified": "修改于 {time}",
-  "@modified": {
-    "placeholders": {
-      "time": { "type": "String" }
-    }
-  }
+  "webdavSync": "WebDAV 同步",
+  "webdavUrl": "WebDAV 地址",
+  "webdavUrlInvalid": "WebDAV 地址格式不正确",
+  "webdavUrlRequired": "请填写 WebDAV 地址"
 }

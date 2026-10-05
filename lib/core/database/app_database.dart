@@ -28,7 +28,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -44,7 +44,8 @@ class AppDatabase extends _$AppDatabase {
           // Migrations must be additive and backward-compatible.
           // If a migration fails, the database is preserved as-is.
           if (from < 2) {
-            // placeholder for future version 2 migration
+            // v2: auto-category keywords on Categories
+            await m.addColumn(categories, categories.keywords);
           }
         },
         beforeOpen: (OpeningDetails details) async {

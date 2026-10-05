@@ -4,7 +4,7 @@
 > 本文档如实记录做到哪一步、跑过什么命令、什么结果；没验证的明确写"未验证"。
 
 更新时间：2026-10-05（CST）
-分支：`antigravity/stage-a`（自 main 切出）
+分支：`antigravity/stage-a`（自 main 切出）；后续工作在 `antigravity/ui-rework`（自 stage-a 切出，见 §7）
 
 ---
 
@@ -233,3 +233,79 @@ test/
    函数与类同名会冲突（`themeMode` 函数改名 `resolvedThemeMode`）。drift 2.35 `OpenedDatabase` 改名
    `OpeningDetails`。file_picker 13 / share_plus 13 API 变更已适配。
 3. 无真机：见 §3.6。
+
+---
+
+## 7. UI 重做 + 自动分类 + WebDAV 配置（分支 `antigravity/ui-rework`，2026-10-05）
+
+背景：用户反馈阶段 A 的页面未按设计图实现，且缺少 WebDAV 配置页；新增需求"分类自动识别（可不选、可手动改）"。
+用户指定模型分工：UI→Gemini、功能逻辑→Claude，均经 `~/.local/bin/agy` 驱动；但 agy 当日配额已耗尽
+（claude-sonnet-4-6 / gemini-3.8-flash-high / claude-opus-4-6-thinking 均 `Individual quota reached`，
+约 158–163h 后重置），两部分全部由子智能体**手写 Dart**完成，未消耗 agy 额度。
+
+设计图（严格遵循，以图为准）：
+- `~/workspace/user/files/1000058075_5_aywc.png`：首页、编辑信息、加密同步（WebDAV 同步页）
+- `~/workspace/user/files/1000058076_4_tdmr.png`：新建信息页
+
+### 7.1 UI 重做（按设计图）
+
+- **首页**（`lib/features/records/presentation/home_page.dart` + `lib/shared/widgets/record_list_tile.dart`）：
+  大标题"随存"+设置齿轮、浅灰圆角搜索框、横向滚动筛选 chips（全部=蓝色填充选中）、列表项
+  （48px 彩色圆角分类图标、加粗标题、两行灰色正文、`分类 · yyyy/MM/dd`、已收藏金色星标+⋮菜单、
+  项间细分割线）、右下角蓝色圆形 FAB"+"、三态空状态。有意偏离两处：① 未收藏行不显示空心星
+  （收藏走 ⋮ 菜单）；② 未放"已同步"小字（同步引擎不存在，显示即虚假）。
+- **编辑信息页**（`edit_record_page.dart`）：顶栏 ←|标题|✓已保存（蓝色）|☆|⋮；标题大字加粗；
+  正文编辑/富文本双层切换，链接蓝色下划线可点（点击=复制链接+Toast，因 url_launcher 未引入）；
+  底部分类行（含"智能推荐"蓝色小标识）、标签 chips（×删除、虚线+添加）。
+- **新建信息页**：顶栏 ←|新建信息|☆；"尚未输入"灰字；"标题（可选）"大字 hint；
+  正文 hint"写下以后还要找的信息……"；底部分类行（未分类/推荐预选）、标签行（"+ 添加标签" outlined 按钮）；
+  底部"自动保存，无需手动点击保存。"小字。
+- **WebDAV 同步页**（新建 `lib/features/settings/presentation/webdav_sync_page.dart`，
+  路由 `/settings/webdav`）：状态卡片、配置表单（地址/用户名/密码显隐/同步目录）、
+  [测试连接][立即同步]、端到端加密卡片。**诚实性落实**：未配置时状态卡片只显示"尚未配置同步"；
+  "立即同步"禁用+灰字"同步引擎开发中（阶段 C）"；"测试连接"调真实 PROPFIND（成功绿 Toast 并自动保存配置，
+  失败红 Toast 显示原因）；未放"在新手机恢复"按钮；加密卡片点击弹诚实说明。
+- **其他页面统一视觉语言**：设置页按 外观/数据/同步/安全/关于 分组（同步分组有真实 WebDAV 入口）、
+  备份页（导出/导入分组卡片）、回收站、分类管理（含关键词 bottom sheet）、标签管理。
+- 保留：中英文双语（ARB 新增约 45 key）、明暗主题（深色独立定义，走 colorScheme 无硬编码）、
+  无障碍（≥48dp 触达、语义标签、字体放大不裁切）。深色主题未做真机目检。
+
+### 7.2 本地自动分类引擎（纯离线）
+
+- `lib/services/auto_category_service.dart`：`suggestCategory({title, body})` 关键词/规则评分
+  （标题权重 2.0 > 正文 1.0，多命中累加，confidence=score/(score+2)，阈值 0.3，低于返回 null）；
+  `learnFromCorrection({title, body, categoryId})` 用 CJK 感知分词器提取关键词并入目标分类（去重）；
+  `get/set/addKeywords`。
+- 数据层：`categories` 表加可空 `keywords` TEXT 列（JSON 数组），Drift migration v1→v2，
+  `CategoryRepository` 加法扩展（损坏 JSON 容错）。阶段 A 的 38 个数据层测试未改动、全部通过。
+- UI 接线：新建/编辑页分类行显示推荐并预选+"智能推荐"标识；用户手动改分类后调 `learnFromCorrection` 学习；
+  分类管理页可查看/编辑每分类关键词。
+- 已知局限：CJK 分词按标点/空白切分，无标点中文长句会形成过长片段导致匹配率低；
+  migration 的真实 v1→v2 `onUpgrade` 路径未被测试覆盖（测试均为内存新库 onCreate），建议在有旧库的设备上手动验证一次。
+
+### 7.3 WebDAV 配置页功能（同步引擎本身是阶段 C，本次不做）
+
+- `lib/services/webdav_service.dart`：`validateConfig`（https:// 必需、用户名/目录非空等）；
+  `testConnection` 真实 PROPFIND（Depth: 1，Basic Auth，15s 超时），只接受 HTTPS，
+  状态映射 2xx/207→ok、401/403→unauthorized、404→notFound、超时→timeout、5xx→serverError；
+  凭据全部存 `flutter_secure_storage`（key 前缀 `suicun.webdav.*`）。
+- 新增依赖：`http: ^1.6.0`、`flutter_secure_storage: ^11.2.0`。
+- **同步引擎（端到端加密、版本 DAG、持久 outbox、冲突处理）标注为阶段 C，未开始**；
+  备份恢复仍走本地 JSON（§2），不受影响。
+
+### 7.4 测试（2026-10-05，`antigravity/ui-rework` 分支）
+
+- `flutter analyze`：**No issues found!**
+- 新增：`test/unit/auto_category_service_test.dart`（21）、`test/unit/webdav_service_test.dart`（20，
+  mock http.Client，不打真实网络）、`test/widget/webdav_sync_page_test.dart`（5）、
+  `test/widget/smart_suggest_test.dart`（1）
+- 更新：`test/widget/record_workflow_test.dart`（4 处适配新 UI；另修复一个真 bug——正文 FocusNode
+  失焦监听导致新建页输入标题后正文意外切富文本态，现仅编辑页失焦收起）
+- 全量 `flutter test`：**91/91 通过**（unit 79 + widget 12；含阶段 A 原有 44 个，数据层测试未改动）
+- 未验证项沿用 §3.6（无真机/模拟器）：真机安装运行、搜索 P95、分享/文件选择原生链路、中文 IME、
+  深色主题真机目检、WebDAV 真实服务器联调（测试用 mock）、v1→v2 数据库升级路径。
+
+### 7.5 构建
+
+- 命令：同 §4 环境变量，`flutter build apk --release`（release 用 debug 签名，模板默认）。
+- 产物：`build/app/outputs/flutter-apk/app-release.apk`（62.3MB / 62268778 字节，远小于 debug 的 170MB；构建时间 2026-10-05 ~22:21 CST）。

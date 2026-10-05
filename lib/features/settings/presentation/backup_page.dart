@@ -1,5 +1,6 @@
 // lib/features/settings/presentation/backup_page.dart
 // Backup & restore: JSON export/import, Markdown ZIP export, TXT export.
+// Restyled with grouped cards; all business logic unchanged.
 
 import 'dart:io';
 
@@ -149,41 +150,95 @@ class _BackupPageState extends ConsumerState<BackupPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
     final service = ref.watch(backupServiceProvider);
+
+    Widget groupTitle(String text) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(4, 0, 4, 8),
+        child: Text(
+          text,
+          style: theme.textTheme.titleSmall?.copyWith(
+            color: theme.colorScheme.primary,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      );
+    }
+
+    Widget actionTile({
+      required IconData icon,
+      required String title,
+      required VoidCallback? onTap,
+    }) {
+      return ListTile(
+        leading: Icon(icon),
+        title: Text(title),
+        trailing: Icon(
+          Icons.chevron_right,
+          color: theme.colorScheme.onSurfaceVariant,
+        ),
+        onTap: onTap,
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.backup)),
       body: Stack(
         children: [
           ListView(
+            padding: const EdgeInsets.all(16),
             children: [
-              ListTile(
-                leading: const Icon(Icons.file_download),
-                title: Text(l10n.exportJson),
-                onTap: _busy ? null : () => _runExport(l10n, service.exportJson),
+              groupTitle(l10n.export),
+              Card(
+                margin: EdgeInsets.zero,
+                child: Column(
+                  children: [
+                    actionTile(
+                      icon: Icons.file_download_outlined,
+                      title: l10n.exportJson,
+                      onTap: _busy
+                          ? null
+                          : () => _runExport(l10n, service.exportJson),
+                    ),
+                    const Divider(height: 1, indent: 16, endIndent: 16),
+                    actionTile(
+                      icon: Icons.archive_outlined,
+                      title: l10n.exportMarkdownZip,
+                      onTap: _busy
+                          ? null
+                          : () => _runExport(l10n, service.exportMarkdownZip),
+                    ),
+                    const Divider(height: 1, indent: 16, endIndent: 16),
+                    actionTile(
+                      icon: Icons.description_outlined,
+                      title: l10n.exportTxt,
+                      onTap: _busy
+                          ? null
+                          : () => _runExport(l10n, service.exportTxt),
+                    ),
+                  ],
+                ),
               ),
-              ListTile(
-                leading: const Icon(Icons.archive),
-                title: Text(l10n.exportMarkdownZip),
-                onTap: _busy
-                    ? null
-                    : () => _runExport(l10n, service.exportMarkdownZip),
-              ),
-              ListTile(
-                leading: const Icon(Icons.description),
-                title: Text(l10n.exportTxt),
-                onTap: _busy ? null : () => _runExport(l10n, service.exportTxt),
-              ),
-              const Divider(),
-              ListTile(
-                leading: const Icon(Icons.restore),
-                title: Text(l10n.importJson),
-                onTap: _busy ? null : () => _runJsonImport(l10n),
-              ),
-              ListTile(
-                leading: const Icon(Icons.note_add),
-                title: Text(l10n.importMarkdown),
-                onTap: _busy ? null : () => _runTextImport(l10n),
+              const SizedBox(height: 16),
+              groupTitle(l10n.importData),
+              Card(
+                margin: EdgeInsets.zero,
+                child: Column(
+                  children: [
+                    actionTile(
+                      icon: Icons.restore_outlined,
+                      title: l10n.importJson,
+                      onTap: _busy ? null : () => _runJsonImport(l10n),
+                    ),
+                    const Divider(height: 1, indent: 16, endIndent: 16),
+                    actionTile(
+                      icon: Icons.note_add_outlined,
+                      title: l10n.importMarkdown,
+                      onTap: _busy ? null : () => _runTextImport(l10n),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

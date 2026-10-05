@@ -65,12 +65,15 @@ void main() {
     // Open the editor
     await tester.tap(find.byTooltip('New Record'));
     await tester.pumpAndSettle();
+    expect(find.text('New Info'), findsOneWidget);
     expect(findByHint('Title (optional)'), findsOneWidget);
 
     // Type title and body
     await tester.enterText(
         findByHint('Title (optional)'), 'Grocery run');
-    await tester.enterText(findByHint('Body'), 'milk and eggs');
+    await tester.enterText(
+        findByHint("Write down info you'll want to find later…"),
+        'milk and eggs');
     await tester.pump();
     expect(find.text('Saving…'), findsOneWidget);
 
@@ -125,10 +128,12 @@ void main() {
     await tester.pageBack();
     await tester.pumpAndSettle();
 
-    // Not favorited yet: star_border icon shown
-    expect(find.byIcon(Icons.star_border), findsOneWidget);
+    // Not favorited yet: no gold star shown; favorite via the ⋮ menu
+    expect(find.byIcon(Icons.star), findsNothing);
 
-    await tester.tap(find.byIcon(Icons.star_border));
+    await tester.tap(find.byIcon(Icons.more_vert));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Favorite'));
     await tester.pumpAndSettle();
     expect(find.byIcon(Icons.star), findsOneWidget);
   });
@@ -156,7 +161,7 @@ void main() {
     expect(find.text('Moved to trash'), findsOneWidget);
 
     // Open trash via settings
-    await tester.tap(find.byIcon(Icons.settings));
+    await tester.tap(find.byIcon(Icons.settings_outlined));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Trash'));
     await tester.pumpAndSettle();
@@ -180,7 +185,7 @@ void main() {
   testWidgets('theme switch persists in settings', (tester) async {
     await pumpApp(tester, db);
 
-    await tester.tap(find.byIcon(Icons.settings));
+    await tester.tap(find.byIcon(Icons.settings_outlined));
     await tester.pumpAndSettle();
     expect(find.text('Theme'), findsOneWidget);
 

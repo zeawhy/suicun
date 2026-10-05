@@ -1,114 +1,204 @@
 {
   "@@locale": "en",
+  "@connectionFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@exportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@importFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@importPreview": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@importSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@lastSyncToday": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@modified": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@recordCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@selectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "about": "About",
+  "addCategory": "Add Category",
+  "addKeyword": "Add keyword",
+  "addTag": "Add Tag",
+  "addTags": "Add tags",
+  "all": "All",
   "appName": "Suicun",
   "appTagline": "Save it now, find it later",
-  "newRecord": "New Record",
-  "searchHint": "Search saved info",
-  "all": "All",
-  "favorites": "Favorites",
-  "uncategorized": "Uncategorized",
-  "untitledRecord": "Untitled",
-  "saving": "Saving…",
-  "saved": "Saved",
-  "saveFailed": "Save failed, retry",
-  "settings": "Settings",
   "appearance": "Appearance",
-  "data": "Data",
-  "about": "About",
-  "theme": "Theme",
-  "themeLight": "Light",
-  "themeDark": "Dark",
-  "themeSystem": "System",
+  "autoSaveHint": "Auto-saved, no need to tap save.",
+  "backup": "Backup",
+  "batchCategorize": "Categorize",
+  "batchDelete": "Delete",
+  "batchFavorite": "Favorite",
+  "bodyHint": "Write down info you'll want to find later…",
+  "bodyLimit": "Body is large (>1 MiB), consider splitting",
+  "cancel": "Cancel",
   "categories": "Categories",
-  "tags": "Tags",
-  "addCategory": "Add Category",
-  "editCategory": "Edit Category",
+  "categoriesEmpty": "No categories yet",
+  "category": "Category",
+  "categoryColor": "Category Color",
+  "categoryName": "Category Name",
+  "clearFilter": "Clear Filters",
+  "configSaved": "Configuration saved",
+  "confirm": "Confirm",
+  "connectionFailed": "Connection failed: {error}",
+  "connectionSuccess": "Connection successful",
+  "data": "Data",
+  "delete": "Delete",
   "deleteCategory": "Delete Category",
   "deleteCategoryConfirm": "Records in this category will become uncategorized. Delete?",
-  "categoryName": "Category Name",
-  "categoryColor": "Category Color",
-  "addTag": "Add Tag",
-  "editTag": "Edit Tag",
   "deleteTag": "Delete Tag",
   "deleteTagConfirm": "Records with this tag will keep their content; the tag association will be removed. Delete?",
-  "tagName": "Tag Name",
-  "favorite": "Favorite",
-  "unfavorite": "Unfavorite",
-  "delete": "Delete",
-  "restore": "Restore",
-  "permanentDelete": "Delete Permanently",
-  "permanentDeleteConfirm": "This cannot be undone. Delete permanently?",
-  "trash": "Trash",
-  "trashEmpty": "Trash is empty",
-  "recordsEmpty": "No records yet",
-  "recordsEmptyHint": "Tap + to create your first record",
-  "searchEmpty": "No results found",
-  "searchEmptyHint": "Try different keywords or clear filters",
-  "clearFilter": "Clear Filters",
-  "backup": "Backup",
+  "directoryInvalid": "Sync directory must start with /",
+  "duplicateName": "Name already exists",
+  "e2eDesc": "Content is encrypted before upload to your storage.",
+  "e2eEnabled": "Enabled",
+  "e2eEncryption": "End-to-end encryption",
+  "e2eWipDialog": "End-to-end encryption will be enabled with the sync engine (Stage C).",
+  "editCategory": "Edit Category",
+  "editInfo": "Edit Info",
+  "editTag": "Edit Tag",
   "export": "Export",
-  "importData": "Import",
+  "exportFailed": "Export failed: {error}",
   "exportJson": "Export JSON Backup",
   "exportMarkdownZip": "Export Markdown ZIP",
+  "exportSuccess": "Export successful",
   "exportTxt": "Export TXT",
+  "favorite": "Favorite",
+  "favorites": "Favorites",
+  "filterEmpty": "No records for this filter",
+  "filterEmptyHint": "Try another category or clear the filter",
+  "hidePassword": "Hide password",
+  "importData": "Import",
+  "importFailed": "Import failed: {error}",
   "importJson": "Restore from JSON",
   "importMarkdown": "Import Markdown/TXT",
   "importPreview": "About to import {count} records",
-  "@importPreview": {
-    "placeholders": {
-      "count": { "type": "int" }
-    }
-  },
   "importSuccess": "Imported {count} records",
-  "@importSuccess": {
-    "placeholders": {
-      "count": { "type": "int" }
-    }
-  },
-  "importFailed": "Import failed: {error}",
-  "@importFailed": {
-    "placeholders": {
-      "error": { "type": "String" }
-    }
-  },
-  "exportSuccess": "Export successful",
-  "exportFailed": "Export failed: {error}",
-  "@exportFailed": {
-    "placeholders": {
-      "error": { "type": "String" }
-    }
-  },
-  "cancel": "Cancel",
-  "confirm": "Confirm",
-  "save": "Save",
-  "rename": "Rename",
+  "keywordHint": "Type a keyword, Enter to add",
+  "keywords": "Keywords",
+  "keywordsEmpty": "No keywords yet — add some to enable smart suggestions",
+  "lastSync": "Last sync",
+  "lastSyncToday": "Today {time}",
+  "linkCopied": "Link copied",
+  "maxTagsReached": "Maximum 10 tags",
+  "modified": "Modified {time}",
+  "newInfo": "New Info",
+  "newRecord": "New Record",
+  "notYetInput": "Nothing entered yet",
   "ok": "OK",
-  "titleHint": "Title (optional)",
-  "bodyHint": "Body",
+  "password": "Password",
+  "passwordRequired": "Password is required",
+  "pendingUpload": "Pending upload",
+  "permanentDelete": "Delete Permanently",
+  "permanentDeleteConfirm": "This cannot be undone. Delete permanently?",
+  "probeInvalidConfig": "Configuration incomplete",
+  "probeNotFound": "Directory not found on server",
+  "probeNotHttps": "HTTPS URLs only",
+  "probeServerError": "Server error",
+  "probeTimeout": "Connection timed out",
+  "probeTls": "TLS handshake failed; check the URL or certificate",
+  "probeUnauthorized": "Wrong username or password",
+  "probeUnknown": "Unknown error",
+  "probeUnreachable": "Cannot reach the server",
+  "recordCount": "{count} records",
+  "recordDeleted": "Moved to trash",
+  "recordsEmpty": "No records yet",
+  "recordsEmptyHint": "Tap + to create your first record",
+  "rename": "Rename",
+  "restore": "Restore",
+  "save": "Save",
+  "saveFailed": "Save failed, retry",
+  "saved": "Saved",
+  "saving": "Saving…",
+  "searchEmpty": "No results found",
+  "searchEmptyHint": "Try different keywords or clear filters",
+  "searchHint": "Search saved info",
+  "security": "Security",
+  "securityNotImplemented": "Security features will be available in a future version",
+  "selectAll": "Select All",
   "selectCategory": "Select Category",
   "selectTags": "Select Tags",
-  "maxTagsReached": "Maximum 10 tags",
-  "duplicateName": "Name already exists",
-  "recordDeleted": "Moved to trash",
-  "undoDelete": "Undo",
-  "selectAll": "Select All",
-  "batchFavorite": "Favorite",
-  "batchDelete": "Delete",
-  "batchCategorize": "Categorize",
   "selectedCount": "{count} selected",
-  "@selectedCount": {
-    "placeholders": {
-      "count": { "type": "int" }
-    }
-  },
+  "settings": "Settings",
+  "showPassword": "Show password",
+  "smartRecommend": "Smart suggestion",
+  "sync": "Sync",
+  "syncCompleted": "Sync completed",
+  "syncDirectory": "Sync directory",
+  "syncEngineWip": "Sync engine in development (Stage C)",
+  "syncNever": "Never synced",
+  "syncNotConfigured": "Sync not configured",
   "syncNotImplemented": "Sync will be available in a future version",
-  "securityNotImplemented": "Security features will be available in a future version",
+  "syncNow": "Sync Now",
+  "synced": "Synced",
+  "tagName": "Tag Name",
+  "tags": "Tags",
+  "tagsEmpty": "No tags yet",
+  "testConnection": "Test Connection",
+  "theme": "Theme",
+  "themeDark": "Dark",
+  "themeLight": "Light",
+  "themeSystem": "System",
+  "titleHint": "Title (optional)",
+  "trash": "Trash",
+  "trashEmpty": "Trash is empty",
+  "uncategorized": "Uncategorized",
+  "undoDelete": "Undo",
+  "unfavorite": "Unfavorite",
+  "untitledRecord": "Untitled",
+  "username": "Username",
+  "usernameRequired": "Username is required",
   "version": "Version",
-  "bodyLimit": "Body is large (>1 MiB), consider splitting",
-  "modified": "Modified {time}",
-  "@modified": {
-    "placeholders": {
-      "time": { "type": "String" }
-    }
-  }
+  "webdavSync": "WebDAV Sync",
+  "webdavUrl": "WebDAV URL",
+  "webdavUrlInvalid": "WebDAV URL is invalid",
+  "webdavUrlRequired": "WebDAV URL is required"
 }
