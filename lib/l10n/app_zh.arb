@@ -1,0 +1,114 @@
+{
+  "@@locale": "zh",
+  "appName": "随存",
+  "appTagline": "保存以后还要找的信息",
+  "newRecord": "新建记录",
+  "searchHint": "搜索保存的信息",
+  "all": "全部",
+  "favorites": "收藏",
+  "uncategorized": "未分类",
+  "untitledRecord": "未命名记录",
+  "saving": "保存中",
+  "saved": "已保存",
+  "saveFailed": "保存失败，重试",
+  "settings": "设置",
+  "appearance": "外观",
+  "data": "数据",
+  "about": "关于",
+  "theme": "主题",
+  "themeLight": "浅色",
+  "themeDark": "深色",
+  "themeSystem": "跟随系统",
+  "categories": "分类",
+  "tags": "标签",
+  "addCategory": "新增分类",
+  "editCategory": "编辑分类",
+  "deleteCategory": "删除分类",
+  "deleteCategoryConfirm": "删除后，该分类下的记录将转为未分类。确认删除吗？",
+  "categoryName": "分类名称",
+  "categoryColor": "分类颜色",
+  "addTag": "新增标签",
+  "editTag": "编辑标签",
+  "deleteTag": "删除标签",
+  "deleteTagConfirm": "删除后，相关记录仍然保留，只解除标签关联。确认删除吗？",
+  "tagName": "标签名称",
+  "favorite": "收藏",
+  "unfavorite": "取消收藏",
+  "delete": "删除",
+  "restore": "恢复",
+  "permanentDelete": "彻底删除",
+  "permanentDeleteConfirm": "彻底删除后无法恢复。确认吗？",
+  "trash": "回收站",
+  "trashEmpty": "回收站为空",
+  "recordsEmpty": "还没有记录",
+  "recordsEmptyHint": "点击右下角新建记录",
+  "searchEmpty": "没有找到相关记录",
+  "searchEmptyHint": "试试其他关键词，或清除筛选条件",
+  "clearFilter": "清除筛选",
+  "backup": "备份",
+  "export": "导出",
+  "importData": "导入",
+  "exportJson": "导出 JSON 备份",
+  "exportMarkdownZip": "导出 Markdown ZIP",
+  "exportTxt": "导出 TXT",
+  "importJson": "从 JSON 恢复",
+  "importMarkdown": "导入 Markdown/TXT",
+  "importPreview": "即将导入 {count} 条记录",
+  "@importPreview": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "importSuccess": "成功导入 {count} 条记录",
+  "@importSuccess": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "importFailed": "导入失败：{error}",
+  "@importFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "exportSuccess": "导出成功",
+  "exportFailed": "导出失败：{error}",
+  "@exportFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "cancel": "取消",
+  "confirm": "确认",
+  "save": "保存",
+  "rename": "改名",
+  "ok": "确定",
+  "titleHint": "标题（可不填）",
+  "bodyHint": "正文",
+  "selectCategory": "选择分类",
+  "selectTags": "选择标签",
+  "maxTagsReached": "最多添加 10 个标签",
+  "duplicateName": "该名称已存在",
+  "recordDeleted": "已移至回收站",
+  "undoDelete": "撤销",
+  "selectAll": "全选",
+  "batchFavorite": "批量收藏",
+  "batchDelete": "批量删除",
+  "batchCategorize": "批量分类",
+  "selectedCount": "已选 {count} 条",
+  "@selectedCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "syncNotImplemented": "同步功能将在后续版本推出",
+  "securityNotImplemented": "安全功能将在后续版本推出",
+  "version": "版本",
+  "bodyLimit": "正文较长（超过 1 MiB），建议拆分",
+  "modified": "修改于 {time}",
+  "@modified": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  }
+}

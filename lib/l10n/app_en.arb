@@ -1,0 +1,114 @@
+{
+  "@@locale": "en",
+  "appName": "Suicun",
+  "appTagline": "Save it now, find it later",
+  "newRecord": "New Record",
+  "searchHint": "Search saved info",
+  "all": "All",
+  "favorites": "Favorites",
+  "uncategorized": "Uncategorized",
+  "untitledRecord": "Untitled",
+  "saving": "Saving…",
+  "saved": "Saved",
+  "saveFailed": "Save failed, retry",
+  "settings": "Settings",
+  "appearance": "Appearance",
+  "data": "Data",
+  "about": "About",
+  "theme": "Theme",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "themeSystem": "System",
+  "categories": "Categories",
+  "tags": "Tags",
+  "addCategory": "Add Category",
+  "editCategory": "Edit Category",
+  "deleteCategory": "Delete Category",
+  "deleteCategoryConfirm": "Records in this category will become uncategorized. Delete?",
+  "categoryName": "Category Name",
+  "categoryColor": "Category Color",
+  "addTag": "Add Tag",
+  "editTag": "Edit Tag",
+  "deleteTag": "Delete Tag",
+  "deleteTagConfirm": "Records with this tag will keep their content; the tag association will be removed. Delete?",
+  "tagName": "Tag Name",
+  "favorite": "Favorite",
+  "unfavorite": "Unfavorite",
+  "delete": "Delete",
+  "restore": "Restore",
+  "permanentDelete": "Delete Permanently",
+  "permanentDeleteConfirm": "This cannot be undone. Delete permanently?",
+  "trash": "Trash",
+  "trashEmpty": "Trash is empty",
+  "recordsEmpty": "No records yet",
+  "recordsEmptyHint": "Tap + to create your first record",
+  "searchEmpty": "No results found",
+  "searchEmptyHint": "Try different keywords or clear filters",
+  "clearFilter": "Clear Filters",
+  "backup": "Backup",
+  "export": "Export",
+  "importData": "Import",
+  "exportJson": "Export JSON Backup",
+  "exportMarkdownZip": "Export Markdown ZIP",
+  "exportTxt": "Export TXT",
+  "importJson": "Restore from JSON",
+  "importMarkdown": "Import Markdown/TXT",
+  "importPreview": "About to import {count} records",
+  "@importPreview": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "importSuccess": "Imported {count} records",
+  "@importSuccess": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "importFailed": "Import failed: {error}",
+  "@importFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "exportSuccess": "Export successful",
+  "exportFailed": "Export failed: {error}",
+  "@exportFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "cancel": "Cancel",
+  "confirm": "Confirm",
+  "save": "Save",
+  "rename": "Rename",
+  "ok": "OK",
+  "titleHint": "Title (optional)",
+  "bodyHint": "Body",
+  "selectCategory": "Select Category",
+  "selectTags": "Select Tags",
+  "maxTagsReached": "Maximum 10 tags",
+  "duplicateName": "Name already exists",
+  "recordDeleted": "Moved to trash",
+  "undoDelete": "Undo",
+  "selectAll": "Select All",
+  "batchFavorite": "Favorite",
+  "batchDelete": "Delete",
+  "batchCategorize": "Categorize",
+  "selectedCount": "{count} selected",
+  "@selectedCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "syncNotImplemented": "Sync will be available in a future version",
+  "securityNotImplemented": "Security features will be available in a future version",
+  "version": "Version",
+  "bodyLimit": "Body is large (>1 MiB), consider splitting",
+  "modified": "Modified {time}",
+  "@modified": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  }
+}
