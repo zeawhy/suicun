@@ -17,7 +17,6 @@ import 'package:suicun/features/sync/session_holder.dart';
 import 'package:suicun/features/sync/sync_contract.dart';
 import 'package:suicun/features/sync/sync_engine.dart';
 import 'package:suicun/features/sync/sync_enqueuer.dart';
-import 'package:suicun/features/sync/sync_errors.dart';
 import 'package:suicun/features/sync/sync_store.dart';
 import 'package:suicun/features/sync/vault_crypto.dart';
 import 'package:suicun/features/tags/data/tag_repository.dart';
@@ -463,7 +462,7 @@ void main() {
       // Force 429 on upload
       final outbox = await hA.store.pendingOutbox();
       expect(outbox, isNotEmpty);
-      final path = 'objects/${outbox.first.revisionId}.enc';
+      final path = 'v2/objects/${outbox.first.revisionId}.enc';
       hA.fakeProvider.forcePutStatus[path] = 429;
       hA.fakeProvider.putRetryAfter = const Duration(minutes: 5);
 
@@ -513,7 +512,7 @@ void main() {
       await hA.recordRepo.createRecord(title: 'NoSpace', body: 'Body');
       final outbox = await hA.store.pendingOutbox();
       expect(outbox, isNotEmpty);
-      final path = 'objects/${outbox.first.revisionId}.enc';
+      final path = 'v2/objects/${outbox.first.revisionId}.enc';
       hA.fakeProvider.forcePutStatus[path] = 507;
 
       await hA.engine.syncNow();
@@ -530,12 +529,12 @@ void main() {
     test('4f. create race, same password -> both joined, same vaultId', () async {
       final storage = <String, StoredObject>{};
 
-      // Pre-seed header.json built by VaultCrypto().createVault('pw')
+      // Pre-seed a v2 key object built by VaultCrypto().createKeyObject('pw')
       final crypto = VaultCrypto();
-      final created = await crypto.createVault(password: 'pw');
-      storage['header.json'] = StoredObject(
-        bytes: Uint8List.fromList(utf8.encode(created.headerJson)),
-        etag: '"header-etag"',
+      final created = await crypto.createKeyObject(password: 'pw');
+      storage['v2/keys/${created.keyId}.${created.variant}.json'] = StoredObject(
+        bytes: Uint8List.fromList(utf8.encode(created.keyJson)),
+        etag: '"key-etag"',
       );
 
       final hA = TestHarness(sharedStorage: storage);
@@ -550,35 +549,23 @@ void main() {
       final overviewB = await hB.engine.getOverview();
       expect(overviewA.vaultId, isNotNull);
       expect(overviewA.vaultId, overviewB.vaultId);
-      expect(overviewA.vaultId, created.session.vaultId);
 
       await hA.dispose();
       await hB.dispose();
     });
 
-    test('4g. supportsConditionalCreate=false -> throws conditionalWriteUnsupported', () async {
+    test('4g. supportsConditionalCreate=false -> createVault succeeds on a server without conditional writes', () async {
       final hA = TestHarness(supportsConditionalCreate: false);
 
-      expect(
-        () => hA.engine.createVault(testConfig, 'pw'),
-        throwsA(isA<SyncError>().having(
-          (e) => e.code,
-          'code',
-          SyncErrorCode.conditionalWriteUnsupported,
-        )),
-      );
+      await hA.engine.createVault(testConfig, 'pw');
+      final overview = await hA.engine.getOverview();
+      expect(overview.vaultId, isNotNull);
 
       await hA.dispose();
     });
 
-    test('4h. no-conditional fallback: join works, upload GET-verify, tamper -> contentConflict', () async {
+    test('4h. no-conditional fallback: upload GET-verify, tamper -> contentConflict', () async {
       final storage = <String, StoredObject>{};
-      final crypto = VaultCrypto();
-      final created = await crypto.createVault(password: 'pw');
-      storage['header.json'] = StoredObject(
-        bytes: Uint8List.fromList(utf8.encode(created.headerJson)),
-        etag: '"etag"',
-      );
 
       final hA = TestHarness(
         sharedStorage: storage,
@@ -586,7 +573,7 @@ void main() {
         supportsConditionalUpdate: false,
       );
 
-      await hA.engine.joinVault(testConfig, password: 'pw');
+      await hA.engine.createVault(testConfig, 'pw');
       await hA.recordRepo.createRecord(title: 'Rec', body: 'Body');
       await hA.engine.syncNow();
 
@@ -633,7 +620,7 @@ void main() {
         'ciphertext_b64': base64Encode(Uint8List(32)),
       });
 
-      storage['objects/rev-v99.enc'] = StoredObject(
+      storage['v2/objects/rev-v99.enc'] = StoredObject(
         bytes: Uint8List.fromList(utf8.encode(fakeRev)),
         etag: '"v99"',
       );
@@ -729,10 +716,10 @@ void main() {
     test('6. out-of-order: parent+child revisions hand-crafted into fake, child content shown', () async {
       final storage = <String, StoredObject>{};
       final crypto = VaultCrypto();
-      final created = await crypto.createVault(password: 'pw');
-      storage['header.json'] = StoredObject(
-        bytes: Uint8List.fromList(utf8.encode(created.headerJson)),
-        etag: '"h"',
+      final created = await crypto.createKeyObject(password: 'pw');
+      storage['v2/keys/${created.keyId}.${created.variant}.json'] = StoredObject(
+        bytes: Uint8List.fromList(utf8.encode(created.keyJson)),
+        etag: '"k"',
       );
 
       final entityId = 'rec-out-of-order';
@@ -756,8 +743,9 @@ void main() {
         ),
       );
 
-      final parentEnc = await crypto.encryptRevision(
-        session: created.session,
+      final parentEnc = await crypto.encryptRevisionV2(
+        kvault: created.kvault,
+        keyId: created.keyId,
         revisionId: 'rev-parent',
         entityType: EntitySnapshots.recordType,
         entityId: entityId,
@@ -782,16 +770,17 @@ void main() {
         ),
       );
 
-      final childEnc = await crypto.encryptRevision(
-        session: created.session,
+      final childEnc = await crypto.encryptRevisionV2(
+        kvault: created.kvault,
+        keyId: created.keyId,
         revisionId: 'rev-child',
         entityType: EntitySnapshots.recordType,
         entityId: entityId,
         payload: childPayload,
       );
 
-      storage['objects/rev-parent.enc'] = StoredObject(bytes: parentEnc, etag: '"p"');
-      storage['objects/rev-child.enc'] = StoredObject(bytes: childEnc, etag: '"c"');
+      storage['v2/objects/rev-parent.enc'] = StoredObject(bytes: parentEnc, etag: '"p"');
+      storage['v2/objects/rev-child.enc'] = StoredObject(bytes: childEnc, etag: '"c"');
 
       final hB = TestHarness(sharedStorage: storage);
       await hB.engine.joinVault(testConfig, password: 'pw');

@@ -1435,6 +1435,7 @@ class SyncEngine implements SyncActions {
     session.lockedKeyIds.removeWhere(toRemove.contains);
 
     if (newlyUnlocked > 0) {
+      await _store.unmarkSkippedByReason(['locked-key', 'unknown-key']);
       session.vault.activeKeyId = MultiKeySession.pickActiveKeyId(session.vault.keys.keys);
       await _persistKeysIndex(session.vault);
       _emitOverview();

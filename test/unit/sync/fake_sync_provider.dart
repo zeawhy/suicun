@@ -102,7 +102,9 @@ class FakeSyncProvider implements SyncProvider {
     final prefix = directory.endsWith('/') ? directory : '$directory/';
     final results = <RemoteObject>[];
     for (final entry in storage.entries) {
-      if (entry.key.startsWith(prefix) && !hiddenFromList.contains(entry.key)) {
+      final isHidden = hiddenFromList.contains(entry.key) ||
+          hiddenFromList.any((pattern) => entry.key.startsWith(pattern));
+      if (entry.key.startsWith(prefix) && !isHidden) {
         results.add(RemoteObject(
           path: entry.key,
           etag: entry.value.etag,

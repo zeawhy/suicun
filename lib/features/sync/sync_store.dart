@@ -285,6 +285,9 @@ class SyncStore {
             mode: InsertMode.insertOrIgnore,
           );
 
+  Future<int> unmarkSkippedByReason(List<String> reasons) =>
+      (_db.delete(_db.syncSkipped)..where((s) => s.reason.isIn(reasons))).go();
+
   Future<bool> isSkipped(String id) async =>
       await (_db.select(_db.syncSkipped)..where((s) => s.revisionId.equals(id)))
           .getSingleOrNull() !=
