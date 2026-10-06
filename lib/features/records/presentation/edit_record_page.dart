@@ -110,9 +110,17 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
           _suggestions = visible;
           _suggestionColors = colors;
         });
+        if (visible.isNotEmpty) {
+          final summary = visible
+              .map((s) =>
+                  '${s.categoryName}(confidence: ${s.confidence.toStringAsFixed(2)})')
+              .join(', ');
+          debugPrint('[auto_category] suggestions: $summary');
+        }
       }
-    } catch (_) {
+    } catch (e, st) {
       // Suggestion is best-effort; never break editing.
+      debugPrint('[auto_category] suggestion failed: $e\n$st');
     }
   }
 

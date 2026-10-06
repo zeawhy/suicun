@@ -12,6 +12,7 @@
 import 'package:drift/drift.dart';
 
 import 'package:suicun/core/database/app_database.dart';
+import 'package:suicun/features/categories/data/category_repository.dart';
 
 /// Builds and parses revision payloads.
 abstract final class EntitySnapshots {
@@ -242,6 +243,16 @@ class SnapshotApplier {
     }
   }
 
+  static List<String>? _findDefaultKeywords(String name) {
+    final lower = name.trim().toLowerCase();
+    for (final def in CategoryRepository.defaultCategories) {
+      if (def.name.trim().toLowerCase() == lower) {
+        return def.keywords;
+      }
+    }
+    return null;
+  }
+
   Future<void> _applyCategory(ParsedRevision rev) async {
     final id = rev.entityId;
     if (rev.deleted) {
@@ -252,21 +263,34 @@ class SnapshotApplier {
       return;
     }
     final s = rev.snapshot;
+    final name = s['name']! as String;
+    final color = s['color']! as String;
+    final seedKeywords = _findDefaultKeywords(name);
     final existing = await (_db.select(_db.categories)
           ..where((c) => c.id.equals(id)))
         .getSingleOrNull();
     if (existing == null) {
       await _db.into(_db.categories).insert(CategoriesCompanion.insert(
             id: id,
-            name: s['name']! as String,
-            color: Value(s['color']! as String),
+            name: name,
+            color: Value(color),
+            keywords: seedKeywords != null
+                ? Value(CategoryRepository.encodeKeywords(seedKeywords))
+                : const Value.absent(),
           ));
     } else {
-      // Update in place: keeps local-only columns (keywords).
+      // Update in place: keeps local-only columns (keywords), but backfills
+      // starter keywords if the category currently has no keywords.
+      final existingKeywords =
+          CategoryRepository.decodeKeywords(existing.keywords);
+      final shouldBackfill = existingKeywords.isEmpty && seedKeywords != null;
       await (_db.update(_db.categories)..where((c) => c.id.equals(id))).write(
         CategoriesCompanion(
-          name: Value(s['name']! as String),
-          color: Value(s['color']! as String),
+          name: Value(name),
+          color: Value(color),
+          keywords: shouldBackfill
+              ? Value(CategoryRepository.encodeKeywords(seedKeywords))
+              : const Value.absent(),
           deletedAt: const Value(null),
         ),
       );

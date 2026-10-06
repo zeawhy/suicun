@@ -148,7 +148,7 @@ class CategoryRepository {
       name: '工作',
       color: '#4A7DDC',
       keywords: [
-        '会议', '项目', '需求', '方案', '汇报', '总结', '邮件', '客户',
+        '会议', '开会', '项目', '需求', '方案', '汇报', '总结', '邮件', '客户',
         '同事', '任务', '计划', '报告', '加班', '面试', '周报', 'deadline',
       ],
     ),
@@ -166,6 +166,7 @@ class CategoryRepository {
       keywords: [
         '生活', '购物', '菜谱', '做饭', '旅行', '酒店', '机票', '健康',
         '运动', '跑步', '健身', '电影', '朋友', '聚会',
+        '密码', '账号', '用户名', '登录',
       ],
     ),
     (
@@ -193,12 +194,16 @@ class CategoryRepository {
   Future<void> ensureDefaultCategories() async {
     try {
       final existing = await getAllCategories();
-      final byName = <String, CategoryModel>{
-        for (final c in existing) c.name.trim().toLowerCase(): c,
-      };
+      final existingByName = <String, List<CategoryModel>>{};
+      for (final c in existing) {
+        existingByName
+            .putIfAbsent(c.name.trim().toLowerCase(), () => [])
+            .add(c);
+      }
       for (final def in defaultCategories) {
-        final match = byName[def.name.toLowerCase()];
-        if (match == null) {
+        final defKey = def.name.trim().toLowerCase();
+        final matches = existingByName[defKey];
+        if (matches == null || matches.isEmpty) {
           await _db.into(_db.categories).insert(
                 CategoriesCompanion.insert(
                   id: _uuid.v4(),
@@ -207,8 +212,12 @@ class CategoryRepository {
                   keywords: Value(encodeKeywords(def.keywords)),
                 ),
               );
-        } else if ((await getKeywords(match.id)).isEmpty) {
-          await setKeywords(match.id, def.keywords);
+        } else {
+          for (final match in matches) {
+            if ((await getKeywords(match.id)).isEmpty) {
+              await setKeywords(match.id, def.keywords);
+            }
+          }
         }
       }
     } catch (e) {
