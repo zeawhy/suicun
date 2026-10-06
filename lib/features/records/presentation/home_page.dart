@@ -49,8 +49,10 @@ class _HomePageState extends ConsumerState<HomePage> {
     ref.invalidate(trashListProvider);
     if (!mounted) return;
     final l10n = AppLocalizations.of(context);
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
+        duration: const Duration(seconds: 4),
         content: Text(l10n.recordDeleted),
         action: SnackBarAction(
           label: l10n.undoDelete,

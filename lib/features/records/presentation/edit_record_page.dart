@@ -401,8 +401,10 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
     ref.invalidate(trashListProvider);
     if (!mounted) return;
     context.pop();
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
+        duration: const Duration(seconds: 4),
         content: Text(l10n.recordDeleted),
         action: SnackBarAction(
           label: l10n.undoDelete,
@@ -682,6 +684,7 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
             ..onTap = () async {
               await Clipboard.setData(ClipboardData(text: url));
               if (mounted) {
+                ScaffoldMessenger.of(context).hideCurrentSnackBar();
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text(l10n.linkCopied)),
                 );
