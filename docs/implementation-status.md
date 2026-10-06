@@ -465,3 +465,112 @@ review 后跑 `flutter analyze` 零问题、`flutter test` 137/137 全过）：
   `dl.google.com` 读超时（`androidx.biometric`/`androidx.fragment`，local_auth 新依赖）
   失败——按 §1 要求补跑 `~/workspace/suicun-env/gradle-proxy.sh` 刷新代理配置并重启
   daemon 后成功。
+
+## 9. 阶段 C Android 同步（分支 `antigravity/stage-c`，2026-10-06）
+
+模型分工（用户硬规则）：功能性代码走 Claude（agy claude-sonnet-5-5-medium），
+UI 走 Gemini 3.8（agy gemini-3.8-flash-low）。UI/功能之间用
+`lib/features/sync/sync_contract.dart` 解耦（名字/签名稳定，只增补）。
+
+### 9.1 功能线（Claude）
+
+**Pass A**（commit `bc0b447`）：同步加密协议 + WebDAV Provider。
+- `vault_crypto.dart`：header.json 双包装槽（密码 Argon2id m=64MiB/t=3/p=1 +
+  独立 256 位恢复密钥，key_id 绑定）、每对象独立 96 位 nonce、
+  AAD=`suicun/v1/object/<vault>/<rev>/<type>`、KDF 参数上限防恶意文件、
+  对象 16MiB 上限。
+- `sync_provider.dart`：`SyncProvider{probe,list,get,put,close}` +
+  `Capabilities/RemoteObject/DownloadedObject/WriteResult` +
+  `SyncProviderException`（11 种 kind，`retryAfter`）。
+- `webdav_sync_provider.dart`：仅 HTTPS、手动重定向（跨域不转发
+  Authorization）、条件 PUT（If-None-Match:*/If-Match）、PROPFIND Depth:1
+  解析（XXE 拒绝 `<!DOCTYPE`）、capability probe（临时目录测条件写入）、
+  401/403/404/412/429+Retry-After/507 映射。
+
+**Pass B**（commit `8891c1e`）：同步引擎 + 存储 + 仓库钩子。
+- Schema v3：Revisions（含 payloadJson/isLocal/createdAt/receivedAt）、
+  Outbox（含 attemptCount/nextRetryAt/lastError）、RemoteReceipts、
+  SyncState、Conflicts、新表 SyncSkipped；v2→v3 迁移（旧表是空桩，删旧建新）。
+- `sync_store.dart`：revision/outbox/receipt/state/conflict 存取、
+  `computeHeads`、memoized `ancestorsOf`。
+- `entity_snapshot.dart`：record/category/tag 快照构造/解析/校验、
+  `SnapshotApplier`（墓碑→本地软删、分类墓碑联动 records.categoryId 置空，
+  不回写 outbox，无回声）。
+- `sync_enqueuer.dart`：repository 在同一事务内调用的入队器
+ （parents=当前 heads、revision 不可变、加密后字节固定）。
+- `sync_engine.dart`（1432 行）：`SyncActions` 实现——7 步同步
+  （任务锁→枚举下载验 tag/父关系→事务落盘→outbox 上传→条件创建/
+  降级随机 ID+读比对+GET 校验→确认完整才标 done→再枚举）、
+  `createVault`（If-None-Match:*，412 转 join）、`joinVault`
+  （密码/恢复密钥）、`recoverFromRemote`（Stream 进度、断点续传、幂等）、
+  `resolveConflict`（4 种选择，keepBoth 新实体 ID）、401 暂停/
+  429 尊重 Retry-After/507/412 处理、未知协议版本停机不覆盖。
+- 决策：K_vault 以 base64 存平台安全存储（与 SQLCipher 密钥同级保护，
+  重启无缝；sync_state 只存 vault_id/device_id，不存密码）；
+  vault 根目录=用户配置目录；恢复密钥只经
+  `consumePendingRecoveryKey()` 一次性取用展示，不落盘。
+- Repository 钩子：record/category/tag 的创建/更新/软删/恢复/彻底删除
+  均在同一事务内入队（彻底删除先记 tombstone 再清本地行，远端历史保留）。
+
+### 9.2 UI 线（Gemini 3.8，commit `0efdd29`）
+
+- `webdav_sync_page.dart`（重写）：状态卡（启用 Switch、同步中指示、
+  最后成功时间、待上传数、冲突数可点→冲突页、错误信息图标+文字）、
+  "立即同步"、"关闭同步"/"移除凭据"（二次确认）、配置表单
+  （未启用时展示，已启用折叠为只读摘要不显示密码）。
+- `sync_wizard_page.dart`（4 步 Stepper）：连接测试→
+  `checkRemoteVault` 分支（无头建库：密码+确认+强度计；有头加库：
+  密码或恢复密钥）→合并确认（文案明确本地内容不被远端替换）→
+  开始同步；建库成功后一次性展示恢复密钥（等宽大字+复制按钮+警告）。
+- `conflicts_page.dart`：冲突列表，本机 vs 另一版本两栏对比，
+  keepLocal/keepRemote/keepBoth/manualMerge（后者弹编辑器），
+  注明被弃版本保留到历史。
+- `recover_page.dart`：WebDAV 配置+密码/恢复密钥→`recoverFromRemote`
+  流展示阶段/进度/已恢复数/失败数，可重试；顶部声明"只能恢复已成功上传的数据"。
+- 路由：`/settings/webdav/wizard`、`/settings/webdav/conflicts`、
+  `/settings/recover`；设置"数据"分组加"从 WebDAV 恢复"入口；
+  l10n 中英约 70 新键。
+
+### 9.3 测试
+
+- `flutter analyze`：No issues found。
+- `flutter test`：**185/185 通过**（Pass A 加密 47 含 NIST AES-GCM
+  256 位标准向量、篡改→鉴权失败、恢复密钥 roundtrip；schema v3 下
+  既有 repository/备份测试全过；widget 测试按新页面重写+补 1 个启用态用例）。
+- 命令：`export PATH="$HOME/flutter/bin:$PATH" && flutter analyze` /
+  `flutter test`（仓库根目录）。
+
+### 9.4 未完成（quota 中断，如实记录）
+
+- **故障注入测试未写**：`test/unit/sync/fake_sync_provider.dart`、
+  `sync_engine_test.dart`（双端冲突、删除 vs 编辑、中途断网、
+  上传后超时、进程重启模拟、乱序下载、建库竞争、412/429/507/401、
+  无明文断言等约 15 场景）、`recovery_test.dart`。
+  原因：2026-10-06 约 08:55 CST Claude 报 `Individual quota reached`
+  （约 13:11 CST 恢复），按用户硬规则立即停止，未调 API、未用替代模型。
+  续跑 prompt 已持久化：`~/workspace/sync_passB2_prompt.md`——quota 恢复后
+  `agy --model claude-sonnet-5-5-medium --dangerously-skip-permissions --add-dir ~/workspace/suicun -p "$(cat ~/workspace/sync_passB2_prompt.md)"`。
+- **未做真实多端同步验证**：无用户 WebDAV 凭据（坚果云凭据由用户在手机上
+  自行配置，不索要不存储），不能宣称真实多端同步已通过。用户联调步骤见
+  本节 9.6。
+- 阶段 C release APK 构建中（见 9.5），构建完成后需用户真机验证。
+
+### 9.5 构建
+
+- 命令：同 §8.9 环境变量，`flutter build apk --release`。
+- 新增依赖：`xml`（PROPFIND 解析）。
+- 产物：`build/app/outputs/flutter-apk/app-release.apk`（构建中）。
+
+### 9.6 用户联调步骤（坚果云 WebDAV）
+
+1. 手机安装阶段 C APK（待 Release，协调者确认后发布）。
+2. 设置→同步→"开始同步设置"：填 `https://dav.jianguoyun.com/dav/`、
+   坚果云账号、**第三方应用专用密码**（不是登录密码）、目录（如 `/suicun/`）。
+3. "测试连接"通过→选"创建新库"：设加密密码（与 WebDAV 密码**不同**，
+   牢记）→**保存展示的一次性恢复密钥**（丢了密码就靠它）。
+4. 另一台 Android 同样安装→"加入已有库"→输同一目录+加密密码或恢复密钥
+   →同步。
+5. 验证点：两端各改同一条记录→重连后冲突页出现两份；一端删分类→另一端
+   记录转未分类且分类不复活；飞行模式编辑→恢复网络后自动补传；
+   新机"从 WebDAV 恢复"→记录/分类/标签/收藏完整。
+6. 密码与恢复密钥都丢失**无法找回**（无开发者重置入口），请用户务必保存。
