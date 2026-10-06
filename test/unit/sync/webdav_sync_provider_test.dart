@@ -118,6 +118,57 @@ void main() {
     });
   });
 
+  group('ensureCollection', () {
+    test('creates nested directories top-down using MKCOL', () async {
+      final seenUris = <String>[];
+      final seenMethods = <String>[];
+      final p = _provider(MockClient((r) async {
+        seenMethods.add(r.method);
+        seenUris.add(r.url.toString());
+        return _res(201);
+      }));
+
+      await p.ensureCollection('v2/keys');
+      expect(seenMethods, ['MKCOL', 'MKCOL']);
+      expect(seenUris, [
+        'https://dav.example.com/suicun%20vault/v2/',
+        'https://dav.example.com/suicun%20vault/v2/keys/',
+      ]);
+    });
+
+    test('treats 200, 201, 405, and 409 as success (idempotent)', () async {
+      final statuses = [201, 200, 405, 409];
+      var idx = 0;
+      final p = _provider(MockClient((r) async {
+        final s = statuses[idx++ % statuses.length];
+        return _res(s);
+      }));
+
+      // Does not throw
+      await p.ensureCollection('a/b/c/d');
+    });
+
+    test('maps 401, 403, 507 to expected ProviderErrorKinds', () async {
+      final p401 = _provider(MockClient((_) async => _res(401)));
+      await expectLater(
+        p401.ensureCollection('v2/keys'),
+        _providerError(ProviderErrorKind.unauthorized),
+      );
+
+      final p403 = _provider(MockClient((_) async => _res(403)));
+      await expectLater(
+        p403.ensureCollection('v2/keys'),
+        _providerError(ProviderErrorKind.forbidden),
+      );
+
+      final p507 = _provider(MockClient((_) async => _res(507)));
+      await expectLater(
+        p507.ensureCollection('v2/keys'),
+        _providerError(ProviderErrorKind.insufficientStorage),
+      );
+    });
+  });
+
   group('get', () {
     test('200 returns bytes and etag', () async {
       final p = _provider(MockClient(

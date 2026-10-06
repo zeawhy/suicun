@@ -251,6 +251,28 @@ class WebdavSyncProvider implements SyncProvider {
   // ----------------------------------------------------------------- API
 
   @override
+  Future<void> ensureCollection(String dirPath) async {
+    final segs = _relSegments(dirPath);
+    if (segs.isEmpty) return;
+
+    var currentPath = '';
+    for (final seg in segs) {
+      currentPath = currentPath.isEmpty ? seg : '$currentPath/$seg';
+      final uri = _uriFor(currentPath, collection: true);
+      final res = await _send('MKCOL', uri);
+      // 201: Created, 200: OK (some servers), 405: Method Not Allowed (already exists),
+      // 409: Conflict (on MKCOL, some servers return 409 when collection already exists)
+      if (res.status == 201 ||
+          res.status == 200 ||
+          res.status == 405 ||
+          res.status == 409) {
+        continue;
+      }
+      _fail(res);
+    }
+  }
+
+  @override
   Future<void> move(String from, String to) async {
     final fromUri = _uriFor(from);
     final toUri = _uriFor(to);

@@ -16,6 +16,7 @@ import 'package:suicun/features/sync/sync_contract.dart';
 import 'package:suicun/features/sync/sync_engine.dart';
 import 'package:suicun/features/sync/sync_enqueuer.dart';
 import 'package:suicun/features/sync/sync_errors.dart';
+import 'package:suicun/features/sync/sync_provider.dart';
 import 'package:suicun/features/sync/sync_store.dart';
 import 'package:suicun/features/sync/vault_crypto.dart';
 import 'package:suicun/features/tags/data/tag_repository.dart';
@@ -45,6 +46,7 @@ class _V2Harness {
     required this.storage,
     this.supportsConditionalCreate = false,
     this.supportsConditionalUpdate = false,
+    this.requireParentDirs = false,
     AppDatabase? existingDb,
     SyncStore? existingStore,
     MemoryKeyValueStore? existingSecureStore,
@@ -58,6 +60,7 @@ class _V2Harness {
     fakeProvider = FakeSyncProvider(
       supportsConditionalCreate: supportsConditionalCreate,
       supportsConditionalUpdate: supportsConditionalUpdate,
+      requireParentDirs: requireParentDirs,
       initialStorage: storage,
     );
 
@@ -86,6 +89,7 @@ class _V2Harness {
   final Map<String, StoredObject> storage;
   final bool supportsConditionalCreate;
   final bool supportsConditionalUpdate;
+  final bool requireParentDirs;
 
   late final AppDatabase db;
   late final SyncStore store;
@@ -622,6 +626,71 @@ void main() {
 
       await hA.dispose();
       await hB.dispose();
+    });
+
+    test('11. createVault succeeds with requireParentDirs=true and key lands in v2/keys/', () async {
+      final storage = <String, StoredObject>{};
+      final harness = _V2Harness(
+        storage: storage,
+        requireParentDirs: true,
+      );
+
+      await harness.engine.createVault(testConfig, 'test-vault-password');
+
+      // Key file lands under v2/keys/
+      final keyFiles = storage.keys.where((k) => k.startsWith('v2/keys/')).toList();
+      expect(keyFiles, hasLength(1));
+      expect(keyFiles.first, endsWith('.json'));
+
+      // Ensure createdDirs has v2, v2/keys, v2/objects
+      expect(harness.fakeProvider.createdDirs, contains('v2'));
+      expect(harness.fakeProvider.createdDirs, contains('v2/keys'));
+      expect(harness.fakeProvider.createdDirs, contains('v2/objects'));
+
+      // Also verify creating and uploading a record works with requireParentDirs=true
+      await harness.recordRepo.createRecord(title: 'Rec', body: 'Body');
+      await harness.engine.syncNow();
+      final objectFiles = storage.keys.where((k) => k.startsWith('v2/objects/')).toList();
+      expect(objectFiles, hasLength(1));
+
+      await harness.dispose();
+    });
+  });
+
+  group('providerErrorMessage mapping', () {
+    test('maps all specified error kinds correctly in zh and en without secrets', () {
+      const eUnauthorized = SyncProviderException(ProviderErrorKind.unauthorized);
+      expect(providerErrorMessage(eUnauthorized, english: false), 'WebDAV 账号或密码错误');
+      expect(providerErrorMessage(eUnauthorized, english: true), 'WebDAV username or password is wrong');
+
+      const eForbidden = SyncProviderException(ProviderErrorKind.forbidden);
+      expect(providerErrorMessage(eForbidden, english: false), '没有权限访问该目录，请检查目录权限');
+      expect(providerErrorMessage(eForbidden, english: true), 'No permission to access this directory; check directory permissions');
+
+      const eNotFound = SyncProviderException(ProviderErrorKind.notFound, statusCode: 409, detail: 'parent collection missing');
+      expect(providerErrorMessage(eNotFound, english: false), '云端目录尚未创建，正在创建…');
+      expect(providerErrorMessage(eNotFound, english: true), 'Creating the remote directory…');
+
+      const eRateLimited = SyncProviderException(ProviderErrorKind.rateLimited);
+      expect(providerErrorMessage(eRateLimited, english: false), '服务器请求过于频繁，稍后重试');
+      expect(providerErrorMessage(eRateLimited, english: true), 'Server is rate limiting; retry later');
+
+      const eInsufficientStorage = SyncProviderException(ProviderErrorKind.insufficientStorage);
+      expect(providerErrorMessage(eInsufficientStorage, english: false), 'WebDAV 存储空间不足');
+      expect(providerErrorMessage(eInsufficientStorage, english: true), 'WebDAV storage is full');
+
+      const eNetwork = SyncProviderException(ProviderErrorKind.network);
+      expect(providerErrorMessage(eNetwork, english: false), '网络不可用，请检查网络后重试');
+      expect(providerErrorMessage(eNetwork, english: true), 'Network unavailable; check your connection and retry');
+
+      const eTimeout = SyncProviderException(ProviderErrorKind.timeout);
+      expect(providerErrorMessage(eTimeout, english: false), '网络不可用，请检查网络后重试');
+      expect(providerErrorMessage(eTimeout, english: true), 'Network unavailable; check your connection and retry');
+
+      const eDefault = SyncProviderException(ProviderErrorKind.serverError, detail: '/sensitive/path');
+      expect(providerErrorMessage(eDefault, english: false), '同步连接失败，请稍后重试');
+      expect(providerErrorMessage(eDefault, english: true), 'Sync connection failed; please retry later');
+      expect(providerErrorMessage(eDefault, english: true).contains('/sensitive/path'), isFalse);
     });
   });
 }

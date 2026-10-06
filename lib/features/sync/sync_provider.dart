@@ -29,6 +29,10 @@ abstract interface class SyncProvider {
     bool createOnly = false,
   });
 
+  /// Ensures that the collection at [dirPath] (vault-relative) exists.
+  /// Must be idempotent (if the collection already exists, succeeds).
+  Future<void> ensureCollection(String dirPath);
+
   /// Moves/renames the object from [from] to [to] (vault-relative).
   Future<void> move(String from, String to);
 

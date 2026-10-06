@@ -589,6 +589,38 @@ class SyncEngine implements SyncActions {
     }
   }
 
+  Future<WriteResult> _putWithParents(
+    _Session session,
+    String path,
+    Uint8List bytes, {
+    String? ifMatch,
+    bool createOnly = false,
+  }) async {
+    try {
+      return await session.provider.put(
+        path,
+        bytes,
+        ifMatch: ifMatch,
+        createOnly: createOnly,
+      );
+    } on SyncProviderException catch (e) {
+      if (e.kind == ProviderErrorKind.notFound) {
+        final lastSlash = path.lastIndexOf('/');
+        if (lastSlash != -1) {
+          final parentDir = path.substring(0, lastSlash);
+          await session.provider.ensureCollection(parentDir);
+          return await session.provider.put(
+            path,
+            bytes,
+            ifMatch: ifMatch,
+            createOnly: createOnly,
+          );
+        }
+      }
+      rethrow;
+    }
+  }
+
   /// GET; a 404 yields null, any other failure throws the mapped error.
   Future<DownloadedObject?> _tryGet(_Session session, String path) async {
     try {
@@ -891,7 +923,7 @@ class SyncEngine implements SyncActions {
       if (session.caps?.supportsConditionalCreate == true) {
         try {
           await _guard(
-              () => session.provider.put(path, bytes, createOnly: true));
+              () => _putWithParents(session, path, bytes, createOnly: true));
         } on SyncError catch (e) {
           if (e.code == SyncErrorCode.preconditionFailed) {
             final existing = await _guardGet(session, path);
@@ -947,7 +979,7 @@ class SyncEngine implements SyncActions {
       }
       throw const SyncError(SyncErrorCode.contentConflict);
     }
-    await _guard(() => session.provider.put(path, bytes));
+    await _guard(() => _putWithParents(session, path, bytes));
     final verify = await _guardGet(session, path);
     if (!_bytesEqual(verify.bytes, bytes)) {
       throw const SyncError(SyncErrorCode.verifyFailed);
@@ -1100,6 +1132,9 @@ class SyncEngine implements SyncActions {
         _lastCreateJoinedExisting = true;
         return await joinVault(config, password: password);
       }
+
+      await provider.ensureCollection('v2/keys');
+      await provider.ensureCollection('v2/objects');
 
       final created = await _crypto.createKeyObject(password: password);
       final keyPath = 'v2/keys/${created.keyId}.${created.variant}.json';

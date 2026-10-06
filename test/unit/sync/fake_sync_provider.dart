@@ -19,12 +19,15 @@ class FakeSyncProvider implements SyncProvider {
   FakeSyncProvider({
     this.supportsConditionalCreate = true,
     this.supportsConditionalUpdate = true,
+    this.requireParentDirs = false,
     Map<String, StoredObject>? initialStorage,
   }) : storage = initialStorage ?? <String, StoredObject>{};
 
   final Map<String, StoredObject> storage;
   bool supportsConditionalCreate;
   bool supportsConditionalUpdate;
+  bool requireParentDirs;
+  final Set<String> createdDirs = <String>{};
 
   // Fault injection controls
   bool offline = false;
@@ -153,6 +156,18 @@ class FakeSyncProvider implements SyncProvider {
   }
 
   @override
+  Future<void> ensureCollection(String dirPath) async {
+    _checkOffline();
+    requestLog.add('MKCOL $dirPath');
+    final segments = dirPath.split('/').where((s) => s.isNotEmpty).toList();
+    var current = '';
+    for (final seg in segments) {
+      current = current.isEmpty ? seg : '$current/$seg';
+      createdDirs.add(current);
+    }
+  }
+
+  @override
   Future<WriteResult> put(
     String path,
     Uint8List bytes, {
@@ -168,6 +183,20 @@ class FakeSyncProvider implements SyncProvider {
     if (forcePutStatus.containsKey(path)) {
       final status = forcePutStatus[path]!;
       throw _mapStatusToException(status, retryAfter: putRetryAfter);
+    }
+
+    if (requireParentDirs) {
+      final lastSlash = path.lastIndexOf('/');
+      if (lastSlash != -1) {
+        final parentDir = path.substring(0, lastSlash);
+        if (!createdDirs.contains(parentDir)) {
+          throw const SyncProviderException(
+            ProviderErrorKind.notFound,
+            statusCode: 409,
+            detail: 'parent collection missing',
+          );
+        }
+      }
     }
 
     final existing = storage[path];

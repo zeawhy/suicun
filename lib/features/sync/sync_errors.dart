@@ -1,6 +1,8 @@
 // lib/features/sync/sync_errors.dart
 // Stage C: user-facing sync error codes with zh/en messages (no secrets).
 
+import 'sync_provider.dart';
+
 enum SyncErrorCode {
   networkUnavailable,
   timeout,
@@ -155,4 +157,40 @@ class SyncError implements Exception {
   @override
   String toString() =>
       'SyncError(${code.name}${detail.isEmpty ? '' : ': $detail'})';
+}
+
+/// Localized user-facing message for [SyncProviderException].
+/// Never contains [e.detail] or secrets.
+String providerErrorMessage(SyncProviderException e, {required bool english}) {
+  switch (e.kind) {
+    case ProviderErrorKind.unauthorized:
+      return english
+          ? 'WebDAV username or password is wrong'
+          : 'WebDAV 账号或密码错误';
+    case ProviderErrorKind.forbidden:
+      return english
+          ? 'No permission to access this directory; check directory permissions'
+          : '没有权限访问该目录，请检查目录权限';
+    case ProviderErrorKind.notFound:
+      return english
+          ? 'Creating the remote directory…'
+          : '云端目录尚未创建，正在创建…';
+    case ProviderErrorKind.rateLimited:
+      return english
+          ? 'Server is rate limiting; retry later'
+          : '服务器请求过于频繁，稍后重试';
+    case ProviderErrorKind.insufficientStorage:
+      return english
+          ? 'WebDAV storage is full'
+          : 'WebDAV 存储空间不足';
+    case ProviderErrorKind.network:
+    case ProviderErrorKind.timeout:
+      return english
+          ? 'Network unavailable; check your connection and retry'
+          : '网络不可用，请检查网络后重试';
+    default:
+      return english
+          ? 'Sync connection failed; please retry later'
+          : '同步连接失败，请稍后重试';
+  }
 }

@@ -11,6 +11,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:suicun/features/sync/sync_contract.dart';
+import 'package:suicun/features/sync/sync_errors.dart';
+import 'package:suicun/features/sync/sync_provider.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
 import 'package:suicun/services/webdav_service.dart';
 
@@ -143,9 +145,15 @@ class _RecoverPageState extends ConsumerState<RecoverPage> {
       },
       onError: (err) {
         if (!mounted) return;
+        final isEn = Localizations.localeOf(context).languageCode == 'en';
+        final msg = err is SyncError
+            ? err.message(english: isEn)
+            : err is SyncProviderException
+                ? providerErrorMessage(err, english: isEn)
+                : err.toString();
         setState(() {
           _isRecovering = false;
-          _streamError = err.toString();
+          _streamError = msg;
         });
       },
       onDone: () {
