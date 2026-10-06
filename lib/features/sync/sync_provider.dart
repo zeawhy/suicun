@@ -29,6 +29,9 @@ abstract interface class SyncProvider {
     bool createOnly = false,
   });
 
+  /// Moves/renames the object from [from] to [to] (vault-relative).
+  Future<void> move(String from, String to);
+
   void close();
 }
 

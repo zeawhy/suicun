@@ -251,6 +251,30 @@ class WebdavSyncProvider implements SyncProvider {
   // ----------------------------------------------------------------- API
 
   @override
+  Future<void> move(String from, String to) async {
+    final fromUri = _uriFor(from);
+    final toUri = _uriFor(to);
+    if (!_sameOrigin(fromUri, toUri)) {
+      throw const SyncProviderException(
+        ProviderErrorKind.protocolError,
+        detail: 'cross-origin move not supported',
+      );
+    }
+    final res = await _send(
+      'MOVE',
+      fromUri,
+      headers: {
+        'Destination': toUri.toString(),
+        'Overwrite': 'T',
+      },
+    );
+    if (res.status == 201 || res.status == 204) {
+      return;
+    }
+    _fail(res);
+  }
+
+  @override
   Future<DownloadedObject> get(String path) async {
     final res = await _send('GET', _uriFor(path));
     if (res.status != 200) _fail(res);

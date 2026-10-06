@@ -30,6 +30,8 @@ class FakeSyncProvider implements SyncProvider {
   bool offline = false;
   final Set<String> failOnGet = <String>{};
   final Set<String> failOnPut = <String>{};
+  final Set<String> failOnMove = <String>{};
+  final Set<String> hiddenFromList = <String>{};
   bool timeoutAfterPut = false;
   final Map<String, int> forcePutStatus = <String, int>{};
   int? forceListStatus;
@@ -100,7 +102,7 @@ class FakeSyncProvider implements SyncProvider {
     final prefix = directory.endsWith('/') ? directory : '$directory/';
     final results = <RemoteObject>[];
     for (final entry in storage.entries) {
-      if (entry.key.startsWith(prefix)) {
+      if (entry.key.startsWith(prefix) && !hiddenFromList.contains(entry.key)) {
         results.add(RemoteObject(
           path: entry.key,
           etag: entry.value.etag,
@@ -110,6 +112,22 @@ class FakeSyncProvider implements SyncProvider {
       }
     }
     return results;
+  }
+
+  @override
+  Future<void> move(String from, String to) async {
+    _checkOffline();
+    requestLog.add('MOVE $from $to');
+    if (failOnMove.contains(from)) {
+      throw const SyncProviderException(ProviderErrorKind.network,
+          detail: 'simulated move failure');
+    }
+    final obj = storage.remove(from);
+    if (obj == null) {
+      throw const SyncProviderException(ProviderErrorKind.notFound,
+          statusCode: 404);
+    }
+    storage[to] = obj;
   }
 
   @override
