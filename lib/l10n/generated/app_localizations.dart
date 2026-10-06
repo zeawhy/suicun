@@ -134,6 +134,18 @@ abstract class AppLocalizations {
   /// **'全部'**
   String get all;
 
+  /// No description provided for @appLock.
+  ///
+  /// In zh, this message translates to:
+  /// **'应用锁'**
+  String get appLock;
+
+  /// No description provided for @appLocked.
+  ///
+  /// In zh, this message translates to:
+  /// **'随存已锁定'**
+  String get appLocked;
+
   /// No description provided for @appName.
   ///
   /// In zh, this message translates to:
@@ -158,11 +170,29 @@ abstract class AppLocalizations {
   /// **'自动保存，无需手动点击保存。'**
   String get autoSaveHint;
 
+  /// No description provided for @backToSync.
+  ///
+  /// In zh, this message translates to:
+  /// **'返回同步设置'**
+  String get backToSync;
+
   /// No description provided for @backup.
   ///
   /// In zh, this message translates to:
   /// **'备份'**
   String get backup;
+
+  /// No description provided for @backupPassword.
+  ///
+  /// In zh, this message translates to:
+  /// **'备份密码'**
+  String get backupPassword;
+
+  /// No description provided for @backupPasswordHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'换设备恢复需要此密码，请妥善保存'**
+  String get backupPasswordHint;
 
   /// No description provided for @batchCategorize.
   ///
@@ -230,6 +260,12 @@ abstract class AppLocalizations {
   /// **'分类名称'**
   String get categoryName;
 
+  /// No description provided for @changePin.
+  ///
+  /// In zh, this message translates to:
+  /// **'修改 PIN'**
+  String get changePin;
+
   /// No description provided for @clearFilter.
   ///
   /// In zh, this message translates to:
@@ -248,6 +284,66 @@ abstract class AppLocalizations {
   /// **'确认'**
   String get confirm;
 
+  /// No description provided for @confirmPassword.
+  ///
+  /// In zh, this message translates to:
+  /// **'确认密码'**
+  String get confirmPassword;
+
+  /// No description provided for @confirmVaultPassword.
+  ///
+  /// In zh, this message translates to:
+  /// **'确认加密密码'**
+  String get confirmVaultPassword;
+
+  /// No description provided for @copyRecoveryKey.
+  ///
+  /// In zh, this message translates to:
+  /// **'复制'**
+  String get copyRecoveryKey;
+
+  /// No description provided for @conflictCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'冲突：{count}'**
+  String conflictCount(int count);
+
+  /// No description provided for @conflictHistoryNote.
+  ///
+  /// In zh, this message translates to:
+  /// **'被弃用的版本会保留到历史记录，不会被删除。'**
+  String get conflictHistoryNote;
+
+  /// No description provided for @conflictTypeCategory.
+  ///
+  /// In zh, this message translates to:
+  /// **'分类'**
+  String get conflictTypeCategory;
+
+  /// No description provided for @conflictTypeRecord.
+  ///
+  /// In zh, this message translates to:
+  /// **'记录'**
+  String get conflictTypeRecord;
+
+  /// No description provided for @conflictTypeTag.
+  ///
+  /// In zh, this message translates to:
+  /// **'标签'**
+  String get conflictTypeTag;
+
+  /// No description provided for @conflictsEmpty.
+  ///
+  /// In zh, this message translates to:
+  /// **'没有未解决的冲突'**
+  String get conflictsEmpty;
+
+  /// No description provided for @conflictsTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'同步冲突'**
+  String get conflictsTitle;
+
   /// No description provided for @connectionFailed.
   ///
   /// In zh, this message translates to:
@@ -259,6 +355,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'连接成功'**
   String get connectionSuccess;
+
+  /// No description provided for @createNewVault.
+  ///
+  /// In zh, this message translates to:
+  /// **'创建新库'**
+  String get createNewVault;
 
   /// No description provided for @data.
   ///
@@ -301,6 +403,18 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'同步目录须以 / 开头'**
   String get directoryInvalid;
+
+  /// No description provided for @disableSync.
+  ///
+  /// In zh, this message translates to:
+  /// **'关闭同步'**
+  String get disableSync;
+
+  /// No description provided for @disableSyncConfirm.
+  ///
+  /// In zh, this message translates to:
+  /// **'关闭同步将停止网络任务，本地数据保留。确认吗？'**
+  String get disableSyncConfirm;
 
   /// No description provided for @duplicateName.
   ///
@@ -350,11 +464,47 @@ abstract class AppLocalizations {
   /// **'编辑标签'**
   String get editTag;
 
+  /// No description provided for @enableAppLock.
+  ///
+  /// In zh, this message translates to:
+  /// **'启用应用锁'**
+  String get enableAppLock;
+
+  /// No description provided for @encryptedBackup.
+  ///
+  /// In zh, this message translates to:
+  /// **'加密备份'**
+  String get encryptedBackup;
+
+  /// No description provided for @encryptionOn.
+  ///
+  /// In zh, this message translates to:
+  /// **'本地数据库已加密'**
+  String get encryptionOn;
+
+  /// No description provided for @encryptionOnDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'数据库使用随机密钥加密，密钥保存在系统安全存储'**
+  String get encryptionOnDesc;
+
+  /// No description provided for @enterPin.
+  ///
+  /// In zh, this message translates to:
+  /// **'输入 PIN 解锁'**
+  String get enterPin;
+
   /// No description provided for @export.
   ///
   /// In zh, this message translates to:
   /// **'导出'**
   String get export;
+
+  /// No description provided for @exportEncryptedBackup.
+  ///
+  /// In zh, this message translates to:
+  /// **'导出加密备份'**
+  String get exportEncryptedBackup;
 
   /// No description provided for @exportFailed.
   ///
@@ -416,11 +566,23 @@ abstract class AppLocalizations {
   /// **'隐藏密码'**
   String get hidePassword;
 
+  /// No description provided for @iHaveSavedPassword.
+  ///
+  /// In zh, this message translates to:
+  /// **'我已妥善保存加密密码'**
+  String get iHaveSavedPassword;
+
   /// No description provided for @importData.
   ///
   /// In zh, this message translates to:
   /// **'导入'**
   String get importData;
+
+  /// No description provided for @importEncryptedBackup.
+  ///
+  /// In zh, this message translates to:
+  /// **'导入加密备份'**
+  String get importEncryptedBackup;
 
   /// No description provided for @importFailed.
   ///
@@ -452,6 +614,36 @@ abstract class AppLocalizations {
   /// **'成功导入 {count} 条记录'**
   String importSuccess(int count);
 
+  /// No description provided for @joinExistingVault.
+  ///
+  /// In zh, this message translates to:
+  /// **'加入已有库'**
+  String get joinExistingVault;
+
+  /// No description provided for @keepBoth.
+  ///
+  /// In zh, this message translates to:
+  /// **'分别保留'**
+  String get keepBoth;
+
+  /// No description provided for @keepLocal.
+  ///
+  /// In zh, this message translates to:
+  /// **'保留本机版本'**
+  String get keepLocal;
+
+  /// No description provided for @keepPasswordSafe.
+  ///
+  /// In zh, this message translates to:
+  /// **'请妥善保管加密密码：丢失后无法找回，WebDAV 账号密码不能恢复笔记内容。'**
+  String get keepPasswordSafe;
+
+  /// No description provided for @keepRemote.
+  ///
+  /// In zh, this message translates to:
+  /// **'保留另一版本'**
+  String get keepRemote;
+
   /// No description provided for @keywordHint.
   ///
   /// In zh, this message translates to:
@@ -469,6 +661,18 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'暂无关键词，添加后可自动推荐分类'**
   String get keywordsEmpty;
+
+  /// No description provided for @lastSuccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'上次成功：{time}'**
+  String lastSuccess(String time);
+
+  /// No description provided for @lastSuccessNever.
+  ///
+  /// In zh, this message translates to:
+  /// **'从未成功同步'**
+  String get lastSuccessNever;
 
   /// No description provided for @lastSync.
   ///
@@ -488,11 +692,53 @@ abstract class AppLocalizations {
   /// **'已复制链接'**
   String get linkCopied;
 
+  /// No description provided for @localVersion.
+  ///
+  /// In zh, this message translates to:
+  /// **'本机版本'**
+  String get localVersion;
+
+  /// No description provided for @lockTimeout.
+  ///
+  /// In zh, this message translates to:
+  /// **'后台锁定超时'**
+  String get lockTimeout;
+
+  /// No description provided for @lockoutTryLater.
+  ///
+  /// In zh, this message translates to:
+  /// **'尝试次数过多，请 {seconds} 秒后再试'**
+  String lockoutTryLater(Object seconds);
+
+  /// No description provided for @manualMerge.
+  ///
+  /// In zh, this message translates to:
+  /// **'手动合并'**
+  String get manualMerge;
+
   /// No description provided for @maxTagsReached.
   ///
   /// In zh, this message translates to:
   /// **'最多添加 10 个标签'**
   String get maxTagsReached;
+
+  /// No description provided for @mergeBodyHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'合并后的正文'**
+  String get mergeBodyHint;
+
+  /// No description provided for @mergeDialogTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'手动合并'**
+  String get mergeDialogTitle;
+
+  /// No description provided for @mergeTitleHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'合并后的标题'**
+  String get mergeTitleHint;
 
   /// No description provided for @modified.
   ///
@@ -512,6 +758,12 @@ abstract class AppLocalizations {
   /// **'新建记录'**
   String get newRecord;
 
+  /// No description provided for @newVaultPassword.
+  ///
+  /// In zh, this message translates to:
+  /// **'新库加密密码'**
+  String get newVaultPassword;
+
   /// No description provided for @notYetInput.
   ///
   /// In zh, this message translates to:
@@ -530,11 +782,47 @@ abstract class AppLocalizations {
   /// **'密码'**
   String get password;
 
+  /// No description provided for @passwordMismatch.
+  ///
+  /// In zh, this message translates to:
+  /// **'两次输入的密码不一致'**
+  String get passwordMismatch;
+
   /// No description provided for @passwordRequired.
   ///
   /// In zh, this message translates to:
   /// **'请填写密码'**
   String get passwordRequired;
+
+  /// No description provided for @passwordStrengthFair.
+  ///
+  /// In zh, this message translates to:
+  /// **'密码强度：中'**
+  String get passwordStrengthFair;
+
+  /// No description provided for @passwordStrengthStrong.
+  ///
+  /// In zh, this message translates to:
+  /// **'密码强度：强'**
+  String get passwordStrengthStrong;
+
+  /// No description provided for @passwordStrengthWeak.
+  ///
+  /// In zh, this message translates to:
+  /// **'密码强度：弱（建议 12 位以上，混合字母、数字和符号）'**
+  String get passwordStrengthWeak;
+
+  /// No description provided for @passwordTooShort.
+  ///
+  /// In zh, this message translates to:
+  /// **'密码至少 8 位'**
+  String get passwordTooShort;
+
+  /// No description provided for @pendingCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'待上传：{count}'**
+  String pendingCount(int count);
 
   /// No description provided for @pendingUpload.
   ///
@@ -553,6 +841,36 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'彻底删除后无法恢复。确认吗？'**
   String get permanentDeleteConfirm;
+
+  /// No description provided for @pinLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'PIN'**
+  String get pinLabel;
+
+  /// No description provided for @pinNotSet.
+  ///
+  /// In zh, this message translates to:
+  /// **'未设置'**
+  String get pinNotSet;
+
+  /// No description provided for @pinSaved.
+  ///
+  /// In zh, this message translates to:
+  /// **'PIN 已保存'**
+  String get pinSaved;
+
+  /// No description provided for @pinSet.
+  ///
+  /// In zh, this message translates to:
+  /// **'已设置'**
+  String get pinSet;
+
+  /// No description provided for @pinTooShort.
+  ///
+  /// In zh, this message translates to:
+  /// **'PIN 至少 4 位'**
+  String get pinTooShort;
 
   /// No description provided for @probeInvalidConfig.
   ///
@@ -632,17 +950,143 @@ abstract class AppLocalizations {
   /// **'点击右下角新建记录'**
   String get recordsEmptyHint;
 
+  /// No description provided for @recoverDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'在新设备上从 WebDAV 下载已上传的数据，重建本地库。只能恢复已成功上传的数据；尚未上传的离线编辑无法找回。'**
+  String get recoverDesc;
+
+  /// No description provided for @recoverFailedObjects.
+  ///
+  /// In zh, this message translates to:
+  /// **'失败对象：{count}'**
+  String recoverFailedObjects(int count);
+
+  /// No description provided for @recoverFromWebdav.
+  ///
+  /// In zh, this message translates to:
+  /// **'从 WebDAV 恢复'**
+  String get recoverFromWebdav;
+
+  /// No description provided for @recoverPartial.
+  ///
+  /// In zh, this message translates to:
+  /// **'部分完成，有 {count} 个对象失败，可重试继续。'**
+  String recoverPartial(int count);
+
+  /// No description provided for @recoverPhaseConnecting.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在连接…'**
+  String get recoverPhaseConnecting;
+
+  /// No description provided for @recoverPhaseDone.
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复完成'**
+  String get recoverPhaseDone;
+
+  /// No description provided for @recoverPhaseDownloading.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在下载对象…'**
+  String get recoverPhaseDownloading;
+
+  /// No description provided for @recoverPhaseError.
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复失败'**
+  String get recoverPhaseError;
+
+  /// No description provided for @recoverPhaseListing.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在列出远端对象…'**
+  String get recoverPhaseListing;
+
+  /// No description provided for @recoverPhaseRebuilding.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在重建本地库…'**
+  String get recoverPhaseRebuilding;
+
+  /// No description provided for @recoverProgress.
+  ///
+  /// In zh, this message translates to:
+  /// **'已完成 {done} / 共 {total}'**
+  String recoverProgress(int done, int total);
+
+  /// No description provided for @recoverRecordsRestored.
+  ///
+  /// In zh, this message translates to:
+  /// **'已恢复记录：{count}'**
+  String recoverRecordsRestored(int count);
+
+  /// No description provided for @recoveryKeyCopied.
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复密钥已复制'**
+  String get recoveryKeyCopied;
+
+  /// No description provided for @recoveryKeyTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复密钥'**
+  String get recoveryKeyTitle;
+
+  /// No description provided for @recoveryKeyWarning.
+  ///
+  /// In zh, this message translates to:
+  /// **'这是恢复密钥唯一的展示机会，请立即抄写或保存到安全的地方，关闭后无法再次查看。'**
+  String get recoveryKeyWarning;
+
+  /// No description provided for @remoteVersion.
+  ///
+  /// In zh, this message translates to:
+  /// **'另一版本'**
+  String get remoteVersion;
+
+  /// No description provided for @removeCredentials.
+  ///
+  /// In zh, this message translates to:
+  /// **'移除凭据'**
+  String get removeCredentials;
+
+  /// No description provided for @removeCredentialsConfirm.
+  ///
+  /// In zh, this message translates to:
+  /// **'移除凭据将关闭同步并删除已保存的 WebDAV 账号密码，本地数据保留。确认吗？'**
+  String get removeCredentialsConfirm;
+
   /// No description provided for @rename.
   ///
   /// In zh, this message translates to:
   /// **'改名'**
   String get rename;
 
+  /// No description provided for @resolveSuccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'冲突已解决'**
+  String get resolveSuccess;
+
+  /// No description provided for @resolving.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在处理…'**
+  String get resolving;
+
   /// No description provided for @restore.
   ///
   /// In zh, this message translates to:
   /// **'恢复'**
   String get restore;
+
+  /// No description provided for @retry.
+  ///
+  /// In zh, this message translates to:
+  /// **'重试'**
+  String get retry;
 
   /// No description provided for @save.
   ///
@@ -698,6 +1142,12 @@ abstract class AppLocalizations {
   /// **'安全功能将在后续版本推出'**
   String get securityNotImplemented;
 
+  /// No description provided for @securityPageTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'安全'**
+  String get securityPageTitle;
+
   /// No description provided for @selectAll.
   ///
   /// In zh, this message translates to:
@@ -722,6 +1172,12 @@ abstract class AppLocalizations {
   /// **'已选 {count} 条'**
   String selectedCount(int count);
 
+  /// No description provided for @setPin.
+  ///
+  /// In zh, this message translates to:
+  /// **'设置 PIN'**
+  String get setPin;
+
   /// No description provided for @settings.
   ///
   /// In zh, this message translates to:
@@ -739,6 +1195,24 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'智能推荐'**
   String get smartRecommend;
+
+  /// No description provided for @startRecovery.
+  ///
+  /// In zh, this message translates to:
+  /// **'开始恢复'**
+  String get startRecovery;
+
+  /// No description provided for @startSync.
+  ///
+  /// In zh, this message translates to:
+  /// **'开始同步'**
+  String get startSync;
+
+  /// No description provided for @startSyncSetup.
+  ///
+  /// In zh, this message translates to:
+  /// **'开始同步设置'**
+  String get startSyncSetup;
 
   /// No description provided for @sync.
   ///
@@ -787,6 +1261,36 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'立即同步'**
   String get syncNow;
+
+  /// No description provided for @syncStatusDisabled.
+  ///
+  /// In zh, this message translates to:
+  /// **'未启用'**
+  String get syncStatusDisabled;
+
+  /// No description provided for @syncStatusEnabled.
+  ///
+  /// In zh, this message translates to:
+  /// **'已启用'**
+  String get syncStatusEnabled;
+
+  /// No description provided for @syncStatusSyncing.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在同步…'**
+  String get syncStatusSyncing;
+
+  /// No description provided for @syncStatusUnavailable.
+  ///
+  /// In zh, this message translates to:
+  /// **'同步状态不可用'**
+  String get syncStatusUnavailable;
+
+  /// No description provided for @syncStatusUnavailableDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'同步引擎正在接入，稍后再试。'**
+  String get syncStatusUnavailableDesc;
 
   /// No description provided for @synced.
   ///
@@ -842,6 +1346,24 @@ abstract class AppLocalizations {
   /// **'跟随系统'**
   String get themeSystem;
 
+  /// No description provided for @timeout1Min.
+  ///
+  /// In zh, this message translates to:
+  /// **'1 分钟'**
+  String get timeout1Min;
+
+  /// No description provided for @timeout5Min.
+  ///
+  /// In zh, this message translates to:
+  /// **'5 分钟'**
+  String get timeout5Min;
+
+  /// No description provided for @timeoutImmediately.
+  ///
+  /// In zh, this message translates to:
+  /// **'立即'**
+  String get timeoutImmediately;
+
   /// No description provided for @titleHint.
   ///
   /// In zh, this message translates to:
@@ -878,11 +1400,41 @@ abstract class AppLocalizations {
   /// **'取消收藏'**
   String get unfavorite;
 
+  /// No description provided for @unlockApp.
+  ///
+  /// In zh, this message translates to:
+  /// **'解锁随存'**
+  String get unlockApp;
+
   /// No description provided for @untitledRecord.
   ///
   /// In zh, this message translates to:
   /// **'未命名记录'**
   String get untitledRecord;
+
+  /// No description provided for @updatedAt.
+  ///
+  /// In zh, this message translates to:
+  /// **'更新于 {time}'**
+  String updatedAt(String time);
+
+  /// No description provided for @useBiometric.
+  ///
+  /// In zh, this message translates to:
+  /// **'生物识别解锁'**
+  String get useBiometric;
+
+  /// No description provided for @usePassword.
+  ///
+  /// In zh, this message translates to:
+  /// **'使用加密密码'**
+  String get usePassword;
+
+  /// No description provided for @useRecoveryKey.
+  ///
+  /// In zh, this message translates to:
+  /// **'使用恢复密钥'**
+  String get useRecoveryKey;
 
   /// No description provided for @username.
   ///
@@ -896,11 +1448,29 @@ abstract class AppLocalizations {
   /// **'请填写用户名'**
   String get usernameRequired;
 
+  /// No description provided for @vaultPassword.
+  ///
+  /// In zh, this message translates to:
+  /// **'加密密码'**
+  String get vaultPassword;
+
+  /// No description provided for @vaultRecoveryKey.
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复密钥'**
+  String get vaultRecoveryKey;
+
   /// No description provided for @version.
   ///
   /// In zh, this message translates to:
   /// **'版本'**
   String get version;
+
+  /// No description provided for @viewConflicts.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看冲突'**
+  String get viewConflicts;
 
   /// No description provided for @webdavSync.
   ///
@@ -926,185 +1496,101 @@ abstract class AppLocalizations {
   /// **'请填写 WebDAV 地址'**
   String get webdavUrlRequired;
 
-  /// No description provided for @appLock.
+  /// No description provided for @wizardConnectionDesc.
   ///
   /// In zh, this message translates to:
-  /// **'应用锁'**
-  String get appLock;
+  /// **'将测试与 WebDAV 服务器的连接，并检查目录中是否已有同步库。'**
+  String get wizardConnectionDesc;
 
-  /// No description provided for @enableAppLock.
+  /// No description provided for @wizardCreating.
   ///
   /// In zh, this message translates to:
-  /// **'启用应用锁'**
-  String get enableAppLock;
+  /// **'正在创建同步库…'**
+  String get wizardCreating;
 
-  /// No description provided for @setPin.
+  /// No description provided for @wizardDone.
   ///
   /// In zh, this message translates to:
-  /// **'设置 PIN'**
-  String get setPin;
+  /// **'同步设置完成'**
+  String get wizardDone;
 
-  /// No description provided for @changePin.
+  /// No description provided for @wizardDoneDesc.
   ///
   /// In zh, this message translates to:
-  /// **'修改 PIN'**
-  String get changePin;
+  /// **'加密同步库已就绪，可以开始同步。'**
+  String get wizardDoneDesc;
 
-  /// No description provided for @pinNotSet.
+  /// No description provided for @wizardHasVaultDesc.
   ///
   /// In zh, this message translates to:
-  /// **'未设置'**
-  String get pinNotSet;
+  /// **'该目录下已存在同步库，请输入加密密码或恢复密钥加入。'**
+  String get wizardHasVaultDesc;
 
-  /// No description provided for @pinSet.
+  /// No description provided for @wizardJoining.
   ///
   /// In zh, this message translates to:
-  /// **'已设置'**
-  String get pinSet;
+  /// **'正在加入同步库…'**
+  String get wizardJoining;
 
-  /// No description provided for @useBiometric.
+  /// No description provided for @wizardMergeCount.
   ///
   /// In zh, this message translates to:
-  /// **'生物识别解锁'**
-  String get useBiometric;
+  /// **'待同步内容：{count} 条'**
+  String wizardMergeCount(int count);
 
-  /// No description provided for @lockTimeout.
+  /// No description provided for @wizardMergeInfo.
   ///
   /// In zh, this message translates to:
-  /// **'后台锁定超时'**
-  String get lockTimeout;
+  /// **'本地已有内容不会被远端直接替换；同步将合并两端数据，出现的冲突可稍后手动解决。'**
+  String get wizardMergeInfo;
 
-  /// No description provided for @timeoutImmediately.
+  /// No description provided for @wizardNoVaultDesc.
   ///
   /// In zh, this message translates to:
-  /// **'立即'**
-  String get timeoutImmediately;
+  /// **'该目录下没有同步库，可以创建一个新加密库。'**
+  String get wizardNoVaultDesc;
 
-  /// No description provided for @timeout1Min.
+  /// No description provided for @wizardStepConnection.
   ///
   /// In zh, this message translates to:
-  /// **'1 分钟'**
-  String get timeout1Min;
+  /// **'连接测试'**
+  String get wizardStepConnection;
 
-  /// No description provided for @timeout5Min.
+  /// No description provided for @wizardStepMerge.
   ///
   /// In zh, this message translates to:
-  /// **'5 分钟'**
-  String get timeout5Min;
+  /// **'合并确认'**
+  String get wizardStepMerge;
 
-  /// No description provided for @encryptedBackup.
+  /// No description provided for @wizardStepSecurity.
   ///
   /// In zh, this message translates to:
-  /// **'加密备份'**
-  String get encryptedBackup;
+  /// **'加密配置'**
+  String get wizardStepSecurity;
 
-  /// No description provided for @exportEncryptedBackup.
+  /// No description provided for @wizardStepVault.
   ///
   /// In zh, this message translates to:
-  /// **'导出加密备份'**
-  String get exportEncryptedBackup;
+  /// **'选择同步库'**
+  String get wizardStepVault;
 
-  /// No description provided for @importEncryptedBackup.
+  /// No description provided for @wizardTestAndContinue.
   ///
   /// In zh, this message translates to:
-  /// **'导入加密备份'**
-  String get importEncryptedBackup;
+  /// **'测试并继续'**
+  String get wizardTestAndContinue;
 
-  /// No description provided for @backupPassword.
+  /// No description provided for @wizardTitle.
   ///
   /// In zh, this message translates to:
-  /// **'备份密码'**
-  String get backupPassword;
-
-  /// No description provided for @backupPasswordHint.
-  ///
-  /// In zh, this message translates to:
-  /// **'换设备恢复需要此密码，请妥善保存'**
-  String get backupPasswordHint;
-
-  /// No description provided for @confirmPassword.
-  ///
-  /// In zh, this message translates to:
-  /// **'确认密码'**
-  String get confirmPassword;
-
-  /// No description provided for @passwordMismatch.
-  ///
-  /// In zh, this message translates to:
-  /// **'两次输入的密码不一致'**
-  String get passwordMismatch;
-
-  /// No description provided for @passwordTooShort.
-  ///
-  /// In zh, this message translates to:
-  /// **'密码至少 8 位'**
-  String get passwordTooShort;
-
-  /// No description provided for @unlockApp.
-  ///
-  /// In zh, this message translates to:
-  /// **'解锁随存'**
-  String get unlockApp;
-
-  /// No description provided for @appLocked.
-  ///
-  /// In zh, this message translates to:
-  /// **'随存已锁定'**
-  String get appLocked;
-
-  /// No description provided for @enterPin.
-  ///
-  /// In zh, this message translates to:
-  /// **'输入 PIN 解锁'**
-  String get enterPin;
+  /// **'同步设置向导'**
+  String get wizardTitle;
 
   /// No description provided for @wrongPin.
   ///
   /// In zh, this message translates to:
   /// **'PIN 错误，请重试'**
   String get wrongPin;
-
-  /// No description provided for @pinTooShort.
-  ///
-  /// In zh, this message translates to:
-  /// **'PIN 至少 4 位'**
-  String get pinTooShort;
-
-  /// No description provided for @pinSaved.
-  ///
-  /// In zh, this message translates to:
-  /// **'PIN 已保存'**
-  String get pinSaved;
-
-  /// No description provided for @securityPageTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'安全'**
-  String get securityPageTitle;
-
-  /// No description provided for @encryptionOn.
-  ///
-  /// In zh, this message translates to:
-  /// **'本地数据库已加密'**
-  String get encryptionOn;
-
-  /// No description provided for @encryptionOnDesc.
-  ///
-  /// In zh, this message translates to:
-  /// **'数据库使用随机密钥加密，密钥保存在系统安全存储'**
-  String get encryptionOnDesc;
-
-  /// No description provided for @lockoutTryLater.
-  ///
-  /// In zh, this message translates to:
-  /// **'尝试次数过多，请 {seconds} 秒后再试'**
-  String lockoutTryLater(Object seconds);
-
-  /// No description provided for @pinLabel.
-  ///
-  /// In zh, this message translates to:
-  /// **'PIN'**
-  String get pinLabel;
 }
 
 class _AppLocalizationsDelegate

@@ -27,6 +27,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get all => '全部';
 
   @override
+  String get appLock => '应用锁';
+
+  @override
+  String get appLocked => '随存已锁定';
+
+  @override
   String get appName => '随存';
 
   @override
@@ -39,7 +45,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autoSaveHint => '自动保存，无需手动点击保存。';
 
   @override
+  String get backToSync => '返回同步设置';
+
+  @override
   String get backup => '备份';
+
+  @override
+  String get backupPassword => '备份密码';
+
+  @override
+  String get backupPasswordHint => '换设备恢复需要此密码，请妥善保存';
 
   @override
   String get batchCategorize => '批量分类';
@@ -75,6 +90,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get categoryName => '分类名称';
 
   @override
+  String get changePin => '修改 PIN';
+
+  @override
   String get clearFilter => '清除筛选';
 
   @override
@@ -84,12 +102,47 @@ class AppLocalizationsZh extends AppLocalizations {
   String get confirm => '确认';
 
   @override
+  String get confirmPassword => '确认密码';
+
+  @override
+  String get confirmVaultPassword => '确认加密密码';
+
+  @override
+  String get copyRecoveryKey => '复制';
+
+  @override
+  String conflictCount(int count) {
+    return '冲突：$count';
+  }
+
+  @override
+  String get conflictHistoryNote => '被弃用的版本会保留到历史记录，不会被删除。';
+
+  @override
+  String get conflictTypeCategory => '分类';
+
+  @override
+  String get conflictTypeRecord => '记录';
+
+  @override
+  String get conflictTypeTag => '标签';
+
+  @override
+  String get conflictsEmpty => '没有未解决的冲突';
+
+  @override
+  String get conflictsTitle => '同步冲突';
+
+  @override
   String connectionFailed(String error) {
     return '连接失败：$error';
   }
 
   @override
   String get connectionSuccess => '连接成功';
+
+  @override
+  String get createNewVault => '创建新库';
 
   @override
   String get data => '数据';
@@ -111,6 +164,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get directoryInvalid => '同步目录须以 / 开头';
+
+  @override
+  String get disableSync => '关闭同步';
+
+  @override
+  String get disableSyncConfirm => '关闭同步将停止网络任务，本地数据保留。确认吗？';
 
   @override
   String get duplicateName => '该名称已存在';
@@ -137,7 +196,25 @@ class AppLocalizationsZh extends AppLocalizations {
   String get editTag => '编辑标签';
 
   @override
+  String get enableAppLock => '启用应用锁';
+
+  @override
+  String get encryptedBackup => '加密备份';
+
+  @override
+  String get encryptionOn => '本地数据库已加密';
+
+  @override
+  String get encryptionOnDesc => '数据库使用随机密钥加密，密钥保存在系统安全存储';
+
+  @override
+  String get enterPin => '输入 PIN 解锁';
+
+  @override
   String get export => '导出';
+
+  @override
+  String get exportEncryptedBackup => '导出加密备份';
 
   @override
   String exportFailed(String error) {
@@ -172,7 +249,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get hidePassword => '隐藏密码';
 
   @override
+  String get iHaveSavedPassword => '我已妥善保存加密密码';
+
+  @override
   String get importData => '导入';
+
+  @override
+  String get importEncryptedBackup => '导入加密备份';
 
   @override
   String importFailed(String error) {
@@ -196,6 +279,21 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get joinExistingVault => '加入已有库';
+
+  @override
+  String get keepBoth => '分别保留';
+
+  @override
+  String get keepLocal => '保留本机版本';
+
+  @override
+  String get keepPasswordSafe => '请妥善保管加密密码：丢失后无法找回，WebDAV 账号密码不能恢复笔记内容。';
+
+  @override
+  String get keepRemote => '保留另一版本';
+
+  @override
   String get keywordHint => '输入关键词，回车添加';
 
   @override
@@ -203,6 +301,14 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get keywordsEmpty => '暂无关键词，添加后可自动推荐分类';
+
+  @override
+  String lastSuccess(String time) {
+    return '上次成功：$time';
+  }
+
+  @override
+  String get lastSuccessNever => '从未成功同步';
 
   @override
   String get lastSync => '上次同步';
@@ -216,7 +322,30 @@ class AppLocalizationsZh extends AppLocalizations {
   String get linkCopied => '已复制链接';
 
   @override
+  String get localVersion => '本机版本';
+
+  @override
+  String get lockTimeout => '后台锁定超时';
+
+  @override
+  String lockoutTryLater(Object seconds) {
+    return '尝试次数过多，请 $seconds 秒后再试';
+  }
+
+  @override
+  String get manualMerge => '手动合并';
+
+  @override
   String get maxTagsReached => '最多添加 10 个标签';
+
+  @override
+  String get mergeBodyHint => '合并后的正文';
+
+  @override
+  String get mergeDialogTitle => '手动合并';
+
+  @override
+  String get mergeTitleHint => '合并后的标题';
 
   @override
   String modified(String time) {
@@ -230,6 +359,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get newRecord => '新建记录';
 
   @override
+  String get newVaultPassword => '新库加密密码';
+
+  @override
   String get notYetInput => '尚未输入';
 
   @override
@@ -239,7 +371,27 @@ class AppLocalizationsZh extends AppLocalizations {
   String get password => '密码';
 
   @override
+  String get passwordMismatch => '两次输入的密码不一致';
+
+  @override
   String get passwordRequired => '请填写密码';
+
+  @override
+  String get passwordStrengthFair => '密码强度：中';
+
+  @override
+  String get passwordStrengthStrong => '密码强度：强';
+
+  @override
+  String get passwordStrengthWeak => '密码强度：弱（建议 12 位以上，混合字母、数字和符号）';
+
+  @override
+  String get passwordTooShort => '密码至少 8 位';
+
+  @override
+  String pendingCount(int count) {
+    return '待上传：$count';
+  }
 
   @override
   String get pendingUpload => '待上传';
@@ -249,6 +401,21 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get permanentDeleteConfirm => '彻底删除后无法恢复。确认吗？';
+
+  @override
+  String get pinLabel => 'PIN';
+
+  @override
+  String get pinNotSet => '未设置';
+
+  @override
+  String get pinSaved => 'PIN 已保存';
+
+  @override
+  String get pinSet => '已设置';
+
+  @override
+  String get pinTooShort => 'PIN 至少 4 位';
 
   @override
   String get probeInvalidConfig => '配置不完整';
@@ -292,10 +459,83 @@ class AppLocalizationsZh extends AppLocalizations {
   String get recordsEmptyHint => '点击右下角新建记录';
 
   @override
+  String get recoverDesc =>
+      '在新设备上从 WebDAV 下载已上传的数据，重建本地库。只能恢复已成功上传的数据；尚未上传的离线编辑无法找回。';
+
+  @override
+  String recoverFailedObjects(int count) {
+    return '失败对象：$count';
+  }
+
+  @override
+  String get recoverFromWebdav => '从 WebDAV 恢复';
+
+  @override
+  String recoverPartial(int count) {
+    return '部分完成，有 $count 个对象失败，可重试继续。';
+  }
+
+  @override
+  String get recoverPhaseConnecting => '正在连接…';
+
+  @override
+  String get recoverPhaseDone => '恢复完成';
+
+  @override
+  String get recoverPhaseDownloading => '正在下载对象…';
+
+  @override
+  String get recoverPhaseError => '恢复失败';
+
+  @override
+  String get recoverPhaseListing => '正在列出远端对象…';
+
+  @override
+  String get recoverPhaseRebuilding => '正在重建本地库…';
+
+  @override
+  String recoverProgress(int done, int total) {
+    return '已完成 $done / 共 $total';
+  }
+
+  @override
+  String recoverRecordsRestored(int count) {
+    return '已恢复记录：$count';
+  }
+
+  @override
+  String get recoveryKeyCopied => '恢复密钥已复制';
+
+  @override
+  String get recoveryKeyTitle => '恢复密钥';
+
+  @override
+  String get recoveryKeyWarning => '这是恢复密钥唯一的展示机会，请立即抄写或保存到安全的地方，关闭后无法再次查看。';
+
+  @override
+  String get remoteVersion => '另一版本';
+
+  @override
+  String get removeCredentials => '移除凭据';
+
+  @override
+  String get removeCredentialsConfirm =>
+      '移除凭据将关闭同步并删除已保存的 WebDAV 账号密码，本地数据保留。确认吗？';
+
+  @override
   String get rename => '改名';
 
   @override
+  String get resolveSuccess => '冲突已解决';
+
+  @override
+  String get resolving => '正在处理…';
+
+  @override
   String get restore => '恢复';
+
+  @override
+  String get retry => '重试';
 
   @override
   String get save => '保存';
@@ -325,6 +565,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get securityNotImplemented => '安全功能将在后续版本推出';
 
   @override
+  String get securityPageTitle => '安全';
+
+  @override
   String get selectAll => '全选';
 
   @override
@@ -339,6 +582,9 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get setPin => '设置 PIN';
+
+  @override
   String get settings => '设置';
 
   @override
@@ -346,6 +592,15 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get smartRecommend => '智能推荐';
+
+  @override
+  String get startRecovery => '开始恢复';
+
+  @override
+  String get startSync => '开始同步';
+
+  @override
+  String get startSyncSetup => '开始同步设置';
 
   @override
   String get sync => '同步';
@@ -370,6 +625,21 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get syncNow => '立即同步';
+
+  @override
+  String get syncStatusDisabled => '未启用';
+
+  @override
+  String get syncStatusEnabled => '已启用';
+
+  @override
+  String get syncStatusSyncing => '正在同步…';
+
+  @override
+  String get syncStatusUnavailable => '同步状态不可用';
+
+  @override
+  String get syncStatusUnavailableDesc => '同步引擎正在接入，稍后再试。';
 
   @override
   String get synced => '已同步';
@@ -399,6 +669,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get themeSystem => '跟随系统';
 
   @override
+  String get timeout1Min => '1 分钟';
+
+  @override
+  String get timeout5Min => '5 分钟';
+
+  @override
+  String get timeoutImmediately => '立即';
+
+  @override
   String get titleHint => '标题（可选）';
 
   @override
@@ -417,7 +696,24 @@ class AppLocalizationsZh extends AppLocalizations {
   String get unfavorite => '取消收藏';
 
   @override
+  String get unlockApp => '解锁随存';
+
+  @override
   String get untitledRecord => '未命名记录';
+
+  @override
+  String updatedAt(String time) {
+    return '更新于 $time';
+  }
+
+  @override
+  String get useBiometric => '生物识别解锁';
+
+  @override
+  String get usePassword => '使用加密密码';
+
+  @override
+  String get useRecoveryKey => '使用恢复密钥';
 
   @override
   String get username => '用户名';
@@ -426,7 +722,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get usernameRequired => '请填写用户名';
 
   @override
+  String get vaultPassword => '加密密码';
+
+  @override
+  String get vaultRecoveryKey => '恢复密钥';
+
+  @override
   String get version => '版本';
+
+  @override
+  String get viewConflicts => '查看冲突';
 
   @override
   String get webdavSync => 'WebDAV 同步';
@@ -441,94 +746,52 @@ class AppLocalizationsZh extends AppLocalizations {
   String get webdavUrlRequired => '请填写 WebDAV 地址';
 
   @override
-  String get appLock => '应用锁';
+  String get wizardConnectionDesc => '将测试与 WebDAV 服务器的连接，并检查目录中是否已有同步库。';
 
   @override
-  String get enableAppLock => '启用应用锁';
+  String get wizardCreating => '正在创建同步库…';
 
   @override
-  String get setPin => '设置 PIN';
+  String get wizardDone => '同步设置完成';
 
   @override
-  String get changePin => '修改 PIN';
+  String get wizardDoneDesc => '加密同步库已就绪，可以开始同步。';
 
   @override
-  String get pinNotSet => '未设置';
+  String get wizardHasVaultDesc => '该目录下已存在同步库，请输入加密密码或恢复密钥加入。';
 
   @override
-  String get pinSet => '已设置';
+  String get wizardJoining => '正在加入同步库…';
 
   @override
-  String get useBiometric => '生物识别解锁';
-
-  @override
-  String get lockTimeout => '后台锁定超时';
-
-  @override
-  String get timeoutImmediately => '立即';
-
-  @override
-  String get timeout1Min => '1 分钟';
-
-  @override
-  String get timeout5Min => '5 分钟';
-
-  @override
-  String get encryptedBackup => '加密备份';
-
-  @override
-  String get exportEncryptedBackup => '导出加密备份';
-
-  @override
-  String get importEncryptedBackup => '导入加密备份';
-
-  @override
-  String get backupPassword => '备份密码';
-
-  @override
-  String get backupPasswordHint => '换设备恢复需要此密码，请妥善保存';
-
-  @override
-  String get confirmPassword => '确认密码';
-
-  @override
-  String get passwordMismatch => '两次输入的密码不一致';
-
-  @override
-  String get passwordTooShort => '密码至少 8 位';
-
-  @override
-  String get unlockApp => '解锁随存';
-
-  @override
-  String get appLocked => '随存已锁定';
-
-  @override
-  String get enterPin => '输入 PIN 解锁';
-
-  @override
-  String get wrongPin => 'PIN 错误，请重试';
-
-  @override
-  String get pinTooShort => 'PIN 至少 4 位';
-
-  @override
-  String get pinSaved => 'PIN 已保存';
-
-  @override
-  String get securityPageTitle => '安全';
-
-  @override
-  String get encryptionOn => '本地数据库已加密';
-
-  @override
-  String get encryptionOnDesc => '数据库使用随机密钥加密，密钥保存在系统安全存储';
-
-  @override
-  String lockoutTryLater(Object seconds) {
-    return '尝试次数过多，请 $seconds 秒后再试';
+  String wizardMergeCount(int count) {
+    return '待同步内容：$count 条';
   }
 
   @override
-  String get pinLabel => 'PIN';
+  String get wizardMergeInfo => '本地已有内容不会被远端直接替换；同步将合并两端数据，出现的冲突可稍后手动解决。';
+
+  @override
+  String get wizardNoVaultDesc => '该目录下没有同步库，可以创建一个新加密库。';
+
+  @override
+  String get wizardStepConnection => '连接测试';
+
+  @override
+  String get wizardStepMerge => '合并确认';
+
+  @override
+  String get wizardStepSecurity => '加密配置';
+
+  @override
+  String get wizardStepVault => '选择同步库';
+
+  @override
+  String get wizardTestAndContinue => '测试并继续';
+
+  @override
+  String get wizardTitle => '同步设置向导';
+
+  @override
+  String get wrongPin => 'PIN 错误，请重试';
 }

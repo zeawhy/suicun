@@ -27,6 +27,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get all => 'All';
 
   @override
+  String get appLock => 'App lock';
+
+  @override
+  String get appLocked => 'Suicun is locked';
+
+  @override
   String get appName => 'Suicun';
 
   @override
@@ -39,7 +45,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoSaveHint => 'Auto-saved, no need to tap save.';
 
   @override
+  String get backToSync => 'Back to sync settings';
+
+  @override
   String get backup => 'Backup';
+
+  @override
+  String get backupPassword => 'Backup password';
+
+  @override
+  String get backupPasswordHint =>
+      'Needed to restore on a new device. Keep it safe.';
 
   @override
   String get batchCategorize => 'Categorize';
@@ -75,6 +91,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get categoryName => 'Category Name';
 
   @override
+  String get changePin => 'Change PIN';
+
+  @override
   String get clearFilter => 'Clear Filters';
 
   @override
@@ -84,12 +103,48 @@ class AppLocalizationsEn extends AppLocalizations {
   String get confirm => 'Confirm';
 
   @override
+  String get confirmPassword => 'Confirm password';
+
+  @override
+  String get confirmVaultPassword => 'Confirm encryption password';
+
+  @override
+  String get copyRecoveryKey => 'Copy';
+
+  @override
+  String conflictCount(int count) {
+    return 'Conflicts: $count';
+  }
+
+  @override
+  String get conflictHistoryNote =>
+      'The discarded version is kept in history and will not be deleted.';
+
+  @override
+  String get conflictTypeCategory => 'Category';
+
+  @override
+  String get conflictTypeRecord => 'Record';
+
+  @override
+  String get conflictTypeTag => 'Tag';
+
+  @override
+  String get conflictsEmpty => 'No unresolved conflicts';
+
+  @override
+  String get conflictsTitle => 'Sync conflicts';
+
+  @override
   String connectionFailed(String error) {
     return 'Connection failed: $error';
   }
 
   @override
   String get connectionSuccess => 'Connection successful';
+
+  @override
+  String get createNewVault => 'Create new vault';
 
   @override
   String get data => 'Data';
@@ -113,6 +168,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get directoryInvalid => 'Sync directory must start with /';
+
+  @override
+  String get disableSync => 'Disable sync';
+
+  @override
+  String get disableSyncConfirm =>
+      'Disabling sync stops network tasks; local data is kept. Confirm?';
 
   @override
   String get duplicateName => 'Name already exists';
@@ -140,7 +202,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get editTag => 'Edit Tag';
 
   @override
+  String get enableAppLock => 'Enable app lock';
+
+  @override
+  String get encryptedBackup => 'Encrypted backup';
+
+  @override
+  String get encryptionOn => 'Local database is encrypted';
+
+  @override
+  String get encryptionOnDesc =>
+      'Encrypted with a random key stored in system secure storage';
+
+  @override
+  String get enterPin => 'Enter PIN to unlock';
+
+  @override
   String get export => 'Export';
+
+  @override
+  String get exportEncryptedBackup => 'Export encrypted backup';
 
   @override
   String exportFailed(String error) {
@@ -175,7 +256,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hidePassword => 'Hide password';
 
   @override
+  String get iHaveSavedPassword => 'I have saved the encryption password';
+
+  @override
   String get importData => 'Import';
+
+  @override
+  String get importEncryptedBackup => 'Import encrypted backup';
 
   @override
   String importFailed(String error) {
@@ -199,6 +286,22 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get joinExistingVault => 'Join existing vault';
+
+  @override
+  String get keepBoth => 'Keep both';
+
+  @override
+  String get keepLocal => 'Keep this version';
+
+  @override
+  String get keepPasswordSafe =>
+      'Keep your encryption password safe: it cannot be recovered if lost. Your WebDAV login cannot restore note contents.';
+
+  @override
+  String get keepRemote => 'Keep other version';
+
+  @override
   String get keywordHint => 'Type a keyword, Enter to add';
 
   @override
@@ -207,6 +310,14 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get keywordsEmpty =>
       'No keywords yet — add some to enable smart suggestions';
+
+  @override
+  String lastSuccess(String time) {
+    return 'Last success: $time';
+  }
+
+  @override
+  String get lastSuccessNever => 'Never synced successfully';
 
   @override
   String get lastSync => 'Last sync';
@@ -220,7 +331,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get linkCopied => 'Link copied';
 
   @override
+  String get localVersion => 'This device';
+
+  @override
+  String get lockTimeout => 'Lock after background';
+
+  @override
+  String lockoutTryLater(Object seconds) {
+    return 'Too many attempts, try again in ${seconds}s';
+  }
+
+  @override
+  String get manualMerge => 'Merge manually';
+
+  @override
   String get maxTagsReached => 'Maximum 10 tags';
+
+  @override
+  String get mergeBodyHint => 'Merged body';
+
+  @override
+  String get mergeDialogTitle => 'Merge manually';
+
+  @override
+  String get mergeTitleHint => 'Merged title';
 
   @override
   String modified(String time) {
@@ -234,6 +368,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get newRecord => 'New Record';
 
   @override
+  String get newVaultPassword => 'New vault password';
+
+  @override
   String get notYetInput => 'Nothing entered yet';
 
   @override
@@ -243,7 +380,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get password => 'Password';
 
   @override
+  String get passwordMismatch => 'Passwords do not match';
+
+  @override
   String get passwordRequired => 'Password is required';
+
+  @override
+  String get passwordStrengthFair => 'Fair';
+
+  @override
+  String get passwordStrengthStrong => 'Strong';
+
+  @override
+  String get passwordStrengthWeak =>
+      'Weak (12+ characters with letters, numbers and symbols recommended)';
+
+  @override
+  String get passwordTooShort => 'Password must be at least 8 characters';
+
+  @override
+  String pendingCount(int count) {
+    return 'Pending upload: $count';
+  }
 
   @override
   String get pendingUpload => 'Pending upload';
@@ -254,6 +412,21 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get permanentDeleteConfirm =>
       'This cannot be undone. Delete permanently?';
+
+  @override
+  String get pinLabel => 'PIN';
+
+  @override
+  String get pinNotSet => 'Not set';
+
+  @override
+  String get pinSaved => 'PIN saved';
+
+  @override
+  String get pinSet => 'Set';
+
+  @override
+  String get pinTooShort => 'PIN must be at least 4 digits';
 
   @override
   String get probeInvalidConfig => 'Configuration incomplete';
@@ -297,10 +470,84 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recordsEmptyHint => 'Tap + to create your first record';
 
   @override
+  String get recoverDesc =>
+      'On a new device, download previously uploaded data from WebDAV and rebuild the local library. Only successfully uploaded data can be restored; offline edits that were never uploaded cannot be recovered.';
+
+  @override
+  String recoverFailedObjects(int count) {
+    return 'Failed objects: $count';
+  }
+
+  @override
+  String get recoverFromWebdav => 'Restore from WebDAV';
+
+  @override
+  String recoverPartial(int count) {
+    return 'Partially complete: $count objects failed. You can retry.';
+  }
+
+  @override
+  String get recoverPhaseConnecting => 'Connecting…';
+
+  @override
+  String get recoverPhaseDone => 'Recovery complete';
+
+  @override
+  String get recoverPhaseDownloading => 'Downloading objects…';
+
+  @override
+  String get recoverPhaseError => 'Recovery failed';
+
+  @override
+  String get recoverPhaseListing => 'Listing remote objects…';
+
+  @override
+  String get recoverPhaseRebuilding => 'Rebuilding local library…';
+
+  @override
+  String recoverProgress(int done, int total) {
+    return '$done of $total';
+  }
+
+  @override
+  String recoverRecordsRestored(int count) {
+    return 'Records restored: $count';
+  }
+
+  @override
+  String get recoveryKeyCopied => 'Recovery key copied';
+
+  @override
+  String get recoveryKeyTitle => 'Recovery key';
+
+  @override
+  String get recoveryKeyWarning =>
+      'This is the only time the recovery key will be shown. Write it down or save it somewhere safe now — it cannot be shown again.';
+
+  @override
+  String get remoteVersion => 'Other version';
+
+  @override
+  String get removeCredentials => 'Remove credentials';
+
+  @override
+  String get removeCredentialsConfirm =>
+      'Removing credentials disables sync and deletes the saved WebDAV login; local data is kept. Confirm?';
+
+  @override
   String get rename => 'Rename';
 
   @override
+  String get resolveSuccess => 'Conflict resolved';
+
+  @override
+  String get resolving => 'Working…';
+
+  @override
   String get restore => 'Restore';
+
+  @override
+  String get retry => 'Retry';
 
   @override
   String get save => 'Save';
@@ -331,6 +578,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Security features will be available in a future version';
 
   @override
+  String get securityPageTitle => 'Security';
+
+  @override
   String get selectAll => 'Select All';
 
   @override
@@ -345,6 +595,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get setPin => 'Set PIN';
+
+  @override
   String get settings => 'Settings';
 
   @override
@@ -352,6 +605,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get smartRecommend => 'Smart suggestion';
+
+  @override
+  String get startRecovery => 'Start recovery';
+
+  @override
+  String get startSync => 'Start sync';
+
+  @override
+  String get startSyncSetup => 'Start sync setup';
 
   @override
   String get sync => 'Sync';
@@ -376,6 +638,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get syncNow => 'Sync Now';
+
+  @override
+  String get syncStatusDisabled => 'Sync disabled';
+
+  @override
+  String get syncStatusEnabled => 'Sync enabled';
+
+  @override
+  String get syncStatusSyncing => 'Syncing…';
+
+  @override
+  String get syncStatusUnavailable => 'Sync status unavailable';
+
+  @override
+  String get syncStatusUnavailableDesc =>
+      'The sync engine is still being wired up. Please try again later.';
 
   @override
   String get synced => 'Synced';
@@ -405,6 +683,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get themeSystem => 'System';
 
   @override
+  String get timeout1Min => '1 minute';
+
+  @override
+  String get timeout5Min => '5 minutes';
+
+  @override
+  String get timeoutImmediately => 'Immediately';
+
+  @override
   String get titleHint => 'Title (optional)';
 
   @override
@@ -423,7 +710,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get unfavorite => 'Unfavorite';
 
   @override
+  String get unlockApp => 'Unlock Suicun';
+
+  @override
   String get untitledRecord => 'Untitled';
+
+  @override
+  String updatedAt(String time) {
+    return 'Updated $time';
+  }
+
+  @override
+  String get useBiometric => 'Unlock with biometrics';
+
+  @override
+  String get usePassword => 'Use encryption password';
+
+  @override
+  String get useRecoveryKey => 'Use recovery key';
 
   @override
   String get username => 'Username';
@@ -432,7 +736,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get usernameRequired => 'Username is required';
 
   @override
+  String get vaultPassword => 'Encryption password';
+
+  @override
+  String get vaultRecoveryKey => 'Recovery key';
+
+  @override
   String get version => 'Version';
+
+  @override
+  String get viewConflicts => 'View conflicts';
 
   @override
   String get webdavSync => 'WebDAV Sync';
@@ -447,96 +760,57 @@ class AppLocalizationsEn extends AppLocalizations {
   String get webdavUrlRequired => 'WebDAV URL is required';
 
   @override
-  String get appLock => 'App lock';
+  String get wizardConnectionDesc =>
+      'Tests the connection to your WebDAV server and checks whether the directory already holds a vault.';
 
   @override
-  String get enableAppLock => 'Enable app lock';
+  String get wizardCreating => 'Creating vault…';
 
   @override
-  String get setPin => 'Set PIN';
+  String get wizardDone => 'Sync setup complete';
 
   @override
-  String get changePin => 'Change PIN';
+  String get wizardDoneDesc =>
+      'Your encrypted vault is ready. You can start syncing now.';
 
   @override
-  String get pinNotSet => 'Not set';
+  String get wizardHasVaultDesc =>
+      'A vault already exists in this directory. Enter the encryption password or recovery key to join.';
 
   @override
-  String get pinSet => 'Set';
+  String get wizardJoining => 'Joining vault…';
 
   @override
-  String get useBiometric => 'Unlock with biometrics';
-
-  @override
-  String get lockTimeout => 'Lock after background';
-
-  @override
-  String get timeoutImmediately => 'Immediately';
-
-  @override
-  String get timeout1Min => '1 minute';
-
-  @override
-  String get timeout5Min => '5 minutes';
-
-  @override
-  String get encryptedBackup => 'Encrypted backup';
-
-  @override
-  String get exportEncryptedBackup => 'Export encrypted backup';
-
-  @override
-  String get importEncryptedBackup => 'Import encrypted backup';
-
-  @override
-  String get backupPassword => 'Backup password';
-
-  @override
-  String get backupPasswordHint =>
-      'Needed to restore on a new device. Keep it safe.';
-
-  @override
-  String get confirmPassword => 'Confirm password';
-
-  @override
-  String get passwordMismatch => 'Passwords do not match';
-
-  @override
-  String get passwordTooShort => 'Password must be at least 8 characters';
-
-  @override
-  String get unlockApp => 'Unlock Suicun';
-
-  @override
-  String get appLocked => 'Suicun is locked';
-
-  @override
-  String get enterPin => 'Enter PIN to unlock';
-
-  @override
-  String get wrongPin => 'Wrong PIN, try again';
-
-  @override
-  String get pinTooShort => 'PIN must be at least 4 digits';
-
-  @override
-  String get pinSaved => 'PIN saved';
-
-  @override
-  String get securityPageTitle => 'Security';
-
-  @override
-  String get encryptionOn => 'Local database is encrypted';
-
-  @override
-  String get encryptionOnDesc =>
-      'Encrypted with a random key stored in system secure storage';
-
-  @override
-  String lockoutTryLater(Object seconds) {
-    return 'Too many attempts, try again in ${seconds}s';
+  String wizardMergeCount(int count) {
+    return 'Items pending sync: $count';
   }
 
   @override
-  String get pinLabel => 'PIN';
+  String get wizardMergeInfo =>
+      'Your local data will never be directly replaced by the remote copy. Sync merges both sides; any conflicts can be resolved manually later.';
+
+  @override
+  String get wizardNoVaultDesc =>
+      'No vault found in this directory. You can create a new encrypted vault.';
+
+  @override
+  String get wizardStepConnection => 'Connection test';
+
+  @override
+  String get wizardStepMerge => 'Merge preview';
+
+  @override
+  String get wizardStepSecurity => 'Encryption setup';
+
+  @override
+  String get wizardStepVault => 'Choose vault';
+
+  @override
+  String get wizardTestAndContinue => 'Test & continue';
+
+  @override
+  String get wizardTitle => 'Sync setup wizard';
+
+  @override
+  String get wrongPin => 'Wrong PIN, try again';
 }

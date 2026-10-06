@@ -69,6 +69,12 @@ class SettingsPage extends ConsumerWidget {
             title: l10n.trash,
             onTap: () => context.push('/trash'),
           ),
+          _navTile(
+            context,
+            icon: Icons.cloud_download_outlined,
+            title: l10n.recoverFromWebdav,
+            onTap: () => context.push('/settings/recover'),
+          ),
           _buildSectionHeader(context, l10n.sync),
           _navTile(
             context,

@@ -1,18 +1,22 @@
 // lib/features/settings/presentation/webdav_sync_page.dart
-// WebDAV sync page, matching the design mockup.
+// WebDAV sync page for 随存 (Stage C).
 //
-// Honesty rules (sync engine is Stage C, not built yet):
-// - The status card NEVER claims "sync completed" and shows no numbers.
-// - "Sync now" is disabled with a "sync engine in development" note.
-// - "Test connection" performs a REAL PROPFIND probe via WebdavService.
-// - No "restore on new phone" button until the engine exists.
+// Honesty rules:
+// - Never pretend "sync completed" or invent numbers.
+// - All numbers and sync states come strictly from SyncOverview.
+// - Password/secrets are never printed or logged.
+// - No network activity is triggered automatically when disabled/unconfigured,
+//   except when the user explicitly taps "Test Connection".
 
 import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:suicun/features/sync/sync_contract.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
 import 'package:suicun/services/webdav_service.dart';
+import 'package:suicun/shared/utils/date_formatter.dart';
 
 class WebdavSyncPage extends ConsumerStatefulWidget {
   const WebdavSyncPage({super.key});
@@ -29,10 +33,12 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
 
   bool _obscurePassword = true;
   bool _testing = false;
+  bool _syncingAction = false;
+  bool _disablingAction = false;
   bool _loaded = false;
   Timer? _autosaveTimer;
 
-  /// Validation errors as l10n keys returned by WebdavService.validateConfig.
+  /// Validation errors returned by WebdavService.validateConfig.
   List<String> _errors = [];
 
   @override
@@ -92,8 +98,6 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
     }
   }
 
-  /// The feature service returns human-readable (already localized) messages.
-  /// This groups them per form field by keyword.
   String? _fieldError(Set<String> fieldKeys, List<String> errors) {
     for (final e in errors) {
       final isMatch = fieldKeys.any((k) => e.contains(k));
@@ -103,7 +107,6 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
   }
 
   String _probeMessage(AppLocalizations l10n, WebdavProbeResult result) {
-    // detail from the service is already a localized, human-readable message.
     final detail = result.detail;
     if (detail != null && detail.isNotEmpty) return detail;
     return switch (result.failure) {
@@ -152,6 +155,111 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
     }
   }
 
+  Future<void> _handleSyncNow(AppLocalizations l10n) async {
+    setState(() => _syncingAction = true);
+    try {
+      final actions = ref.read(syncActionsProvider);
+      await actions.syncNow();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString()),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _syncingAction = false);
+    }
+  }
+
+  Future<void> _confirmDisableSync(AppLocalizations l10n) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.disableSync),
+        content: Text(l10n.disableSyncConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(l10n.confirm),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _disablingAction = true);
+    try {
+      final actions = ref.read(syncActionsProvider);
+      await actions.disableSync(removeCredentials: false);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString()),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _disablingAction = false);
+    }
+  }
+
+  Future<void> _confirmRemoveCredentials(AppLocalizations l10n) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.removeCredentials),
+        content: Text(l10n.removeCredentialsConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(ctx).colorScheme.error,
+              foregroundColor: Theme.of(ctx).colorScheme.onError,
+            ),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(l10n.confirm),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _disablingAction = true);
+    try {
+      final actions = ref.read(syncActionsProvider);
+      await actions.disableSync(removeCredentials: true);
+      await ref.read(webdavServiceProvider).clearConfig();
+      if (!mounted) return;
+      setState(() {
+        _urlController.clear();
+        _userController.clear();
+        _passController.clear();
+        _dirController.text = '/suicun/';
+        _errors.clear();
+      });
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString()),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _disablingAction = false);
+    }
+  }
+
   void _showE2eDialog(AppLocalizations l10n) {
     showDialog<void>(
       context: context,
@@ -173,6 +281,12 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final overviewAsync = ref.watch(syncOverviewProvider);
+
+    final bool isEnabled = overviewAsync.maybeWhen(
+      data: (overview) => overview.enabled,
+      orElse: () => false,
+    );
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.webdavSync)),
@@ -181,9 +295,15 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                _buildStatusCard(l10n, theme, colorScheme),
+                _buildStatusSection(l10n, theme, colorScheme, overviewAsync),
                 const SizedBox(height: 12),
-                _buildFormCard(l10n, theme, colorScheme),
+                if (!isEnabled) ...[
+                  _buildStartSetupCard(l10n, theme, colorScheme),
+                  const SizedBox(height: 12),
+                  _buildFormCard(l10n, theme, colorScheme),
+                ] else ...[
+                  _buildReadOnlyConfigCard(l10n, theme, colorScheme),
+                ],
                 const SizedBox(height: 12),
                 _buildE2eCard(l10n, theme, colorScheme),
               ],
@@ -191,31 +311,351 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
     );
   }
 
-  /// Honest status: configured vs not configured. Never claims completion.
-  Widget _buildStatusCard(
+  Widget _buildStatusSection(
+    AppLocalizations l10n,
+    ThemeData theme,
+    ColorScheme colorScheme,
+    AsyncValue<SyncOverview> overviewAsync,
+  ) {
+    return overviewAsync.when(
+      data: (overview) => _buildLiveStatusCard(l10n, theme, colorScheme, overview),
+      loading: () => Card(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const LinearProgressIndicator(),
+              const SizedBox(height: 12),
+              Text(
+                l10n.saving,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      error: (err, stack) => Card(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                Icons.cloud_off_outlined,
+                size: 36,
+                color: colorScheme.outline,
+                semanticLabel: l10n.syncStatusUnavailable,
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.syncStatusUnavailable,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      l10n.syncStatusUnavailableDesc,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLiveStatusCard(
+    AppLocalizations l10n,
+    ThemeData theme,
+    ColorScheme colorScheme,
+    SyncOverview overview,
+  ) {
+    final localeName = Localizations.localeOf(context).toString();
+    final lastSuccessStr = overview.lastSuccessAt != null
+        ? l10n.lastSuccess(DateFormatter.formatFull(overview.lastSuccessAt!, localeName))
+        : l10n.lastSuccessNever;
+
+    final isSyncing = overview.syncing || _syncingAction;
+    final canSyncNow = overview.enabled && !isSyncing && !_disablingAction;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  overview.enabled
+                      ? Icons.cloud_done_outlined
+                      : Icons.cloud_off_outlined,
+                  size: 28,
+                  color: overview.enabled
+                      ? colorScheme.primary
+                      : colorScheme.outline,
+                  semanticLabel: overview.enabled
+                      ? l10n.syncStatusEnabled
+                      : l10n.syncStatusDisabled,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    overview.enabled
+                        ? l10n.syncStatusEnabled
+                        : l10n.syncStatusDisabled,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                Switch(
+                  value: overview.enabled,
+                  onChanged: _disablingAction
+                      ? null
+                      : (val) async {
+                          try {
+                            final actions = ref.read(syncActionsProvider);
+                            await actions.setEnabled(val);
+                          } catch (e) {
+                            if (!mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(e.toString()),
+                                backgroundColor: colorScheme.error,
+                              ),
+                            );
+                          }
+                        },
+                ),
+              ],
+            ),
+            const Divider(height: 24),
+            if (isSyncing) ...[
+              Row(
+                children: [
+                  const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    l10n.syncStatusSyncing,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+            ],
+            Row(
+              children: [
+                Icon(
+                  Icons.history_outlined,
+                  size: 20,
+                  color: colorScheme.onSurfaceVariant,
+                  semanticLabel: l10n.lastSync,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    lastSuccessStr,
+                    style: theme.textTheme.bodyMedium,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(
+                  Icons.upload_file_outlined,
+                  size: 20,
+                  color: colorScheme.onSurfaceVariant,
+                  semanticLabel: l10n.pendingUpload,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    l10n.pendingCount(overview.pendingCount),
+                    style: theme.textTheme.bodyMedium,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            InkWell(
+              borderRadius: BorderRadius.circular(8),
+              onTap: overview.conflictCount > 0
+                  ? () => context.push('/settings/webdav/conflicts')
+                  : null,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  children: [
+                    Icon(
+                      overview.conflictCount > 0
+                          ? Icons.warning_amber_rounded
+                          : Icons.check_circle_outline,
+                      size: 20,
+                      color: overview.conflictCount > 0
+                          ? colorScheme.error
+                          : colorScheme.onSurfaceVariant,
+                      semanticLabel: l10n.conflictCount(overview.conflictCount),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        l10n.conflictCount(overview.conflictCount),
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: overview.conflictCount > 0
+                              ? colorScheme.error
+                              : null,
+                          fontWeight: overview.conflictCount > 0
+                              ? FontWeight.w600
+                              : FontWeight.normal,
+                        ),
+                      ),
+                    ),
+                    if (overview.conflictCount > 0) ...[
+                      Text(
+                        l10n.viewConflicts,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colorScheme.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(
+                        Icons.chevron_right,
+                        size: 18,
+                        color: colorScheme.primary,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+            if (overview.lastError != null &&
+                overview.lastError!.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: colorScheme.errorContainer,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      size: 20,
+                      color: colorScheme.onErrorContainer,
+                      semanticLabel: l10n.saveFailed,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        overview.lastError!,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onErrorContainer,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: FilledButton.icon(
+                icon: isSyncing
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Icon(Icons.sync),
+                label: Text(l10n.syncNow),
+                onPressed: canSyncNow ? () => _handleSyncNow(l10n) : null,
+              ),
+            ),
+            if (overview.enabled) ...[
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: SizedBox(
+                      height: 48,
+                      child: OutlinedButton(
+                        onPressed: _disablingAction
+                            ? null
+                            : () => _confirmDisableSync(l10n),
+                        child: Text(l10n.disableSync),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: SizedBox(
+                      height: 48,
+                      child: TextButton(
+                        style: TextButton.styleFrom(
+                          foregroundColor: colorScheme.error,
+                        ),
+                        onPressed: _disablingAction
+                            ? null
+                            : () => _confirmRemoveCredentials(l10n),
+                        child: Text(l10n.removeCredentials),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStartSetupCard(
     AppLocalizations l10n,
     ThemeData theme,
     ColorScheme colorScheme,
   ) {
-    final configured = _urlController.text.trim().isNotEmpty;
     return Card(
+      color: colorScheme.primaryContainer,
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(16),
         child: Row(
           children: [
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: colorScheme.surfaceContainerHighest,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                configured ? Icons.cloud_outlined : Icons.cloud_off_outlined,
-                size: 30,
-                color: colorScheme.onSurfaceVariant,
-                semanticLabel: l10n.webdavSync,
-              ),
+            Icon(
+              Icons.sync_alt_outlined,
+              size: 32,
+              color: colorScheme.onPrimaryContainer,
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -223,24 +663,126 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    configured ? l10n.syncNever : l10n.syncNotConfigured,
+                    l10n.webdavSync,
                     style: theme.textTheme.titleMedium?.copyWith(
+                      color: colorScheme.onPrimaryContainer,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    configured
-                        ? _urlController.text.trim()
-                        : l10n.syncEngineWip,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                    l10n.syncStatusDisabled,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
+                      color: colorScheme.onPrimaryContainer.withValues(alpha: 0.8),
                     ),
                   ),
                 ],
               ),
+            ),
+            const SizedBox(width: 8),
+            SizedBox(
+              height: 48,
+              child: FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: colorScheme.primary,
+                  foregroundColor: colorScheme.onPrimary,
+                ),
+                onPressed: () => context.push('/settings/webdav/wizard'),
+                child: Text(l10n.startSyncSetup),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReadOnlyConfigCard(
+    AppLocalizations l10n,
+    ThemeData theme,
+    ColorScheme colorScheme,
+  ) {
+    final serverUrl = _urlController.text.trim();
+    final username = _userController.text.trim();
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l10n.settings,
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: colorScheme.primary,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Icon(
+                  Icons.dns_outlined,
+                  size: 20,
+                  color: colorScheme.onSurfaceVariant,
+                  semanticLabel: l10n.webdavUrl,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.webdavUrl,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      Text(
+                        serverUrl.isEmpty ? '-' : serverUrl,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w500,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Icon(
+                  Icons.person_outline,
+                  size: 20,
+                  color: colorScheme.onSurfaceVariant,
+                  semanticLabel: l10n.username,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.username,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      Text(
+                        username.isEmpty ? '-' : username,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w500,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -303,37 +845,19 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
               errorKeywords: const {'目录'},
             ),
             const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: _testing ? null : () => _testConnection(l10n),
-                    child: _testing
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : Text(l10n.testConnection),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: FilledButton(
-                    // Sync engine is Stage C: honestly disabled.
-                    onPressed: null,
-                    child: Text(l10n.syncNow),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              l10n.syncEngineWip,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: colorScheme.onSurfaceVariant,
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: OutlinedButton(
+                onPressed: _testing ? null : () => _testConnection(l10n),
+                child: _testing
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(l10n.testConnection),
               ),
-              textAlign: TextAlign.center,
             ),
           ],
         ),

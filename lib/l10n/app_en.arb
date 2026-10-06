@@ -1,5 +1,12 @@
 {
   "@@locale": "en",
+  "@conflictCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "@connectionFailed": {
     "placeholders": {
       "error": {
@@ -35,11 +42,23 @@
       }
     }
   },
+  "@lastSuccess": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
   "@lastSyncToday": {
     "placeholders": {
       "time": {
         "type": "String"
       }
+    }
+  },
+  "@lockoutTryLater": {
+    "placeholders": {
+      "seconds": {}
     }
   },
   "@modified": {
@@ -49,7 +68,45 @@
       }
     }
   },
+  "@pendingCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "@recordCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@recoverFailedObjects": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@recoverPartial": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@recoverProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@recoverRecordsRestored": {
     "placeholders": {
       "count": {
         "type": "int"
@@ -63,17 +120,36 @@
       }
     }
   },
+  "@updatedAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@wizardMergeCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "about": "About",
   "addCategory": "Add Category",
   "addKeyword": "Add keyword",
   "addTag": "Add Tag",
   "addTags": "Add tags",
   "all": "All",
+  "appLock": "App lock",
+  "appLocked": "Suicun is locked",
   "appName": "Suicun",
   "appTagline": "Save it now, find it later",
   "appearance": "Appearance",
   "autoSaveHint": "Auto-saved, no need to tap save.",
+  "backToSync": "Back to sync settings",
   "backup": "Backup",
+  "backupPassword": "Backup password",
+  "backupPasswordHint": "Needed to restore on a new device. Keep it safe.",
   "batchCategorize": "Categorize",
   "batchDelete": "Delete",
   "batchFavorite": "Favorite",
@@ -85,11 +161,23 @@
   "category": "Category",
   "categoryColor": "Category Color",
   "categoryName": "Category Name",
+  "changePin": "Change PIN",
   "clearFilter": "Clear Filters",
   "configSaved": "Configuration saved",
   "confirm": "Confirm",
+  "confirmPassword": "Confirm password",
+  "confirmVaultPassword": "Confirm encryption password",
+  "copyRecoveryKey": "Copy",
+  "conflictCount": "Conflicts: {count}",
+  "conflictHistoryNote": "The discarded version is kept in history and will not be deleted.",
+  "conflictTypeCategory": "Category",
+  "conflictTypeRecord": "Record",
+  "conflictTypeTag": "Tag",
+  "conflictsEmpty": "No unresolved conflicts",
+  "conflictsTitle": "Sync conflicts",
   "connectionFailed": "Connection failed: {error}",
   "connectionSuccess": "Connection successful",
+  "createNewVault": "Create new vault",
   "data": "Data",
   "delete": "Delete",
   "deleteCategory": "Delete Category",
@@ -97,6 +185,8 @@
   "deleteTag": "Delete Tag",
   "deleteTagConfirm": "Records with this tag will keep their content; the tag association will be removed. Delete?",
   "directoryInvalid": "Sync directory must start with /",
+  "disableSync": "Disable sync",
+  "disableSyncConfirm": "Disabling sync stops network tasks; local data is kept. Confirm?",
   "duplicateName": "Name already exists",
   "e2eDesc": "Content is encrypted before upload to your storage.",
   "e2eEnabled": "Enabled",
@@ -105,7 +195,13 @@
   "editCategory": "Edit Category",
   "editInfo": "Edit Info",
   "editTag": "Edit Tag",
+  "enableAppLock": "Enable app lock",
+  "encryptedBackup": "Encrypted backup",
+  "encryptionOn": "Local database is encrypted",
+  "encryptionOnDesc": "Encrypted with a random key stored in system secure storage",
+  "enterPin": "Enter PIN to unlock",
   "export": "Export",
+  "exportEncryptedBackup": "Export encrypted backup",
   "exportFailed": "Export failed: {error}",
   "exportJson": "Export JSON Backup",
   "exportMarkdownZip": "Export Markdown ZIP",
@@ -116,29 +212,57 @@
   "filterEmpty": "No records for this filter",
   "filterEmptyHint": "Try another category or clear the filter",
   "hidePassword": "Hide password",
+  "iHaveSavedPassword": "I have saved the encryption password",
   "importData": "Import",
+  "importEncryptedBackup": "Import encrypted backup",
   "importFailed": "Import failed: {error}",
   "importJson": "Restore from JSON",
   "importMarkdown": "Import Markdown/TXT",
   "importPreview": "About to import {count} records",
   "importSuccess": "Imported {count} records",
+  "joinExistingVault": "Join existing vault",
+  "keepBoth": "Keep both",
+  "keepLocal": "Keep this version",
+  "keepPasswordSafe": "Keep your encryption password safe: it cannot be recovered if lost. Your WebDAV login cannot restore note contents.",
+  "keepRemote": "Keep other version",
   "keywordHint": "Type a keyword, Enter to add",
   "keywords": "Keywords",
   "keywordsEmpty": "No keywords yet — add some to enable smart suggestions",
+  "lastSuccess": "Last success: {time}",
+  "lastSuccessNever": "Never synced successfully",
   "lastSync": "Last sync",
   "lastSyncToday": "Today {time}",
   "linkCopied": "Link copied",
+  "localVersion": "This device",
+  "lockTimeout": "Lock after background",
+  "lockoutTryLater": "Too many attempts, try again in {seconds}s",
+  "manualMerge": "Merge manually",
   "maxTagsReached": "Maximum 10 tags",
+  "mergeBodyHint": "Merged body",
+  "mergeDialogTitle": "Merge manually",
+  "mergeTitleHint": "Merged title",
   "modified": "Modified {time}",
   "newInfo": "New Info",
   "newRecord": "New Record",
+  "newVaultPassword": "New vault password",
   "notYetInput": "Nothing entered yet",
   "ok": "OK",
   "password": "Password",
+  "passwordMismatch": "Passwords do not match",
   "passwordRequired": "Password is required",
+  "passwordStrengthFair": "Fair",
+  "passwordStrengthStrong": "Strong",
+  "passwordStrengthWeak": "Weak (12+ characters with letters, numbers and symbols recommended)",
+  "passwordTooShort": "Password must be at least 8 characters",
+  "pendingCount": "Pending upload: {count}",
   "pendingUpload": "Pending upload",
   "permanentDelete": "Delete Permanently",
   "permanentDeleteConfirm": "This cannot be undone. Delete permanently?",
+  "pinLabel": "PIN",
+  "pinNotSet": "Not set",
+  "pinSaved": "PIN saved",
+  "pinSet": "Set",
+  "pinTooShort": "PIN must be at least 4 digits",
   "probeInvalidConfig": "Configuration incomplete",
   "probeNotFound": "Directory not found on server",
   "probeNotHttps": "HTTPS URLs only",
@@ -152,8 +276,29 @@
   "recordDeleted": "Moved to trash",
   "recordsEmpty": "No records yet",
   "recordsEmptyHint": "Tap + to create your first record",
+  "recoverDesc": "On a new device, download previously uploaded data from WebDAV and rebuild the local library. Only successfully uploaded data can be restored; offline edits that were never uploaded cannot be recovered.",
+  "recoverFailedObjects": "Failed objects: {count}",
+  "recoverFromWebdav": "Restore from WebDAV",
+  "recoverPartial": "Partially complete: {count} objects failed. You can retry.",
+  "recoverPhaseConnecting": "Connecting…",
+  "recoverPhaseDone": "Recovery complete",
+  "recoverPhaseDownloading": "Downloading objects…",
+  "recoverPhaseError": "Recovery failed",
+  "recoverPhaseListing": "Listing remote objects…",
+  "recoverPhaseRebuilding": "Rebuilding local library…",
+  "recoverProgress": "{done} of {total}",
+  "recoverRecordsRestored": "Records restored: {count}",
+  "recoveryKeyCopied": "Recovery key copied",
+  "recoveryKeyTitle": "Recovery key",
+  "recoveryKeyWarning": "This is the only time the recovery key will be shown. Write it down or save it somewhere safe now — it cannot be shown again.",
+  "remoteVersion": "Other version",
+  "removeCredentials": "Remove credentials",
+  "removeCredentialsConfirm": "Removing credentials disables sync and deletes the saved WebDAV login; local data is kept. Confirm?",
   "rename": "Rename",
+  "resolveSuccess": "Conflict resolved",
+  "resolving": "Working…",
   "restore": "Restore",
+  "retry": "Retry",
   "save": "Save",
   "saveFailed": "Save failed, retry",
   "saved": "Saved",
@@ -163,13 +308,18 @@
   "searchHint": "Search saved info",
   "security": "Security",
   "securityNotImplemented": "Security features will be available in a future version",
+  "securityPageTitle": "Security",
   "selectAll": "Select All",
   "selectCategory": "Select Category",
   "selectTags": "Select Tags",
   "selectedCount": "{count} selected",
+  "setPin": "Set PIN",
   "settings": "Settings",
   "showPassword": "Show password",
   "smartRecommend": "Smart suggestion",
+  "startRecovery": "Start recovery",
+  "startSync": "Start sync",
+  "startSyncSetup": "Start sync setup",
   "sync": "Sync",
   "syncCompleted": "Sync completed",
   "syncDirectory": "Sync directory",
@@ -178,6 +328,11 @@
   "syncNotConfigured": "Sync not configured",
   "syncNotImplemented": "Sync will be available in a future version",
   "syncNow": "Sync Now",
+  "syncStatusDisabled": "Sync disabled",
+  "syncStatusEnabled": "Sync enabled",
+  "syncStatusSyncing": "Syncing…",
+  "syncStatusUnavailable": "Sync status unavailable",
+  "syncStatusUnavailableDesc": "The sync engine is still being wired up. Please try again later.",
   "synced": "Synced",
   "tagName": "Tag Name",
   "tags": "Tags",
@@ -187,53 +342,45 @@
   "themeDark": "Dark",
   "themeLight": "Light",
   "themeSystem": "System",
+  "timeout1Min": "1 minute",
+  "timeout5Min": "5 minutes",
+  "timeoutImmediately": "Immediately",
   "titleHint": "Title (optional)",
   "trash": "Trash",
   "trashEmpty": "Trash is empty",
   "uncategorized": "Uncategorized",
   "undoDelete": "Undo",
   "unfavorite": "Unfavorite",
+  "unlockApp": "Unlock Suicun",
   "untitledRecord": "Untitled",
+  "updatedAt": "Updated {time}",
+  "useBiometric": "Unlock with biometrics",
+  "usePassword": "Use encryption password",
+  "useRecoveryKey": "Use recovery key",
   "username": "Username",
   "usernameRequired": "Username is required",
+  "vaultPassword": "Encryption password",
+  "vaultRecoveryKey": "Recovery key",
   "version": "Version",
+  "viewConflicts": "View conflicts",
   "webdavSync": "WebDAV Sync",
   "webdavUrl": "WebDAV URL",
   "webdavUrlInvalid": "WebDAV URL is invalid",
   "webdavUrlRequired": "WebDAV URL is required",
-  "appLock": "App lock",
-  "enableAppLock": "Enable app lock",
-  "setPin": "Set PIN",
-  "changePin": "Change PIN",
-  "pinNotSet": "Not set",
-  "pinSet": "Set",
-  "useBiometric": "Unlock with biometrics",
-  "lockTimeout": "Lock after background",
-  "timeoutImmediately": "Immediately",
-  "timeout1Min": "1 minute",
-  "timeout5Min": "5 minutes",
-  "encryptedBackup": "Encrypted backup",
-  "exportEncryptedBackup": "Export encrypted backup",
-  "importEncryptedBackup": "Import encrypted backup",
-  "backupPassword": "Backup password",
-  "backupPasswordHint": "Needed to restore on a new device. Keep it safe.",
-  "confirmPassword": "Confirm password",
-  "passwordMismatch": "Passwords do not match",
-  "passwordTooShort": "Password must be at least 8 characters",
-  "unlockApp": "Unlock Suicun",
-  "appLocked": "Suicun is locked",
-  "enterPin": "Enter PIN to unlock",
-  "wrongPin": "Wrong PIN, try again",
-  "pinTooShort": "PIN must be at least 4 digits",
-  "pinSaved": "PIN saved",
-  "securityPageTitle": "Security",
-  "encryptionOn": "Local database is encrypted",
-  "encryptionOnDesc": "Encrypted with a random key stored in system secure storage",
-  "lockoutTryLater": "Too many attempts, try again in {seconds}s",
-  "@lockoutTryLater": {
-    "placeholders": {
-      "seconds": {}
-    }
-  },
-  "pinLabel": "PIN"
+  "wizardConnectionDesc": "Tests the connection to your WebDAV server and checks whether the directory already holds a vault.",
+  "wizardCreating": "Creating vault…",
+  "wizardDone": "Sync setup complete",
+  "wizardDoneDesc": "Your encrypted vault is ready. You can start syncing now.",
+  "wizardHasVaultDesc": "A vault already exists in this directory. Enter the encryption password or recovery key to join.",
+  "wizardJoining": "Joining vault…",
+  "wizardMergeCount": "Items pending sync: {count}",
+  "wizardMergeInfo": "Your local data will never be directly replaced by the remote copy. Sync merges both sides; any conflicts can be resolved manually later.",
+  "wizardNoVaultDesc": "No vault found in this directory. You can create a new encrypted vault.",
+  "wizardStepConnection": "Connection test",
+  "wizardStepMerge": "Merge preview",
+  "wizardStepSecurity": "Encryption setup",
+  "wizardStepVault": "Choose vault",
+  "wizardTestAndContinue": "Test & continue",
+  "wizardTitle": "Sync setup wizard",
+  "wrongPin": "Wrong PIN, try again"
 }

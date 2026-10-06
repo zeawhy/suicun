@@ -1,5 +1,12 @@
 {
   "@@locale": "zh",
+  "@conflictCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "@connectionFailed": {
     "placeholders": {
       "error": {
@@ -35,11 +42,23 @@
       }
     }
   },
+  "@lastSuccess": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
   "@lastSyncToday": {
     "placeholders": {
       "time": {
         "type": "String"
       }
+    }
+  },
+  "@lockoutTryLater": {
+    "placeholders": {
+      "seconds": {}
     }
   },
   "@modified": {
@@ -49,7 +68,45 @@
       }
     }
   },
+  "@pendingCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "@recordCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@recoverFailedObjects": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@recoverPartial": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@recoverProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@recoverRecordsRestored": {
     "placeholders": {
       "count": {
         "type": "int"
@@ -63,17 +120,36 @@
       }
     }
   },
+  "@updatedAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@wizardMergeCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "about": "关于",
   "addCategory": "新增分类",
   "addKeyword": "添加关键词",
   "addTag": "新增标签",
   "addTags": "添加标签",
   "all": "全部",
+  "appLock": "应用锁",
+  "appLocked": "随存已锁定",
   "appName": "随存",
   "appTagline": "保存以后还要找的信息",
   "appearance": "外观",
   "autoSaveHint": "自动保存，无需手动点击保存。",
+  "backToSync": "返回同步设置",
   "backup": "备份",
+  "backupPassword": "备份密码",
+  "backupPasswordHint": "换设备恢复需要此密码，请妥善保存",
   "batchCategorize": "批量分类",
   "batchDelete": "批量删除",
   "batchFavorite": "批量收藏",
@@ -85,11 +161,23 @@
   "category": "分类",
   "categoryColor": "分类颜色",
   "categoryName": "分类名称",
+  "changePin": "修改 PIN",
   "clearFilter": "清除筛选",
   "configSaved": "配置已保存",
   "confirm": "确认",
+  "confirmPassword": "确认密码",
+  "confirmVaultPassword": "确认加密密码",
+  "copyRecoveryKey": "复制",
+  "conflictCount": "冲突：{count}",
+  "conflictHistoryNote": "被弃用的版本会保留到历史记录，不会被删除。",
+  "conflictTypeCategory": "分类",
+  "conflictTypeRecord": "记录",
+  "conflictTypeTag": "标签",
+  "conflictsEmpty": "没有未解决的冲突",
+  "conflictsTitle": "同步冲突",
   "connectionFailed": "连接失败：{error}",
   "connectionSuccess": "连接成功",
+  "createNewVault": "创建新库",
   "data": "数据",
   "delete": "删除",
   "deleteCategory": "删除分类",
@@ -97,6 +185,8 @@
   "deleteTag": "删除标签",
   "deleteTagConfirm": "删除后，相关记录仍然保留，只解除标签关联。确认删除吗？",
   "directoryInvalid": "同步目录须以 / 开头",
+  "disableSync": "关闭同步",
+  "disableSyncConfirm": "关闭同步将停止网络任务，本地数据保留。确认吗？",
   "duplicateName": "该名称已存在",
   "e2eDesc": "内容加密后上传到你的存储空间。",
   "e2eEnabled": "已开启",
@@ -105,7 +195,13 @@
   "editCategory": "编辑分类",
   "editInfo": "编辑信息",
   "editTag": "编辑标签",
+  "enableAppLock": "启用应用锁",
+  "encryptedBackup": "加密备份",
+  "encryptionOn": "本地数据库已加密",
+  "encryptionOnDesc": "数据库使用随机密钥加密，密钥保存在系统安全存储",
+  "enterPin": "输入 PIN 解锁",
   "export": "导出",
+  "exportEncryptedBackup": "导出加密备份",
   "exportFailed": "导出失败：{error}",
   "exportJson": "导出 JSON 备份",
   "exportMarkdownZip": "导出 Markdown ZIP",
@@ -116,29 +212,57 @@
   "filterEmpty": "该筛选下没有记录",
   "filterEmptyHint": "试试其他分类，或清除筛选条件",
   "hidePassword": "隐藏密码",
+  "iHaveSavedPassword": "我已妥善保存加密密码",
   "importData": "导入",
+  "importEncryptedBackup": "导入加密备份",
   "importFailed": "导入失败：{error}",
   "importJson": "从 JSON 恢复",
   "importMarkdown": "导入 Markdown/TXT",
   "importPreview": "即将导入 {count} 条记录",
   "importSuccess": "成功导入 {count} 条记录",
+  "joinExistingVault": "加入已有库",
+  "keepBoth": "分别保留",
+  "keepLocal": "保留本机版本",
+  "keepPasswordSafe": "请妥善保管加密密码：丢失后无法找回，WebDAV 账号密码不能恢复笔记内容。",
+  "keepRemote": "保留另一版本",
   "keywordHint": "输入关键词，回车添加",
   "keywords": "关键词",
   "keywordsEmpty": "暂无关键词，添加后可自动推荐分类",
+  "lastSuccess": "上次成功：{time}",
+  "lastSuccessNever": "从未成功同步",
   "lastSync": "上次同步",
   "lastSyncToday": "今天 {time}",
   "linkCopied": "已复制链接",
+  "localVersion": "本机版本",
+  "lockTimeout": "后台锁定超时",
+  "lockoutTryLater": "尝试次数过多，请 {seconds} 秒后再试",
+  "manualMerge": "手动合并",
   "maxTagsReached": "最多添加 10 个标签",
+  "mergeBodyHint": "合并后的正文",
+  "mergeDialogTitle": "手动合并",
+  "mergeTitleHint": "合并后的标题",
   "modified": "修改于 {time}",
   "newInfo": "新建信息",
   "newRecord": "新建记录",
+  "newVaultPassword": "新库加密密码",
   "notYetInput": "尚未输入",
   "ok": "确定",
   "password": "密码",
+  "passwordMismatch": "两次输入的密码不一致",
   "passwordRequired": "请填写密码",
+  "passwordStrengthFair": "密码强度：中",
+  "passwordStrengthStrong": "密码强度：强",
+  "passwordStrengthWeak": "密码强度：弱（建议 12 位以上，混合字母、数字和符号）",
+  "passwordTooShort": "密码至少 8 位",
+  "pendingCount": "待上传：{count}",
   "pendingUpload": "待上传",
   "permanentDelete": "彻底删除",
   "permanentDeleteConfirm": "彻底删除后无法恢复。确认吗？",
+  "pinLabel": "PIN",
+  "pinNotSet": "未设置",
+  "pinSaved": "PIN 已保存",
+  "pinSet": "已设置",
+  "pinTooShort": "PIN 至少 4 位",
   "probeInvalidConfig": "配置不完整",
   "probeNotFound": "服务器上找不到该目录",
   "probeNotHttps": "仅支持 HTTPS 地址",
@@ -152,8 +276,29 @@
   "recordDeleted": "已移至回收站",
   "recordsEmpty": "还没有记录",
   "recordsEmptyHint": "点击右下角新建记录",
+  "recoverDesc": "在新设备上从 WebDAV 下载已上传的数据，重建本地库。只能恢复已成功上传的数据；尚未上传的离线编辑无法找回。",
+  "recoverFailedObjects": "失败对象：{count}",
+  "recoverFromWebdav": "从 WebDAV 恢复",
+  "recoverPartial": "部分完成，有 {count} 个对象失败，可重试继续。",
+  "recoverPhaseConnecting": "正在连接…",
+  "recoverPhaseDone": "恢复完成",
+  "recoverPhaseDownloading": "正在下载对象…",
+  "recoverPhaseError": "恢复失败",
+  "recoverPhaseListing": "正在列出远端对象…",
+  "recoverPhaseRebuilding": "正在重建本地库…",
+  "recoverProgress": "已完成 {done} / 共 {total}",
+  "recoverRecordsRestored": "已恢复记录：{count}",
+  "recoveryKeyCopied": "恢复密钥已复制",
+  "recoveryKeyTitle": "恢复密钥",
+  "recoveryKeyWarning": "这是恢复密钥唯一的展示机会，请立即抄写或保存到安全的地方，关闭后无法再次查看。",
+  "remoteVersion": "另一版本",
+  "removeCredentials": "移除凭据",
+  "removeCredentialsConfirm": "移除凭据将关闭同步并删除已保存的 WebDAV 账号密码，本地数据保留。确认吗？",
   "rename": "改名",
+  "resolveSuccess": "冲突已解决",
+  "resolving": "正在处理…",
   "restore": "恢复",
+  "retry": "重试",
   "save": "保存",
   "saveFailed": "保存失败，重试",
   "saved": "已保存",
@@ -163,13 +308,18 @@
   "searchHint": "搜索保存的信息",
   "security": "安全",
   "securityNotImplemented": "安全功能将在后续版本推出",
+  "securityPageTitle": "安全",
   "selectAll": "全选",
   "selectCategory": "选择分类",
   "selectTags": "选择标签",
   "selectedCount": "已选 {count} 条",
+  "setPin": "设置 PIN",
   "settings": "设置",
   "showPassword": "显示密码",
   "smartRecommend": "智能推荐",
+  "startRecovery": "开始恢复",
+  "startSync": "开始同步",
+  "startSyncSetup": "开始同步设置",
   "sync": "同步",
   "syncCompleted": "同步已完成",
   "syncDirectory": "同步目录",
@@ -178,6 +328,11 @@
   "syncNotConfigured": "尚未配置同步",
   "syncNotImplemented": "同步功能将在后续版本推出",
   "syncNow": "立即同步",
+  "syncStatusDisabled": "未启用",
+  "syncStatusEnabled": "已启用",
+  "syncStatusSyncing": "正在同步…",
+  "syncStatusUnavailable": "同步状态不可用",
+  "syncStatusUnavailableDesc": "同步引擎正在接入，稍后再试。",
   "synced": "已同步",
   "tagName": "标签名称",
   "tags": "标签",
@@ -187,53 +342,45 @@
   "themeDark": "深色",
   "themeLight": "浅色",
   "themeSystem": "跟随系统",
+  "timeout1Min": "1 分钟",
+  "timeout5Min": "5 分钟",
+  "timeoutImmediately": "立即",
   "titleHint": "标题（可选）",
   "trash": "回收站",
   "trashEmpty": "回收站为空",
   "uncategorized": "未分类",
   "undoDelete": "撤销",
   "unfavorite": "取消收藏",
+  "unlockApp": "解锁随存",
   "untitledRecord": "未命名记录",
+  "updatedAt": "更新于 {time}",
+  "useBiometric": "生物识别解锁",
+  "usePassword": "使用加密密码",
+  "useRecoveryKey": "使用恢复密钥",
   "username": "用户名",
   "usernameRequired": "请填写用户名",
+  "vaultPassword": "加密密码",
+  "vaultRecoveryKey": "恢复密钥",
   "version": "版本",
+  "viewConflicts": "查看冲突",
   "webdavSync": "WebDAV 同步",
   "webdavUrl": "WebDAV 地址",
   "webdavUrlInvalid": "WebDAV 地址格式不正确",
   "webdavUrlRequired": "请填写 WebDAV 地址",
-  "appLock": "应用锁",
-  "enableAppLock": "启用应用锁",
-  "setPin": "设置 PIN",
-  "changePin": "修改 PIN",
-  "pinNotSet": "未设置",
-  "pinSet": "已设置",
-  "useBiometric": "生物识别解锁",
-  "lockTimeout": "后台锁定超时",
-  "timeoutImmediately": "立即",
-  "timeout1Min": "1 分钟",
-  "timeout5Min": "5 分钟",
-  "encryptedBackup": "加密备份",
-  "exportEncryptedBackup": "导出加密备份",
-  "importEncryptedBackup": "导入加密备份",
-  "backupPassword": "备份密码",
-  "backupPasswordHint": "换设备恢复需要此密码，请妥善保存",
-  "confirmPassword": "确认密码",
-  "passwordMismatch": "两次输入的密码不一致",
-  "passwordTooShort": "密码至少 8 位",
-  "unlockApp": "解锁随存",
-  "appLocked": "随存已锁定",
-  "enterPin": "输入 PIN 解锁",
-  "wrongPin": "PIN 错误，请重试",
-  "pinTooShort": "PIN 至少 4 位",
-  "pinSaved": "PIN 已保存",
-  "securityPageTitle": "安全",
-  "encryptionOn": "本地数据库已加密",
-  "encryptionOnDesc": "数据库使用随机密钥加密，密钥保存在系统安全存储",
-  "lockoutTryLater": "尝试次数过多，请 {seconds} 秒后再试",
-  "@lockoutTryLater": {
-    "placeholders": {
-      "seconds": {}
-    }
-  },
-  "pinLabel": "PIN"
+  "wizardConnectionDesc": "将测试与 WebDAV 服务器的连接，并检查目录中是否已有同步库。",
+  "wizardCreating": "正在创建同步库…",
+  "wizardDone": "同步设置完成",
+  "wizardDoneDesc": "加密同步库已就绪，可以开始同步。",
+  "wizardHasVaultDesc": "该目录下已存在同步库，请输入加密密码或恢复密钥加入。",
+  "wizardJoining": "正在加入同步库…",
+  "wizardMergeCount": "待同步内容：{count} 条",
+  "wizardMergeInfo": "本地已有内容不会被远端直接替换；同步将合并两端数据，出现的冲突可稍后手动解决。",
+  "wizardNoVaultDesc": "该目录下没有同步库，可以创建一个新加密库。",
+  "wizardStepConnection": "连接测试",
+  "wizardStepMerge": "合并确认",
+  "wizardStepSecurity": "加密配置",
+  "wizardStepVault": "选择同步库",
+  "wizardTestAndContinue": "测试并继续",
+  "wizardTitle": "同步设置向导",
+  "wrongPin": "PIN 错误，请重试"
 }
