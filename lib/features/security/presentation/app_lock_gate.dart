@@ -79,6 +79,17 @@ class _AppLockGateState extends ConsumerState<AppLockGate>
     }
   }
 
+  /// Called when the user authenticates on the lock screen.
+  ///
+  /// Resets [_pausedAt] to now: the system biometric prompt pauses and
+  /// resumes the app, and without this the resume handler would measure
+  /// from before the prompt and instantly re-lock (especially with the
+  /// "immediately" timeout), making a successful unlock appear to fail.
+  void _handleUnlocked() {
+    _pausedAt = DateTime.now();
+    ref.read(appLockControllerProvider.notifier).unlock();
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_checking) {
@@ -100,8 +111,7 @@ class _AppLockGateState extends ConsumerState<AppLockGate>
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: _LockScreen(
-        onUnlocked: () =>
-            ref.read(appLockControllerProvider.notifier).unlock(),
+        onUnlocked: _handleUnlocked,
       ),
     );
   }

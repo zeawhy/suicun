@@ -236,6 +236,9 @@ class AppLockService {
         localizedReason: reason.isEmpty ? '解锁随存' : reason,
         // biometricOnly: false allows device PIN/pattern/password fallback.
         biometricOnly: false,
+        // Don't cancel auth if the activity pauses while the system
+        // prompt is showing (prevents "recognized but didn't unlock").
+        persistAcrossBackgrounding: true,
       );
     } on PlatformException {
       return false;
