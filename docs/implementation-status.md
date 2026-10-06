@@ -559,7 +559,11 @@ UI 走 Gemini 3.8（agy gemini-3.8-flash-low）。UI/功能之间用
 
 - 命令：同 §8.9 环境变量，`flutter build apk --release`。
 - 新增依赖：`xml`（PROPFIND 解析）。
-- 产物：`build/app/outputs/flutter-apk/app-release.apk`（构建中）。
+- 产物：`build/app/outputs/flutter-apk/app-release.apk`
+  （76.3MB / 76266102 字节，构建时间 2026-10-06 09:20 CST）。
+- 构建波折（如实记录）：首次构建因另一项目（suicun-ui-polish）的 Gradle
+  进程占用 `/root/.gradle` journal 锁而失败（"Timeout waiting to lock
+  journal cache"）；等待其结束后重试成功，未杀他人进程。
 
 ### 9.6 用户联调步骤（坚果云 WebDAV）
 
