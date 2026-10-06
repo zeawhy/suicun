@@ -70,124 +70,183 @@ class RecordListTile extends StatelessWidget {
         ? '${record.category!.name} · $dateStr'
         : dateStr;
 
-    return InkWell(
-      onTap: onTap,
-      onLongPress: onLongPress,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (isMultiSelectMode)
-              Padding(
-                padding: const EdgeInsets.only(right: 12.0, top: 4.0),
-                child: Checkbox(
-                  value: isSelected,
-                  onChanged: (_) => onTap(),
-                  materialTapTargetSize: MaterialTapTargetSize.padded,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        onLongPress: onLongPress,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (isMultiSelectMode)
+                Padding(
+                  padding: const EdgeInsets.only(right: 12.0, top: 4.0),
+                  child: Checkbox(
+                    value: isSelected,
+                    onChanged: (_) => onTap(),
+                    materialTapTargetSize: MaterialTapTargetSize.padded,
+                  ),
+                ),
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: categoryColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: categoryColor.withValues(alpha: 0.20),
+                    width: 1,
+                  ),
+                ),
+                child: Center(
+                  child: Icon(
+                    record.category != null
+                        ? Icons.folder_rounded
+                        : Icons.description_outlined,
+                    color: categoryColor,
+                    size: 24,
+                    semanticLabel: record.category?.name,
+                  ),
                 ),
               ),
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: categoryColor.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                record.category != null
-                    ? Icons.folder_outlined
-                    : Icons.note_outlined,
-                color: categoryColor,
-                size: 24,
-                semanticLabel: record.category?.name,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          displayTitle,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: titleColor,
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            displayTitle,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: titleColor,
+                            ),
                           ),
                         ),
-                      ),
-                      if (record.isFavorite)
-                        IconButton(
-                          icon: const Icon(Icons.star, color: Colors.amber),
-                          onPressed: onFavoriteToggle,
-                          tooltip: favoriteTooltip ?? 'Favorite',
-                          constraints: const BoxConstraints(
-                              minWidth: 48, minHeight: 48),
-                          padding: EdgeInsets.zero,
-                          visualDensity: VisualDensity.compact,
-                        ),
-                      SizedBox(
-                        width: 40,
-                        height: 48,
-                        child: PopupMenuButton<String>(
-                          icon: const Icon(Icons.more_vert),
-                          tooltip: 'More',
-                          padding: EdgeInsets.zero,
-                          onSelected: (value) {
-                            switch (value) {
-                              case 'favorite':
-                                onFavoriteToggle();
-                              case 'delete':
-                                onDelete?.call();
-                            }
-                          },
-                          itemBuilder: (ctx) => [
-                            PopupMenuItem(
-                              value: 'favorite',
-                              child: Text(record.isFavorite
-                                  ? (unfavoriteTooltip ?? 'Unfavorite')
-                                  : (favoriteTooltip ?? 'Favorite')),
+                        if (record.isFavorite)
+                          IconButton(
+                            icon: const Icon(Icons.star,
+                                color: Color(0xFFF5A623), size: 22),
+                            onPressed: onFavoriteToggle,
+                            tooltip: favoriteTooltip ?? 'Favorite',
+                            constraints: const BoxConstraints(
+                                minWidth: 48, minHeight: 48),
+                            padding: EdgeInsets.zero,
+                            visualDensity: VisualDensity.compact,
+                          ),
+                        SizedBox(
+                          width: 40,
+                          height: 48,
+                          child: PopupMenuButton<String>(
+                            icon: const Icon(Icons.more_vert),
+                            tooltip: 'More',
+                            padding: EdgeInsets.zero,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                            if (onDelete != null)
+                            onSelected: (value) {
+                              switch (value) {
+                                case 'favorite':
+                                  onFavoriteToggle();
+                                case 'delete':
+                                  onDelete?.call();
+                              }
+                            },
+                            itemBuilder: (ctx) => [
                               PopupMenuItem(
-                                value: 'delete',
-                                child: Text(deleteLabel ?? 'Delete'),
+                                value: 'favorite',
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      record.isFavorite
+                                          ? Icons.star_border_rounded
+                                          : Icons.star_rounded,
+                                      size: 20,
+                                      color: record.isFavorite
+                                          ? null
+                                          : const Color(0xFFF5A623),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Text(record.isFavorite
+                                        ? (unfavoriteTooltip ?? 'Unfavorite')
+                                        : (favoriteTooltip ?? 'Favorite')),
+                                  ],
+                                ),
                               ),
-                          ],
+                              if (onDelete != null)
+                                PopupMenuItem(
+                                  value: 'delete',
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.delete_outline,
+                                        size: 20,
+                                        color: colorScheme.error,
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Text(
+                                        deleteLabel ?? 'Delete',
+                                        style: TextStyle(color: colorScheme.error),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (bodyPreview.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        bodyPreview,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                          height: 1.35,
                         ),
                       ),
                     ],
-                  ),
-                  if (bodyPreview.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      bodyPreview,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        if (record.category != null) ...[
+                          Container(
+                            width: 6,
+                            height: 6,
+                            margin: const EdgeInsets.only(right: 6),
+                            decoration: BoxDecoration(
+                              color: categoryColor,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ],
+                        Expanded(
+                          child: Text(
+                            metaStr,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                              letterSpacing: 0.2,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
-                  const SizedBox(height: 6),
-                  Text(
-                    metaStr,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

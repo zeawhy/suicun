@@ -170,22 +170,31 @@ class CategoriesPage extends ConsumerWidget {
         data: (categories) {
           if (categories.isEmpty) {
             return Center(
-              child: Padding(
+              child: SingleChildScrollView(
                 padding: const EdgeInsets.all(32),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      Icons.folder_outlined,
-                      size: 64,
-                      color: theme.colorScheme.onSurfaceVariant
-                          .withValues(alpha: 0.5),
+                    Container(
+                      width: 88,
+                      height: 88,
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primary.withValues(alpha: 0.08),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.folder_open_rounded,
+                        size: 44,
+                        color: theme.colorScheme.primary.withValues(alpha: 0.8),
+                      ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 20),
                     Text(
                       l10n.categoriesEmpty,
-                      style: theme.textTheme.titleLarge
-                          ?.copyWith(fontWeight: FontWeight.bold),
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -196,10 +205,11 @@ class CategoriesPage extends ConsumerWidget {
           return ListView.separated(
             padding: const EdgeInsets.symmetric(vertical: 8),
             itemCount: categories.length,
-            separatorBuilder: (_, __) => const Divider(
+            separatorBuilder: (_, __) => Divider(
               height: 1,
-              indent: 72,
+              indent: 74,
               endIndent: 16,
+              color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
             ),
             itemBuilder: (context, index) {
               final cat = categories[index];
@@ -209,32 +219,46 @@ class CategoriesPage extends ConsumerWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.15),
+                    color: color.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: color.withValues(alpha: 0.20),
+                      width: 1,
+                    ),
                   ),
-                  child: Icon(Icons.folder_outlined, color: color),
+                  child: Center(
+                    child: Icon(Icons.folder_rounded, color: color, size: 24),
+                  ),
                 ),
-                title: Text(cat.name,
-                    style: const TextStyle(fontWeight: FontWeight.w600)),
+                title: Text(
+                  cat.name,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 subtitle: _KeywordCountLabel(categoryId: cat.id),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.key_outlined),
+                      icon: const Icon(Icons.auto_awesome_outlined, size: 20),
                       tooltip: l10n.keywords,
                       onPressed: () =>
                           _editKeywordsSheet(context, ref, l10n, cat),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.edit_outlined),
+                      icon: const Icon(Icons.edit_outlined, size: 20),
                       tooltip: l10n.editCategory,
                       onPressed: () => _editCategoryDialog(
                           context, ref, l10n,
                           existing: cat),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.delete_outline),
+                      icon: Icon(
+                        Icons.delete_outline,
+                        size: 20,
+                        color: theme.colorScheme.error,
+                      ),
                       tooltip: l10n.deleteCategory,
                       onPressed: () =>
                           _confirmDelete(context, ref, l10n, cat),
@@ -253,8 +277,10 @@ class CategoriesPage extends ConsumerWidget {
       floatingActionButton: FloatingActionButton(
         onPressed: () => _editCategoryDialog(context, ref, l10n),
         tooltip: l10n.addCategory,
-        shape: const CircleBorder(),
-        child: const Icon(Icons.add),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: const Icon(Icons.add, size: 28),
       ),
     );
   }

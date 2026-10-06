@@ -141,22 +141,31 @@ class TagsPage extends ConsumerWidget {
         data: (tags) {
           if (tags.isEmpty) {
             return Center(
-              child: Padding(
+              child: SingleChildScrollView(
                 padding: const EdgeInsets.all(32),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      Icons.label_outlined,
-                      size: 64,
-                      color: theme.colorScheme.onSurfaceVariant
-                          .withValues(alpha: 0.5),
+                    Container(
+                      width: 88,
+                      height: 88,
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primary.withValues(alpha: 0.08),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.label_outline_rounded,
+                        size: 44,
+                        color: theme.colorScheme.primary.withValues(alpha: 0.8),
+                      ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 20),
                     Text(
                       l10n.tagsEmpty,
-                      style: theme.textTheme.titleLarge
-                          ?.copyWith(fontWeight: FontWeight.bold),
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -167,10 +176,11 @@ class TagsPage extends ConsumerWidget {
           return ListView.separated(
             padding: const EdgeInsets.symmetric(vertical: 8),
             itemCount: tags.length,
-            separatorBuilder: (_, __) => const Divider(
+            separatorBuilder: (_, __) => Divider(
               height: 1,
-              indent: 72,
+              indent: 74,
               endIndent: 16,
+              color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
             ),
             itemBuilder: (context, index) {
               final tag = tags[index];
@@ -179,27 +189,42 @@ class TagsPage extends ConsumerWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withValues(alpha: 0.12),
+                    color: theme.colorScheme.primary.withValues(alpha: 0.10),
                     borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: theme.colorScheme.primary.withValues(alpha: 0.18),
+                      width: 1,
+                    ),
                   ),
-                  child: Icon(
-                    Icons.tag_outlined,
-                    color: theme.colorScheme.primary,
+                  child: Center(
+                    child: Icon(
+                      Icons.tag_rounded,
+                      color: theme.colorScheme.primary,
+                      size: 22,
+                    ),
                   ),
                 ),
-                title: Text(tag.name,
-                    style: const TextStyle(fontWeight: FontWeight.w600)),
+                title: Text(
+                  tag.name,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.edit_outlined),
+                      icon: const Icon(Icons.edit_outlined, size: 20),
                       tooltip: l10n.editTag,
                       onPressed: () =>
                           _renameTagDialog(context, ref, l10n, tag),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.delete_outline),
+                      icon: Icon(
+                        Icons.delete_outline,
+                        size: 20,
+                        color: theme.colorScheme.error,
+                      ),
                       tooltip: l10n.deleteTag,
                       onPressed: () =>
                           _confirmDelete(context, ref, l10n, tag),
@@ -218,8 +243,10 @@ class TagsPage extends ConsumerWidget {
       floatingActionButton: FloatingActionButton(
         onPressed: () => _addTagDialog(context, ref, l10n),
         tooltip: l10n.addTag,
-        shape: const CircleBorder(),
-        child: const Icon(Icons.add),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: const Icon(Icons.add, size: 28),
       ),
     );
   }

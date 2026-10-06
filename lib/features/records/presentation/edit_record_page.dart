@@ -523,22 +523,48 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
                   ),
                 ),
               ),
-              const Divider(height: 1),
-              _buildCategoryRow(l10n, theme, colorScheme, record),
-              _buildSuggestionRow(l10n, theme, colorScheme),
-              const Divider(height: 1, indent: 20, endIndent: 20),
-              _buildTagRow(l10n, theme, colorScheme, record),
-              const Divider(height: 1),
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: colorScheme.surfaceContainerLowest,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: colorScheme.outlineVariant.withValues(alpha: 0.6),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    _buildCategoryRow(l10n, theme, colorScheme, record),
+                    _buildSuggestionRow(l10n, theme, colorScheme),
+                    Divider(
+                      height: 1,
+                      indent: 16,
+                      endIndent: 16,
+                      color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+                    ),
+                    _buildTagRow(l10n, theme, colorScheme, record),
+                  ],
+                ),
+              ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 10, 20, 14),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    l10n.autoSaveHint,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.cloud_done_outlined,
+                      size: 14,
+                      color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
                     ),
-                  ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        l10n.autoSaveHint,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -563,7 +589,7 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
         decoration: InputDecoration(
           hintText: l10n.bodyHint,
           hintStyle: TextStyle(
-            color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+            color: colorScheme.onSurfaceVariant.withValues(alpha: 0.55),
           ),
           border: InputBorder.none,
           enabledBorder: InputBorder.none,
@@ -571,7 +597,7 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
           filled: false,
           contentPadding: EdgeInsets.zero,
         ),
-        style: theme.textTheme.bodyLarge,
+        style: theme.textTheme.bodyLarge?.copyWith(height: 1.5),
         keyboardType: TextInputType.multiline,
         maxLines: null,
         onChanged: (_) => _onChanged(),
@@ -590,7 +616,8 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
           child: Text(
             l10n.bodyHint,
             style: theme.textTheme.bodyLarge?.copyWith(
-              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.55),
+              height: 1.5,
             ),
           ),
         ),
@@ -610,6 +637,7 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
             children: _buildBodySpans(text, l10n, theme, colorScheme),
             style: theme.textTheme.bodyLarge?.copyWith(
               color: colorScheme.onSurface,
+              height: 1.5,
             ),
           ),
         ),
@@ -670,24 +698,32 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
     final category = record?.category;
     return InkWell(
       onTap: () => _pickCategory(l10n, record),
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
       child: Padding(
         padding:
-            const EdgeInsets.symmetric(horizontal: 20.0, vertical: 4.0),
+            const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
         child: SizedBox(
           height: 48,
           child: Row(
             children: [
               Icon(Icons.folder_outlined,
+                  size: 20,
                   color: colorScheme.onSurfaceVariant),
               const SizedBox(width: 12),
-              Text(l10n.category, style: theme.textTheme.titleMedium),
+              Text(
+                l10n.category,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
               const Spacer(),
               if (category != null) ...[
                 _ColorDot(color: _parseColor(category.color)),
-                const SizedBox(width: 6),
+                const SizedBox(width: 8),
                 Text(category.name,
                     style: theme.textTheme.bodyMedium?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
+                      color: colorScheme.onSurface,
+                      fontWeight: FontWeight.w500,
                     )),
               ] else
                 Text(
@@ -698,6 +734,7 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
                 ),
               const SizedBox(width: 4),
               Icon(Icons.chevron_right,
+                  size: 20,
                   color: colorScheme.onSurfaceVariant),
             ],
           ),
@@ -715,17 +752,24 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
     final tags = record?.tags ?? const <TagModel>[];
     return InkWell(
       onTap: () => _pickTags(l10n, record),
+      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16)),
       child: Padding(
         padding:
-            const EdgeInsets.symmetric(horizontal: 20.0, vertical: 4.0),
+            const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
         child: SizedBox(
           height: 48,
           child: Row(
             children: [
               Icon(Icons.label_outlined,
+                  size: 20,
                   color: colorScheme.onSurfaceVariant),
               const SizedBox(width: 12),
-              Text(l10n.tags, style: theme.textTheme.titleMedium),
+              Text(
+                l10n.tags,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: tags.isEmpty
@@ -733,12 +777,16 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
                         alignment: Alignment.centerRight,
                         child: OutlinedButton.icon(
                           onPressed: () => _pickTags(l10n, record),
-                          icon: const Icon(Icons.add, size: 18),
-                          label: Text(l10n.addTags),
+                          icon: const Icon(Icons.add, size: 16),
+                          label: Text(l10n.addTags,
+                              style: const TextStyle(fontSize: 13)),
                           style: OutlinedButton.styleFrom(
-                            minimumSize: const Size(0, 40),
+                            minimumSize: const Size(0, 36),
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 12),
+                                horizontal: 10),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                           ),
                         ),
                       )
@@ -771,6 +819,7 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
               ),
               const SizedBox(width: 4),
               Icon(Icons.chevron_right,
+                  size: 20,
                   color: colorScheme.onSurfaceVariant),
             ],
           ),

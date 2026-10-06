@@ -214,20 +214,31 @@ class _LockScreenState extends ConsumerState<_LockScreen> {
           child: Column(
             children: [
               const Spacer(flex: 2),
-              Icon(Icons.lock_outline,
-                  size: 48, color: colorScheme.primary),
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withValues(alpha: 0.10),
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Icon(Icons.lock_rounded,
+                      size: 36, color: colorScheme.primary),
+                ),
+              ),
               const SizedBox(height: 16),
               Text(
                 l10n.appLocked,
                 style: theme.textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
+                  letterSpacing: -0.2,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 16),
               // PIN dots (filled = entered digits).
               Wrap(
                 alignment: WrapAlignment.center,
-                spacing: 12,
+                spacing: 14,
                 children: [
                   for (var i = 0; i < _pin.length.clamp(0, 12); i++)
                     Container(
@@ -247,17 +258,20 @@ class _LockScreenState extends ConsumerState<_LockScreen> {
                     ),
                 ],
               ),
+              const SizedBox(height: 12),
               SizedBox(
                 height: 28,
                 child: _error == null
                     ? null
                     : Text(_error!,
                         style: TextStyle(
-                            color: colorScheme.error, fontSize: 13)),
+                            color: colorScheme.error,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500)),
               ),
               if (!_checkingBiometric && _biometricAvailable)
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.only(bottom: 12),
                   child: IconButton.filledTonal(
                     onPressed: _tryBiometric,
                     icon: const Icon(Icons.fingerprint, size: 32),
@@ -274,34 +288,54 @@ class _LockScreenState extends ConsumerState<_LockScreen> {
                 ['7', '8', '9'],
                 ['ok', '0', 'back'],
               ])
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    for (final key in row)
-                      SizedBox(
-                        width: 88,
-                        height: 64,
-                        child: key == 'back'
-                            ? IconButton(
-                                onPressed: _onBackspace,
-                                icon:
-                                    const Icon(Icons.backspace_outlined),
-                              )
-                            : key == 'ok'
-                                ? IconButton.filled(
-                                    onPressed: _onConfirm,
-                                    icon: const Icon(Icons.check),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      for (final key in row)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          child: SizedBox(
+                            width: 76,
+                            height: 64,
+                            child: key == 'back'
+                                ? IconButton(
+                                    onPressed: _onBackspace,
+                                    icon:
+                                        const Icon(Icons.backspace_outlined, size: 22),
                                   )
-                                : TextButton(
-                                    onPressed: () => _onDigit(key),
-                                    child: Text(
-                                      key,
-                                      style: theme
-                                          .textTheme.headlineMedium,
-                                    ),
-                                  ),
-                      ),
-                  ],
+                                : key == 'ok'
+                                    ? IconButton.filled(
+                                        onPressed: _onConfirm,
+                                        icon: const Icon(Icons.check, size: 24),
+                                        style: IconButton.styleFrom(
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(16),
+                                          ),
+                                        ),
+                                      )
+                                    : TextButton(
+                                        onPressed: () => _onDigit(key),
+                                        style: TextButton.styleFrom(
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(16),
+                                          ),
+                                        ),
+                                        child: Text(
+                                          key,
+                                          style: theme
+                                              .textTheme.headlineMedium?.copyWith(
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                        ),
+                                      ),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               const Spacer(flex: 3),
             ],
