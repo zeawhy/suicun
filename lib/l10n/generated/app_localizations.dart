@@ -1418,6 +1418,12 @@ abstract class AppLocalizations {
   /// **'解锁随存'**
   String get unlockApp;
 
+  /// No description provided for @unlockAndJoin.
+  ///
+  /// In zh, this message translates to:
+  /// **'解锁并加入'**
+  String get unlockAndJoin;
+
   /// No description provided for @untitledRecord.
   ///
   /// In zh, this message translates to:
@@ -1483,6 +1489,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'查看冲突'**
   String get viewConflicts;
+
+  /// No description provided for @webdavConnectionSettings.
+  ///
+  /// In zh, this message translates to:
+  /// **'WebDAV 连接配置'**
+  String get webdavConnectionSettings;
 
   /// No description provided for @webdavSync.
   ///

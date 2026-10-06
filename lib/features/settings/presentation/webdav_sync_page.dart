@@ -15,6 +15,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:suicun/features/categories/presentation/categories_notifier.dart';
+import 'package:suicun/features/records/presentation/records_notifier.dart';
 import 'package:suicun/features/sync/sync_contract.dart';
 import 'package:suicun/features/sync/sync_errors.dart';
 import 'package:suicun/features/sync/sync_provider.dart';
@@ -393,6 +395,7 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
       final actions = ref.read(syncActionsProvider);
       await actions.setEnabled(true);
       await actions.syncNow();
+      _refreshHomeProviders();
       if (!mounted) return;
       setState(() {
         _vaultCheck = null;
@@ -434,11 +437,21 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
         : sanitized;
   }
 
+  /// Refreshes the providers the home screen watches, so notes restored by
+  /// a sync appear as soon as the user returns to the home page.
+  /// UI-layer only: does not touch the sync engine.
+  void _refreshHomeProviders() {
+    ref.invalidate(recordsListProvider);
+    ref.invalidate(trashListProvider);
+    ref.invalidate(categoriesProvider);
+  }
+
   Future<void> _handleSyncNow(AppLocalizations l10n) async {
     setState(() => _syncingAction = true);
     try {
       final actions = ref.read(syncActionsProvider);
       await actions.syncNow();
+      _refreshHomeProviders();
     } catch (e) {
       if (!mounted) return;
       final isEn = Localizations.localeOf(context).languageCode == 'en';
@@ -608,6 +621,7 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
       if (!mounted) return;
       if (unlocked > 0) {
         await actions.syncNow();
+        _refreshHomeProviders();
       } else {
         final isEn = Localizations.localeOf(context).languageCode == 'en';
         ScaffoldMessenger.of(context).showSnackBar(
@@ -654,10 +668,21 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
                 _buildStatusSection(l10n, theme, colorScheme, overviewAsync),
                 const SizedBox(height: 12),
                 if (!isEnabled) ...[
-                  _buildSetupCard(l10n, theme, colorScheme),
-                  if (_vaultCheck != null) ...[
-                    const SizedBox(height: 12),
+                  if (_vaultCheck == RemoteVaultCheck.hasVault) ...[
+                    // Existing remote vault: the password/recovery-key input
+                    // is the primary action, shown first. The WebDAV config
+                    // collapses into a secondary section and the
+                    // "Connect & sync" button is hidden to avoid implying
+                    // sync can proceed without the vault credentials.
                     _buildVaultBranchCard(l10n, theme, colorScheme),
+                    const SizedBox(height: 12),
+                    _buildCollapsedConfigCard(l10n, theme, colorScheme),
+                  ] else ...[
+                    _buildSetupCard(l10n, theme, colorScheme),
+                    if (_vaultCheck != null) ...[
+                      const SizedBox(height: 12),
+                      _buildVaultBranchCard(l10n, theme, colorScheme),
+                    ],
                   ],
                 ] else ...[
                   _buildReadOnlyConfigCard(l10n, theme, colorScheme),
@@ -1264,6 +1289,103 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
     );
   }
 
+  /// Secondary WebDAV config section shown when a remote vault has already
+  /// been detected: the credentials are already saved, so the fields start
+  /// collapsed and the "Connect & sync" button is not shown in this state.
+  Widget _buildCollapsedConfigCard(
+    AppLocalizations l10n,
+    ThemeData theme,
+    ColorScheme colorScheme,
+  ) {
+    return Card(
+      child: ExpansionTile(
+        leading: Icon(
+          Icons.dns_outlined,
+          color: colorScheme.onSurfaceVariant,
+          semanticLabel: l10n.webdavConnectionSettings,
+        ),
+        title: Text(
+          l10n.webdavConnectionSettings,
+          style: theme.textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _formRow(
+                  l10n: l10n,
+                  theme: theme,
+                  colorScheme: colorScheme,
+                  label: l10n.webdavUrl,
+                  controller: _urlController,
+                  hint: 'https://dav.example.com',
+                  keyboardType: TextInputType.url,
+                  errorKeywords: const {'服务器地址', 'WebDAV', 'https://', 'URL'},
+                ),
+                _formRow(
+                  l10n: l10n,
+                  theme: theme,
+                  colorScheme: colorScheme,
+                  label: l10n.username,
+                  controller: _userController,
+                  errorKeywords: const {'用户名'},
+                ),
+                _formRow(
+                  l10n: l10n,
+                  theme: theme,
+                  colorScheme: colorScheme,
+                  label: l10n.password,
+                  controller: _passController,
+                  obscure: _obscurePassword,
+                  errorKeywords: const {'密码'},
+                  suffix: IconButton(
+                    icon: Icon(_obscurePassword
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined),
+                    tooltip: _obscurePassword
+                        ? l10n.showPassword
+                        : l10n.hidePassword,
+                    onPressed: () =>
+                        setState(() => _obscurePassword = !_obscurePassword),
+                  ),
+                ),
+                _formRow(
+                  l10n: l10n,
+                  theme: theme,
+                  colorScheme: colorScheme,
+                  label: l10n.syncDirectory,
+                  controller: _dirController,
+                  errorKeywords: const {'目录'},
+                ),
+                const SizedBox(height: 4),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: OutlinedButton(
+                    onPressed: (_testing || _busy)
+                        ? null
+                        : () => _testConnection(l10n),
+                    child: _testing
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Text(l10n.testConnection),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildVaultBranchCard(
     AppLocalizations l10n,
     ThemeData theme,
@@ -1642,6 +1764,24 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        Row(
+          children: [
+            Icon(
+              Icons.lock_open_outlined,
+              color: colorScheme.primary,
+              size: 22,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              l10n.joinExistingVault,
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: colorScheme.primary,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
         Text(
           l10n.wizardHasVaultDesc,
           style: theme.textTheme.bodyMedium?.copyWith(
@@ -1736,7 +1876,7 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
                             Text(l10n.wizardJoining),
                           ],
                         )
-                      : Text(l10n.joinExistingVault),
+                      : Text(l10n.unlockAndJoin),
                 ),
               ),
             ),

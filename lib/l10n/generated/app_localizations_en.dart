@@ -721,6 +721,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get unlockApp => 'Unlock Suicun';
 
   @override
+  String get unlockAndJoin => 'Unlock & Join';
+
+  @override
   String get untitledRecord => 'Untitled';
 
   @override
@@ -754,6 +757,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get viewConflicts => 'View conflicts';
+
+  @override
+  String get webdavConnectionSettings => 'WebDAV connection settings';
 
   @override
   String get webdavSync => 'WebDAV Sync';

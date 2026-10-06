@@ -707,6 +707,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get unlockApp => '解锁随存';
 
   @override
+  String get unlockAndJoin => '解锁并加入';
+
+  @override
   String get untitledRecord => '未命名记录';
 
   @override
@@ -740,6 +743,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get viewConflicts => '查看冲突';
+
+  @override
+  String get webdavConnectionSettings => 'WebDAV 连接配置';
 
   @override
   String get webdavSync => 'WebDAV 同步';

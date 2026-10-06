@@ -200,6 +200,19 @@ void main() {
     });
 
     test(
+        '(d.1) address notes are categorized as "生活" (regression: 住址/地址 keywords)',
+        () async {
+      await repo.ensureDefaultCategories();
+
+      final suggestions = await service.suggestCategories(
+        title: '',
+        body: '学校地址：北京市海淀区',
+      );
+      expect(suggestions, isNotEmpty);
+      expect(suggestions.first.categoryName, '生活');
+    });
+
+    test(
         '(d) password template notes are categorized as "生活" with high confidence',
         () async {
       await repo.ensureDefaultCategories();
