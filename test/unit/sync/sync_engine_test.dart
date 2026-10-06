@@ -107,7 +107,7 @@ void main() {
     directory: '/suicun/',
   );
 
-  VaultSession? savedSession;
+  MultiKeySession? savedSession;
 
   setUp(() {
     savedSession = SyncSessionHolder.current;
@@ -261,20 +261,22 @@ void main() {
       hB.fakeProvider.offline = true;
 
       // Device A edits
-      final stateA = await hA.store.getState();
-      final kvaultA = await hA.secureStore.read('suicun.sync.kvault.${stateA!.vaultId}');
-      SyncSessionHolder.current = VaultSession(
-        vaultId: stateA.vaultId,
-        kvault: Uint8List.fromList(base64Decode(kvaultA!)),
+      final keys2JsonA = await hA.secureStore.read('suicun.sync.keys2');
+      final listA = (jsonDecode(keys2JsonA!) as List).cast<Map<String, dynamic>>();
+      final keyIdA = listA.first['key_id'] as String;
+      final kvaultA = await hA.secureStore.read('suicun.sync.kvault2.$keyIdA');
+      SyncSessionHolder.current = MultiKeySession(
+        keys: {keyIdA: Uint8List.fromList(base64Decode(kvaultA!))},
       );
       await hA.recordRepo.updateRecord(created.id, title: 'A-edit');
 
       // Device B edits
-      final stateB = await hB.store.getState();
-      final kvaultB = await hB.secureStore.read('suicun.sync.kvault.${stateB!.vaultId}');
-      SyncSessionHolder.current = VaultSession(
-        vaultId: stateB.vaultId,
-        kvault: Uint8List.fromList(base64Decode(kvaultB!)),
+      final keys2JsonB = await hB.secureStore.read('suicun.sync.keys2');
+      final listB = (jsonDecode(keys2JsonB!) as List).cast<Map<String, dynamic>>();
+      final keyIdB = listB.first['key_id'] as String;
+      final kvaultB = await hB.secureStore.read('suicun.sync.kvault2.$keyIdB');
+      SyncSessionHolder.current = MultiKeySession(
+        keys: {keyIdB: Uint8List.fromList(base64Decode(kvaultB!))},
       );
       await hB.recordRepo.updateRecord(created.id, title: 'B-edit');
 
@@ -331,19 +333,21 @@ void main() {
       hA.fakeProvider.offline = true;
       hB.fakeProvider.offline = true;
 
-      final stateA = await hA.store.getState();
-      final kvaultA = await hA.secureStore.read('suicun.sync.kvault.${stateA!.vaultId}');
-      SyncSessionHolder.current = VaultSession(
-        vaultId: stateA.vaultId,
-        kvault: Uint8List.fromList(base64Decode(kvaultA!)),
+      final keys2JsonA = await hA.secureStore.read('suicun.sync.keys2');
+      final listA = (jsonDecode(keys2JsonA!) as List).cast<Map<String, dynamic>>();
+      final keyIdA = listA.first['key_id'] as String;
+      final kvaultA = await hA.secureStore.read('suicun.sync.kvault2.$keyIdA');
+      SyncSessionHolder.current = MultiKeySession(
+        keys: {keyIdA: Uint8List.fromList(base64Decode(kvaultA!))},
       );
       await hA.recordRepo.softDeleteRecord(created.id); // soft-delete
 
-      final stateB = await hB.store.getState();
-      final kvaultB = await hB.secureStore.read('suicun.sync.kvault.${stateB!.vaultId}');
-      SyncSessionHolder.current = VaultSession(
-        vaultId: stateB.vaultId,
-        kvault: Uint8List.fromList(base64Decode(kvaultB!)),
+      final keys2JsonB = await hB.secureStore.read('suicun.sync.keys2');
+      final listB = (jsonDecode(keys2JsonB!) as List).cast<Map<String, dynamic>>();
+      final keyIdB = listB.first['key_id'] as String;
+      final kvaultB = await hB.secureStore.read('suicun.sync.kvault2.$keyIdB');
+      SyncSessionHolder.current = MultiKeySession(
+        keys: {keyIdB: Uint8List.fromList(base64Decode(kvaultB!))},
       );
       await hB.recordRepo.updateRecord(created.id, body: 'B-body');
 

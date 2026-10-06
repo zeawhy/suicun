@@ -99,6 +99,16 @@ class _FakeSyncActions implements SyncActions {
   }) async {}
 
   @override
+  Future<MigrationReport> migrateV1ToV2(WebdavConfig config, String password) async =>
+      const MigrationReport(keyId: 'k1', copiedObjects: 0, skippedObjects: 0);
+
+  @override
+  Future<int> unlockKeys({String? password, String? recoveryKey}) async => 0;
+
+  @override
+  bool get lastCreateJoinedExisting => false;
+
+  @override
   String? consumePendingRecoveryKey() => null;
 }
 

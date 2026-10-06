@@ -17,7 +17,7 @@ import 'package:suicun/features/sync/vault_crypto.dart';
 
 const _uuid = Uuid();
 
-typedef VaultSessionProvider = Future<VaultSession?> Function();
+typedef VaultSessionProvider = Future<MultiKeySession?> Function();
 
 class SyncEnqueuer {
   SyncEnqueuer({
@@ -111,7 +111,8 @@ class SyncEnqueuer {
     required Map<String, Object?> snapshot,
   }) async {
     final session = await sessionProvider();
-    if (session == null) return '';
+    if (session == null || !session.keys.containsKey(session.activeKeyId)) return '';
+    final kvault = session.keys[session.activeKeyId]!;
     final now = DateTime.now().toUtc();
     final revisionId = _uuid.v4();
     final payload = EntitySnapshots.payload(
@@ -123,8 +124,9 @@ class SyncEnqueuer {
       deleted: deleted,
       snapshot: snapshot,
     );
-    final bytes = await _crypto.encryptRevision(
-      session: session,
+    final bytes = await _crypto.encryptRevisionV2(
+      kvault: kvault,
+      keyId: session.activeKeyId,
       revisionId: revisionId,
       entityType: entityType,
       entityId: entityId,

@@ -25,6 +25,8 @@ enum SyncErrorCode {
   redirectBlocked,
   payloadTooLarge,
   notJoined,
+  needsMigration,
+  needsPassword,
   unknown,
 }
 
@@ -135,6 +137,14 @@ class SyncError implements Exception {
     SyncErrorCode.notJoined: (
       '尚未加入同步库，请先创建或加入',
       'Not joined to a sync vault yet',
+    ),
+    SyncErrorCode.needsMigration: (
+      '发现旧协议同步库，需要先迁移',
+      'Legacy sync vault found; migration is required',
+    ),
+    SyncErrorCode.needsPassword: (
+      '需要输入同步密码以继续同步',
+      'Sync password is required to continue syncing',
     ),
     SyncErrorCode.unknown: (
       '同步时发生未知错误',

@@ -24,6 +24,8 @@ class SyncOverview {
     this.lastSuccessAt,
     this.pendingCount = 0,
     this.conflictCount = 0,
+    this.lockedKeyCount = 0,
+    this.keyCount = 0,
     this.vaultId,
     this.lastError,
   });
@@ -42,6 +44,12 @@ class SyncOverview {
 
   /// Number of unresolved conflicts.
   final int conflictCount;
+
+  /// Number of keys known on server but not unlocked locally.
+  final int lockedKeyCount;
+
+  /// Total number of keys known on server.
+  final int keyCount;
 
   /// The vault id of the joined sync library, if any.
   final String? vaultId;
@@ -114,12 +122,27 @@ class RecoveryProgress {
 
 /// Result of checking whether the configured directory already holds a vault.
 enum RemoteVaultCheck {
-  /// No header.json found — the user can create a new vault here.
+  /// No vault found — the user can create a new vault here.
   noVault,
 
-  /// A valid header.json was found — the user must enter the vault password
+  /// A valid v2 vault was found — the user must enter the vault password
   /// or recovery key to join.
   hasVault,
+
+  /// A v1 header.json was found — offer migration to v2.
+  hasV1Vault,
+}
+
+class MigrationReport {
+  const MigrationReport({
+    required this.keyId,
+    required this.copiedObjects,
+    required this.skippedObjects,
+  });
+
+  final String keyId;
+  final int copiedObjects;
+  final int skippedObjects;
 }
 
 /// Actions the UI can trigger. Implemented by the functional side.
@@ -148,6 +171,16 @@ abstract interface class SyncActions {
     String? password,
     String? recoveryKey,
   });
+
+  /// Migrates a v1 vault at [config] to v2 using [password].
+  Future<MigrationReport> migrateV1ToV2(WebdavConfig config, String password);
+
+  /// Unlocks locked keys using the provided credential, returning the count
+  /// of newly unlocked keys.
+  Future<int> unlockKeys({String? password, String? recoveryKey});
+
+  /// True when the last [createVault] call found an existing vault and joined it instead.
+  bool get lastCreateJoinedExisting;
 
   /// Starts recovery on a new device. Emits progress; completes when done.
   /// The local database is rebuilt with this device's own device key.

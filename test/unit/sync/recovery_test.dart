@@ -100,7 +100,7 @@ void main() {
     directory: '/suicun/',
   );
 
-  VaultSession? savedSession;
+  MultiKeySession? savedSession;
 
   setUp(() {
     savedSession = SyncSessionHolder.current;

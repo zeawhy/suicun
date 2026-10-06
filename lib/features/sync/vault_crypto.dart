@@ -882,6 +882,52 @@ class VaultCrypto {
     );
   }
 
+  Future<VaultKeyObject> buildMigratedKeyObject({
+    required VaultHeader v1Header,
+    required Uint8List kvault,
+    required String password,
+  }) async {
+    final keyId = _hex(_randomBytes(8));
+    final variant = _hex(_randomBytes(4));
+    final wrapKey = await _deriveKey(password, v1Header.salt, v1Header.kdf);
+    final passNonce = _randomBytes(12);
+    final passBox = await _aesGcm.encrypt(
+      kvault,
+      secretKey: wrapKey,
+      nonce: passNonce,
+      aad: _aad('suicun/v2/keyslot/$keyId/password'),
+    );
+    final passSlot = VaultSlot(
+      type: 'password',
+      nonce: passNonce,
+      wrapped: Uint8List.fromList([...passBox.cipherText, ...passBox.mac.bytes]),
+    );
+
+    final v1RecSlot = v1Header.slotOfType('recovery');
+    if (v1RecSlot == null) {
+      throw const VaultCryptoError(VaultCryptoCode.malformed, 'no recovery slot in v1 header');
+    }
+    final recSlot = VaultSlot(
+      type: 'recovery',
+      nonce: v1RecSlot.nonce,
+      wrapped: v1RecSlot.wrapped,
+      keyId: v1RecSlot.keyId,
+    );
+
+    return VaultKeyObject(
+      protocolVersion: kVaultProtocolVersionV2,
+      keyId: keyId,
+      variant: variant,
+      origin: 'v1-migrated',
+      createdByDevice: 'device-${keyId.substring(0, 8)}',
+      createdAt: DateTime.now().toUtc().toIso8601String(),
+      kdf: v1Header.kdf,
+      salt: v1Header.salt,
+      slots: [passSlot, recSlot],
+      legacyVaultId: v1Header.vaultId,
+    );
+  }
+
   Future<UnlockedKey> openKeyObjectWithPassword(
     String keyJson,
     String password,

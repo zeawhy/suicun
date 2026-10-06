@@ -3,7 +3,7 @@
 
 import 'package:suicun/features/sync/vault_crypto.dart';
 
-/// Holds the currently active [VaultSession] (vault id + K_vault) so that
+/// Holds the currently active [MultiKeySession] (keys + activeKeyId) so that
 /// repositories can encrypt revisions without depending on the engine.
 ///
 /// In-memory ONLY: never persisted from here and never logged. The sync
@@ -12,5 +12,5 @@ import 'package:suicun/features/sync/vault_crypto.dart';
 class SyncSessionHolder {
   SyncSessionHolder._();
 
-  static VaultSession? current;
+  static MultiKeySession? current;
 }

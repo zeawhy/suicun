@@ -181,6 +181,7 @@ class SyncStore {
     required String vaultId,
     required String deviceId,
     required bool enabled,
+    int protocolVersion = 1,
   }) async {
     await (_db.delete(_db.syncState)..where((s) => s.vaultId.equals(vaultId).not()))
         .go();
@@ -188,11 +189,13 @@ class SyncStore {
           SyncStateCompanion.insert(
             vaultId: vaultId,
             deviceId: deviceId,
+            protocolVersion: Value(protocolVersion),
             enabled: Value(enabled),
           ),
           onConflict: DoUpdate(
             (_) => SyncStateCompanion(
               deviceId: Value(deviceId),
+              protocolVersion: Value(protocolVersion),
               enabled: Value(enabled),
             ),
             target: [_db.syncState.vaultId],
