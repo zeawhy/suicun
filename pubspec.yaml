@@ -37,6 +37,7 @@ dependencies:
   # Icons
   cupertino_icons: ^2.0.0
   http: ^1.6.0
+  xml: ^6.5.0
   sqlite3: ^3.7.0
   flutter_secure_storage: ^11.2.0
   local_auth: ^3.0.2
