@@ -42,6 +42,13 @@
       }
     }
   },
+  "@infoCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "@lastSuccess": {
     "placeholders": {
       "time": {
@@ -130,6 +137,13 @@
       }
     }
   },
+  "@timeToday": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
   "@updatedAt": {
     "placeholders": {
       "time": {
@@ -178,6 +192,7 @@
   "category": "分类",
   "categoryColor": "分类颜色",
   "categoryName": "分类名称",
+  "changeCategory": "修改分类",
   "changePin": "修改 PIN",
   "clearFilter": "清除筛选",
   "configSaved": "配置已保存",
@@ -196,6 +211,7 @@
   "connectionFailed": "连接失败：{error}",
   "connectionSuccess": "连接成功",
   "createNewVault": "创建新库",
+  "createdAtPrefix": "创建于",
   "data": "数据",
   "delete": "删除",
   "deleteCategory": "删除分类",
@@ -226,6 +242,7 @@
   "exportSuccess": "导出成功",
   "exportTxt": "导出 TXT",
   "favorite": "收藏",
+  "favoriteFailed": "收藏失败，请重试",
   "favorites": "收藏",
   "filterEmpty": "该筛选下没有记录",
   "filterEmptyHint": "试试其他分类，或清除筛选条件",
@@ -238,6 +255,7 @@
   "importMarkdown": "导入 Markdown/TXT",
   "importPreview": "即将导入 {count} 条记录",
   "importSuccess": "成功导入 {count} 条记录",
+  "infoCount": "{count} 条信息",
   "joinExistingVault": "加入已有库",
   "keepBoth": "分别保留",
   "keepLocal": "保留本机版本",
@@ -254,12 +272,14 @@
   "localVersion": "本机版本",
   "lockTimeout": "后台锁定超时",
   "lockoutTryLater": "尝试次数过多，请 {seconds} 秒后再试",
+  "manage": "管理",
   "manualMerge": "手动合并",
   "maxTagsReached": "最多添加 10 个标签",
   "mergeBodyHint": "合并后的正文",
   "mergeDialogTitle": "手动合并",
   "mergeTitleHint": "合并后的标题",
   "modified": "修改于 {time}",
+  "myRecords": "我的信息",
   "newInfo": "新建信息",
   "newRecord": "新建记录",
   "newVaultPassword": "新库加密密码",
@@ -294,7 +314,7 @@
   "recordCount": "{count} 条记录",
   "recordDeleted": "已移至回收站",
   "recordsEmpty": "还没有记录",
-  "recordsEmptyHint": "点击右下角新建记录",
+  "recordsEmptyHint": "点击下方「新建信息」开始记录",
   "recoverDesc": "在新设备上从 WebDAV 下载已上传的数据，重建本地库。只能恢复已成功上传的数据；尚未上传的离线编辑无法找回。",
   "recoverFailedObjects": "失败对象：{count}",
   "recoverFromWebdav": "从 WebDAV 恢复",
@@ -336,6 +356,10 @@
   "settings": "设置",
   "showPassword": "显示密码",
   "smartRecommend": "智能推荐",
+  "sortRecentlyCreated": "最近创建",
+  "sortRecentlyEdited": "最近编辑",
+  "sortTitle": "排序",
+  "sortTitleAZ": "标题 A–Z",
   "startRecovery": "开始恢复",
   "startSync": "开始同步",
   "startSyncSetup": "开始同步设置",
@@ -364,6 +388,8 @@
   "timeout1Min": "1 分钟",
   "timeout5Min": "5 分钟",
   "timeoutImmediately": "立即",
+  "timeToday": "今天 {time}",
+  "timeYesterday": "昨天",
   "titleHint": "标题（可选）",
   "trash": "回收站",
   "trashEmpty": "回收站为空",

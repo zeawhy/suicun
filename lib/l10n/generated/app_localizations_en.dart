@@ -91,6 +91,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get categoryName => 'Category Name';
 
   @override
+  String get changeCategory => 'Change category';
+
+  @override
   String get changePin => 'Change PIN';
 
   @override
@@ -148,6 +151,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get createNewVault => 'Create new vault';
+
+  @override
+  String get createdAtPrefix => 'Created';
 
   @override
   String get data => 'Data';
@@ -247,6 +253,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get favorite => 'Favorite';
 
   @override
+  String get favoriteFailed => 'Couldn\'t update favorite, please try again';
+
+  @override
   String get favorites => 'Favorites';
 
   @override
@@ -286,6 +295,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String importSuccess(int count) {
     return 'Imported $count records';
+  }
+
+  @override
+  String infoCount(int count) {
+    return '$count items';
   }
 
   @override
@@ -345,6 +359,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get manage => 'Manage';
+
+  @override
   String get manualMerge => 'Merge manually';
 
   @override
@@ -363,6 +380,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String modified(String time) {
     return 'Modified $time';
   }
+
+  @override
+  String get myRecords => 'My Info';
 
   @override
   String get newInfo => 'New Info';
@@ -475,7 +495,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recordsEmpty => 'No records yet';
 
   @override
-  String get recordsEmptyHint => 'Tap + to create your first record';
+  String get recordsEmptyHint => 'Tap \"New Info\" below to get started';
 
   @override
   String get recoverDesc =>
@@ -615,6 +635,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get smartRecommend => 'Smart suggestion';
 
   @override
+  String get sortRecentlyCreated => 'Recently created';
+
+  @override
+  String get sortRecentlyEdited => 'Recently edited';
+
+  @override
+  String get sortTitle => 'Sort';
+
+  @override
+  String get sortTitleAZ => 'Title A–Z';
+
+  @override
   String get startRecovery => 'Start recovery';
 
   @override
@@ -698,6 +730,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get timeoutImmediately => 'Immediately';
+
+  @override
+  String timeToday(String time) {
+    return 'Today $time';
+  }
+
+  @override
+  String get timeYesterday => 'Yesterday';
 
   @override
   String get titleHint => 'Title (optional)';

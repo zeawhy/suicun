@@ -1,18 +1,23 @@
 // lib/features/records/presentation/home_page.dart
-// Home screen, restyled to match the design mockups:
-// big title + settings gear, rounded search box, horizontal filter chips,
-// record rows with colored icon blocks, gold stars, ⋮ menus, dividers, FAB.
+// Redesigned home page matching the modern jade green spec:
+// header row, debounced search, custom category chips with fixed manage button,
+// item count & persistent sort switcher, clean white cards, sticky bottom sync status + action.
+
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:suicun/core/database/providers.dart';
 import 'package:suicun/features/categories/domain/category_model.dart';
 import 'package:suicun/features/categories/presentation/categories_notifier.dart';
 import 'package:suicun/features/records/domain/record_model.dart';
+import 'package:suicun/features/records/presentation/home_sort_provider.dart';
 import 'package:suicun/features/records/presentation/records_notifier.dart';
+import 'package:suicun/features/sync/sync_contract.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
-import 'package:suicun/shared/widgets/record_list_tile.dart';
+import 'package:suicun/shared/widgets/record_card.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -22,8 +27,38 @@ class HomePage extends ConsumerStatefulWidget {
 }
 
 class _HomePageState extends ConsumerState<HomePage> {
+  final TextEditingController _searchController = TextEditingController();
+  Timer? _debounce;
   bool _isMultiSelect = false;
   final Set<String> _selectedIds = {};
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged(String value) {
+    // Note on debounce and race condition prevention:
+    // User input is debounced by 200ms to reduce database queries while typing.
+    // recordsListProvider is a Riverpod FutureProvider; whenever recordsFilterProvider
+    // emits a new query/filter, Riverpod triggers a new evaluation and exposes
+    // only the latest AsyncValue. Any earlier, out-of-order query responses
+    // that complete later are automatically dropped by Riverpod.
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 200), () {
+      ref.read(recordsFilterProvider.notifier).setQuery(value);
+    });
+    setState(() {});
+  }
+
+  void _clearSearch() {
+    _debounce?.cancel();
+    _searchController.clear();
+    ref.read(recordsFilterProvider.notifier).setQuery('');
+    setState(() {});
+  }
 
   void _toggleMultiSelect(String id) {
     setState(() {
@@ -67,10 +102,143 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   Future<void> _toggleFavorite(RecordDetail r) async {
-    await ref
-        .read(recordRepositoryProvider)
-        .updateRecord(r.id, isFavorite: !r.isFavorite);
-    ref.invalidate(recordsListProvider);
+    try {
+      await ref
+          .read(recordRepositoryProvider)
+          .updateRecord(r.id, isFavorite: !r.isFavorite);
+      ref.invalidate(recordsListProvider);
+    } catch (_) {
+      if (!mounted) return;
+      final l10n = AppLocalizations.of(context);
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.favoriteFailed)),
+      );
+    }
+  }
+
+  Future<void> _showChangeCategoryDialog(RecordDetail r) async {
+    final l10n = AppLocalizations.of(context);
+    final categories = ref.read(categoriesProvider).value ?? [];
+    final repo = ref.read(recordRepositoryProvider);
+
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) {
+        return SimpleDialog(
+          title: Text(l10n.changeCategory),
+          children: [
+            SimpleDialogOption(
+              onPressed: () async {
+                await repo.updateRecord(r.id, clearCategoryId: true);
+                ref.invalidate(recordsListProvider);
+                if (ctx.mounted) Navigator.pop(ctx);
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: Text(l10n.uncategorized),
+              ),
+            ),
+            for (final c in categories)
+              SimpleDialogOption(
+                onPressed: () async {
+                  await repo.updateRecord(r.id, categoryId: c.id);
+                  ref.invalidate(recordsListProvider);
+                  if (ctx.mounted) Navigator.pop(ctx);
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 10,
+                        height: 10,
+                        decoration: BoxDecoration(
+                          color: _parseColor(c.color),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(c.name),
+                    ],
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showSortSheet() {
+    final l10n = AppLocalizations.of(context);
+    final currentSortMode =
+        ref.read(homeSortModeProvider).value ?? RecordSortMode.byUpdatedAt;
+
+    showModalBottomSheet<void>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                  child: Text(
+                    l10n.sortTitle,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                RadioGroup<RecordSortMode>(
+                  groupValue: currentSortMode,
+                  onChanged: (m) async {
+                    if (m != null) {
+                      await ref.read(homeSortModeProvider.notifier).setMode(m);
+                    }
+                    if (ctx.mounted) Navigator.pop(ctx);
+                  },
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      RadioListTile<RecordSortMode>(
+                        title: Text(l10n.sortRecentlyEdited),
+                        value: RecordSortMode.byUpdatedAt,
+                      ),
+                      RadioListTile<RecordSortMode>(
+                        title: Text(l10n.sortRecentlyCreated),
+                        value: RecordSortMode.byCreatedAt,
+                      ),
+                      RadioListTile<RecordSortMode>(
+                        title: Text(l10n.sortTitleAZ),
+                        value: RecordSortMode.byTitle,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Color _parseColor(String hexStr) {
+    hexStr = hexStr.toUpperCase().replaceAll('#', '');
+    if (hexStr.length == 6) {
+      hexStr = 'FF$hexStr';
+    }
+    return Color(int.tryParse(hexStr, radix: 16) ?? 0xFF287B70);
   }
 
   @override
@@ -81,174 +249,327 @@ class _HomePageState extends ConsumerState<HomePage> {
     final recordsAsync = ref.watch(recordsListProvider);
     final filter = ref.watch(recordsFilterProvider);
     final categoriesAsync = ref.watch(categoriesProvider);
+    final sortMode =
+        ref.watch(homeSortModeProvider).value ?? RecordSortMode.byUpdatedAt;
+
+    final sortTitleText = switch (sortMode) {
+      RecordSortMode.byUpdatedAt => l10n.sortRecentlyEdited,
+      RecordSortMode.byCreatedAt => l10n.sortRecentlyCreated,
+      RecordSortMode.byTitle => l10n.sortTitleAZ,
+    };
 
     return Scaffold(
-      appBar: _isMultiSelect
-          ? AppBar(
-              leading: IconButton(
-                icon: const Icon(Icons.close),
-                tooltip: l10n.cancel,
-                onPressed: _exitMultiSelect,
-              ),
-              title: Text(l10n.selectedCount(_selectedIds.length)),
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.delete_outline),
-                  tooltip: l10n.batchDelete,
-                  onPressed: () async {
-                    final repo = ref.read(recordRepositoryProvider);
-                    for (final id in _selectedIds) {
-                      await repo.softDeleteRecord(id);
-                    }
-                    ref.invalidate(recordsListProvider);
-                    ref.invalidate(trashListProvider);
-                    _exitMultiSelect();
-                  },
-                ),
-              ],
-            )
-          : AppBar(
-              title: Text(
-                l10n.appName,
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.settings_outlined),
-                  tooltip: l10n.settings,
-                  onPressed: () => context.push('/settings'),
-                ),
-              ],
+      body: SafeArea(
+        child: Column(
+          children: [
+            // a) Top Row
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+              child: _isMultiSelect
+                  ? Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          constraints: const BoxConstraints(
+                              minWidth: 48, minHeight: 48),
+                          tooltip: l10n.cancel,
+                          onPressed: _exitMultiSelect,
+                        ),
+                        Text(
+                          l10n.selectedCount(_selectedIds.length),
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: colorScheme.onSurface,
+                          ),
+                        ),
+                        const Spacer(),
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline),
+                          constraints: const BoxConstraints(
+                              minWidth: 48, minHeight: 48),
+                          tooltip: l10n.batchDelete,
+                          onPressed: () async {
+                            final repo = ref.read(recordRepositoryProvider);
+                            for (final id in _selectedIds) {
+                              await repo.softDeleteRecord(id);
+                            }
+                            ref.invalidate(recordsListProvider);
+                            ref.invalidate(trashListProvider);
+                            _exitMultiSelect();
+                          },
+                        ),
+                      ],
+                    )
+                  : Row(
+                      children: [
+                        Text(
+                          l10n.myRecords,
+                          style: TextStyle(
+                            fontSize: 23,
+                            fontWeight: FontWeight.w600,
+                            color: colorScheme.onSurface,
+                          ),
+                        ),
+                        const Spacer(),
+                        IconButton(
+                          icon: const Icon(Icons.settings_outlined, size: 24),
+                          constraints: const BoxConstraints(
+                              minWidth: 48, minHeight: 48),
+                          tooltip: l10n.settings,
+                          onPressed: () => context.push('/settings'),
+                        ),
+                      ],
+                    ),
             ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-            child: TextField(
-              onChanged: (v) =>
-                  ref.read(recordsFilterProvider.notifier).setQuery(v),
-              decoration: InputDecoration(
-                hintText: l10n.searchHint,
-                prefixIcon: Icon(
-                  Icons.search_rounded,
-                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
-                  size: 22,
-                ),
-                filled: true,
-                fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.65),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide.none,
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide.none,
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide:
-                      BorderSide(color: colorScheme.primary, width: 1.5),
-                ),
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              ),
-            ),
-          ),
-          categoriesAsync.maybeWhen(
-            data: (categories) => _FilterChips(
-              filter: filter,
-              categories: categories,
-              onAll: () =>
-                  ref.read(recordsFilterProvider.notifier).clearFilter(),
-              onFavorites: () => ref
-                  .read(recordsFilterProvider.notifier)
-                  .setFavoritesOnly(true),
-              onCategory: (id) =>
-                  ref.read(recordsFilterProvider.notifier).setCategory(id),
-            ),
-            orElse: () => const SizedBox(height: 40),
-          ),
-          const SizedBox(height: 8),
-          Expanded(
-            child: recordsAsync.when(
-              data: (records) {
-                if (records.isEmpty) {
-                  return _EmptyState(
-                    filter: filter,
-                    onClearFilter: () => ref
-                        .read(recordsFilterProvider.notifier)
-                        .clearFilter(),
-                  );
-                }
-                return ListView.separated(
-                  itemCount: records.length,
-                  separatorBuilder: (_, __) => Divider(
-                    height: 1,
-                    indent: 78,
-                    endIndent: 16,
-                    color: colorScheme.outlineVariant.withValues(alpha: 0.6),
+
+            // b) Search bar
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+              child: TextField(
+                controller: _searchController,
+                onChanged: _onSearchChanged,
+                decoration: InputDecoration(
+                  hintText: l10n.searchHint,
+                  prefixIcon: Icon(
+                    Icons.search_rounded,
+                    color: colorScheme.onSurfaceVariant,
+                    size: 22,
                   ),
-                  itemBuilder: (context, index) {
-                    final r = records[index];
-                    return RecordListTile(
-                      record: r,
-                      isSelected: _selectedIds.contains(r.id),
-                      isMultiSelectMode: _isMultiSelect,
-                      untitledLabel: l10n.untitledRecord,
-                      favoriteTooltip: l10n.favorite,
-                      unfavoriteTooltip: l10n.unfavorite,
-                      deleteLabel: l10n.delete,
-                      onTap: () {
-                        if (_isMultiSelect) {
-                          _toggleMultiSelect(r.id);
-                        } else {
-                          context.push('/edit/${r.id}');
-                        }
-                      },
-                      onLongPress: () {
-                        if (!_isMultiSelect) {
-                          setState(() {
-                            _isMultiSelect = true;
-                            _selectedIds.add(r.id);
-                          });
-                        }
-                      },
-                      onFavoriteToggle: () => _toggleFavorite(r),
-                      onDelete: () => _deleteRecord(r.id),
-                    );
-                  },
-                );
-              },
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, st) => Center(child: Text(e.toString())),
-            ),
-          ),
-        ],
-      ),
-      floatingActionButton: _isMultiSelect
-          ? null
-          : FloatingActionButton(
-              onPressed: () => context.push('/edit'),
-              tooltip: l10n.newRecord,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(18),
+                  suffixIcon: _searchController.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear, size: 20),
+                          constraints: const BoxConstraints(
+                              minWidth: 48, minHeight: 48),
+                          onPressed: _clearSearch,
+                        )
+                      : null,
+                  filled: true,
+                  fillColor: colorScheme.surfaceContainerLowest,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(
+                      color: colorScheme.outlineVariant,
+                      width: 1,
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(
+                      color: colorScheme.outlineVariant,
+                      width: 1,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(
+                      color: colorScheme.primary,
+                      width: 1.5,
+                    ),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
+                ),
               ),
-              child: const Icon(Icons.add, size: 28),
             ),
+
+            // c) Category filter bar
+            categoriesAsync.maybeWhen(
+              data: (categories) => _CategoryFilterBar(
+                filter: filter,
+                categories: categories,
+                onAll: () {
+                  final notifier = ref.read(recordsFilterProvider.notifier);
+                  notifier.setCategory(null);
+                  notifier.setFavoritesOnly(false);
+                },
+                onFavorites: () {
+                  final notifier = ref.read(recordsFilterProvider.notifier);
+                  notifier.setFavoritesOnly(true);
+                  notifier.setCategory(null);
+                },
+                onCategory: (id) {
+                  final notifier = ref.read(recordsFilterProvider.notifier);
+                  notifier.setCategory(id);
+                  notifier.setFavoritesOnly(false);
+                },
+                onManage: () => context.push('/settings/categories'),
+              ),
+              orElse: () => const SizedBox(height: 38),
+            ),
+
+            // d & e) Record count + sort switcher & record list
+            Expanded(
+              child: recordsAsync.when(
+                loading: () =>
+                    const Center(child: CircularProgressIndicator()),
+                error: (e, _) => Center(child: Text(e.toString())),
+                data: (records) {
+                  if (records.isEmpty) {
+                    return _EmptyState(
+                      filter: filter,
+                      onClearFilter: () => ref
+                          .read(recordsFilterProvider.notifier)
+                          .clearFilter(),
+                    );
+                  }
+                  return Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                        child: Row(
+                          children: [
+                            Text(
+                              l10n.infoCount(records.length),
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                            const Spacer(),
+                            Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(8),
+                                onTap: _showSortSheet,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 10,
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        sortTitleText,
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          color: colorScheme.onSurface,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                      const Icon(
+                                        Icons.arrow_drop_down,
+                                        size: 18,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: ListView.builder(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          itemCount: records.length,
+                          itemBuilder: (context, index) {
+                            final r = records[index];
+                            return RecordCard(
+                              record: r,
+                              sortMode: sortMode,
+                              isSelected: _selectedIds.contains(r.id),
+                              isMultiSelectMode: _isMultiSelect,
+                              untitledLabel: l10n.untitledRecord,
+                              uncategorizedLabel: l10n.uncategorized,
+                              favoriteTooltip: l10n.favorite,
+                              unfavoriteTooltip: l10n.unfavorite,
+                              onTap: () {
+                                if (_isMultiSelect) {
+                                  _toggleMultiSelect(r.id);
+                                } else {
+                                  context.push('/edit/${r.id}');
+                                }
+                              },
+                              onLongPress: () {
+                                if (!_isMultiSelect) {
+                                  setState(() {
+                                    _isMultiSelect = true;
+                                    _selectedIds.add(r.id);
+                                  });
+                                }
+                              },
+                              onFavoriteToggle: () => _toggleFavorite(r),
+                              onEdit: () => context.push('/edit/${r.id}'),
+                              onChangeCategory: () =>
+                                  _showChangeCategoryDialog(r),
+                              onDelete: () => _deleteRecord(r.id),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+
+            // f) Sticky bottom status area (hidden during multi-select)
+            if (!_isMultiSelect)
+              Container(
+                decoration: BoxDecoration(
+                  color: colorScheme.surfaceContainerLowest,
+                  border: Border(
+                    top: BorderSide(
+                      color: colorScheme.outlineVariant,
+                      width: 1,
+                    ),
+                  ),
+                ),
+                child: SafeArea(
+                  top: false,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    child: Row(
+                      children: [
+                        const Expanded(child: _SyncStatus()),
+                        const SizedBox(width: 12),
+                        Tooltip(
+                          message: l10n.newRecord,
+                          child: FilledButton.icon(
+                            icon: const Icon(Icons.add, size: 22),
+                            label: Text(l10n.newInfo),
+                            style: FilledButton.styleFrom(
+                              minimumSize: const Size(0, 52),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 24),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                            onPressed: () => context.push('/edit'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }
 
-/// Horizontal filter chips: All / Favorites / categories.
-class _FilterChips extends StatelessWidget {
-  const _FilterChips({
+/// Category filter chips row with fixed "Manage" button on the right.
+class _CategoryFilterBar extends StatelessWidget {
+  const _CategoryFilterBar({
     required this.filter,
     required this.categories,
     required this.onAll,
     required this.onFavorites,
     required this.onCategory,
+    required this.onManage,
   });
 
   final RecordsFilter filter;
@@ -256,6 +577,7 @@ class _FilterChips extends StatelessWidget {
   final VoidCallback onAll;
   final VoidCallback onFavorites;
   final void Function(String id) onCategory;
+  final VoidCallback onManage;
 
   @override
   Widget build(BuildContext context) {
@@ -263,57 +585,233 @@ class _FilterChips extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final allSelected = filter.categoryId == null && !filter.favoritesOnly;
 
-    Widget chip({
-      required String label,
+    Widget customChip({
+      required Widget content,
       required bool selected,
       required VoidCallback onTap,
     }) {
       return Padding(
         padding: const EdgeInsets.only(right: 8),
-        child: ChoiceChip(
-          label: Text(label),
-          selected: selected,
-          onSelected: (_) => onTap(),
-          showCheckmark: false,
-          labelStyle: TextStyle(
-            color: selected ? colorScheme.onPrimary : colorScheme.onSurface,
-            fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
-            fontSize: 13,
-          ),
-          selectedColor: colorScheme.primary,
-          backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-          side: BorderSide(
-            color: selected
-                ? Colors.transparent
-                : colorScheme.outlineVariant.withValues(alpha: 0.4),
-          ),
+        child: Material(
+          color: selected
+              ? colorScheme.primary
+              : colorScheme.surfaceContainerHigh,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(20),
+            side: selected
+                ? BorderSide.none
+                : BorderSide(color: colorScheme.outlineVariant, width: 1),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          materialTapTargetSize: MaterialTapTargetSize.padded,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(20),
+            onTap: onTap,
+            child: Container(
+              height: 38,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              alignment: Alignment.center,
+              child: content,
+            ),
+          ),
         ),
       );
     }
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 8, 4),
       child: Row(
         children: [
-          chip(label: l10n.all, selected: allSelected, onTap: onAll),
-          chip(
-            label: l10n.favorites,
-            selected: filter.favoritesOnly,
-            onTap: onFavorites,
-          ),
-          for (final c in categories)
-            chip(
-              label: c.name,
-              selected: filter.categoryId == c.id,
-              onTap: () => onCategory(c.id),
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  customChip(
+                    content: Text(
+                      l10n.all,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight:
+                            allSelected ? FontWeight.w600 : FontWeight.normal,
+                        color: allSelected
+                            ? colorScheme.onPrimary
+                            : colorScheme.onSurface,
+                      ),
+                    ),
+                    selected: allSelected,
+                    onTap: onAll,
+                  ),
+                  customChip(
+                    content: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.star_rounded,
+                          size: 15,
+                          color: filter.favoritesOnly
+                              ? Colors.white
+                              : colorScheme.primary,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          l10n.favorites,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: filter.favoritesOnly
+                                ? FontWeight.w600
+                                : FontWeight.normal,
+                            color: filter.favoritesOnly
+                                ? colorScheme.onPrimary
+                                : colorScheme.onSurface,
+                          ),
+                        ),
+                      ],
+                    ),
+                    selected: filter.favoritesOnly,
+                    onTap: onFavorites,
+                  ),
+                  for (final c in categories)
+                    customChip(
+                      content: Text(
+                        c.name,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: filter.categoryId == c.id
+                              ? FontWeight.w600
+                              : FontWeight.normal,
+                          color: filter.categoryId == c.id
+                              ? colorScheme.onPrimary
+                              : colorScheme.onSurface,
+                        ),
+                      ),
+                      selected: filter.categoryId == c.id,
+                      onTap: () => onCategory(c.id),
+                    ),
+                ],
+              ),
             ),
+          ),
+          TextButton(
+            onPressed: onManage,
+            style: TextButton.styleFrom(
+              minimumSize: const Size(48, 38),
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+            ),
+            child: Text(
+              l10n.manage,
+              style: TextStyle(
+                color: colorScheme.primary,
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
+            ),
+          ),
         ],
+      ),
+    );
+  }
+}
+
+/// Sync status widget shown in the bottom bar.
+class _SyncStatus extends ConsumerWidget {
+  const _SyncStatus();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final locale = Localizations.localeOf(context).toString();
+    final syncOverviewAsync = ref.watch(syncOverviewProvider);
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(8),
+        onTap: () => context.push('/settings/webdav'),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+          child: syncOverviewAsync.when(
+            loading: () => const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ],
+            ),
+            error: (_, __) => Text(
+              l10n.syncStatusUnavailable,
+              style: TextStyle(
+                fontSize: 13,
+                color: colorScheme.onSurfaceVariant,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            data: (o) {
+              final Widget icon;
+              final String text;
+              final Color textColor;
+
+              if (o.syncing) {
+                icon = Icon(
+                  Icons.cloud_sync_outlined,
+                  size: 20,
+                  color: colorScheme.primary,
+                );
+                text = l10n.syncStatusSyncing;
+                textColor = colorScheme.primary;
+              } else if (o.lastSuccessAt != null) {
+                icon = Icon(
+                  Icons.cloud_done_outlined,
+                  size: 20,
+                  color: colorScheme.primary,
+                );
+                final hm =
+                    DateFormat.Hm(locale).format(o.lastSuccessAt!.toLocal());
+                text = '${l10n.synced} · $hm';
+                textColor = colorScheme.onSurfaceVariant;
+              } else if (o.enabled) {
+                icon = Icon(
+                  Icons.cloud_off_outlined,
+                  size: 20,
+                  color: colorScheme.onSurfaceVariant,
+                );
+                text = l10n.syncNever;
+                textColor = colorScheme.onSurfaceVariant;
+              } else {
+                icon = Icon(
+                  Icons.cloud_off_outlined,
+                  size: 20,
+                  color: colorScheme.onSurfaceVariant,
+                );
+                text = l10n.syncStatusDisabled;
+                textColor = colorScheme.onSurfaceVariant;
+              }
+
+              return Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  icon,
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      text,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: textColor,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
       ),
     );
   }
@@ -336,8 +834,7 @@ class _EmptyState extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     final hasQuery = filter.query.trim().isNotEmpty;
-    final hasFilter =
-        filter.categoryId != null || filter.favoritesOnly;
+    final hasFilter = filter.categoryId != null || filter.favoritesOnly;
 
     final String title;
     final String hint;

@@ -90,6 +90,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get categoryName => '分类名称';
 
   @override
+  String get changeCategory => '修改分类';
+
+  @override
   String get changePin => '修改 PIN';
 
   @override
@@ -146,6 +149,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get createNewVault => '创建新库';
+
+  @override
+  String get createdAtPrefix => '创建于';
 
   @override
   String get data => '数据';
@@ -240,6 +246,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get favorite => '收藏';
 
   @override
+  String get favoriteFailed => '收藏失败，请重试';
+
+  @override
   String get favorites => '收藏';
 
   @override
@@ -279,6 +288,11 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String importSuccess(int count) {
     return '成功导入 $count 条记录';
+  }
+
+  @override
+  String infoCount(int count) {
+    return '$count 条信息';
   }
 
   @override
@@ -336,6 +350,9 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get manage => '管理';
+
+  @override
   String get manualMerge => '手动合并';
 
   @override
@@ -354,6 +371,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String modified(String time) {
     return '修改于 $time';
   }
+
+  @override
+  String get myRecords => '我的信息';
 
   @override
   String get newInfo => '新建信息';
@@ -464,7 +484,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get recordsEmpty => '还没有记录';
 
   @override
-  String get recordsEmptyHint => '点击右下角新建记录';
+  String get recordsEmptyHint => '点击下方「新建信息」开始记录';
 
   @override
   String get recoverDesc =>
@@ -602,6 +622,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get smartRecommend => '智能推荐';
 
   @override
+  String get sortRecentlyCreated => '最近创建';
+
+  @override
+  String get sortRecentlyEdited => '最近编辑';
+
+  @override
+  String get sortTitle => '排序';
+
+  @override
+  String get sortTitleAZ => '标题 A–Z';
+
+  @override
   String get startRecovery => '开始恢复';
 
   @override
@@ -684,6 +716,14 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get timeoutImmediately => '立即';
+
+  @override
+  String timeToday(String time) {
+    return '今天 $time';
+  }
+
+  @override
+  String get timeYesterday => '昨天';
 
   @override
   String get titleHint => '标题（可选）';

@@ -42,6 +42,13 @@
       }
     }
   },
+  "@infoCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "@lastSuccess": {
     "placeholders": {
       "time": {
@@ -130,6 +137,13 @@
       }
     }
   },
+  "@timeToday": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
   "@updatedAt": {
     "placeholders": {
       "time": {
@@ -178,6 +192,7 @@
   "category": "Category",
   "categoryColor": "Category Color",
   "categoryName": "Category Name",
+  "changeCategory": "Change category",
   "changePin": "Change PIN",
   "clearFilter": "Clear Filters",
   "configSaved": "Configuration saved",
@@ -196,6 +211,7 @@
   "connectionFailed": "Connection failed: {error}",
   "connectionSuccess": "Connection successful",
   "createNewVault": "Create new vault",
+  "createdAtPrefix": "Created",
   "data": "Data",
   "delete": "Delete",
   "deleteCategory": "Delete Category",
@@ -226,6 +242,7 @@
   "exportSuccess": "Export successful",
   "exportTxt": "Export TXT",
   "favorite": "Favorite",
+  "favoriteFailed": "Couldn't update favorite, please try again",
   "favorites": "Favorites",
   "filterEmpty": "No records for this filter",
   "filterEmptyHint": "Try another category or clear the filter",
@@ -238,6 +255,7 @@
   "importMarkdown": "Import Markdown/TXT",
   "importPreview": "About to import {count} records",
   "importSuccess": "Imported {count} records",
+  "infoCount": "{count} items",
   "joinExistingVault": "Join existing vault",
   "keepBoth": "Keep both",
   "keepLocal": "Keep this version",
@@ -254,12 +272,14 @@
   "localVersion": "This device",
   "lockTimeout": "Lock after background",
   "lockoutTryLater": "Too many attempts, try again in {seconds}s",
+  "manage": "Manage",
   "manualMerge": "Merge manually",
   "maxTagsReached": "Maximum 10 tags",
   "mergeBodyHint": "Merged body",
   "mergeDialogTitle": "Merge manually",
   "mergeTitleHint": "Merged title",
   "modified": "Modified {time}",
+  "myRecords": "My Info",
   "newInfo": "New Info",
   "newRecord": "New Record",
   "newVaultPassword": "New vault password",
@@ -294,7 +314,7 @@
   "recordCount": "{count} records",
   "recordDeleted": "Moved to trash",
   "recordsEmpty": "No records yet",
-  "recordsEmptyHint": "Tap + to create your first record",
+  "recordsEmptyHint": "Tap \"New Info\" below to get started",
   "recoverDesc": "On a new device, download previously uploaded data from WebDAV and rebuild the local library. Only successfully uploaded data can be restored; offline edits that were never uploaded cannot be recovered.",
   "recoverFailedObjects": "Failed objects: {count}",
   "recoverFromWebdav": "Restore from WebDAV",
@@ -336,6 +356,10 @@
   "settings": "Settings",
   "showPassword": "Show password",
   "smartRecommend": "Smart suggestion",
+  "sortRecentlyCreated": "Recently created",
+  "sortRecentlyEdited": "Recently edited",
+  "sortTitle": "Sort",
+  "sortTitleAZ": "Title A–Z",
   "startRecovery": "Start recovery",
   "startSync": "Start sync",
   "startSyncSetup": "Start sync setup",
@@ -364,6 +388,8 @@
   "timeout1Min": "1 minute",
   "timeout5Min": "5 minutes",
   "timeoutImmediately": "Immediately",
+  "timeToday": "Today {time}",
+  "timeYesterday": "Yesterday",
   "titleHint": "Title (optional)",
   "trash": "Trash",
   "trashEmpty": "Trash is empty",

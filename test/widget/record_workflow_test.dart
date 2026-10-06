@@ -7,8 +7,10 @@ import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:suicun/core/database/app_database.dart';
 import 'package:suicun/core/database/providers.dart';
+import 'package:suicun/features/sync/sync_contract.dart';
 import 'package:suicun/main.dart';
 import 'package:suicun/shared/theme/theme_providers.dart';
 
@@ -19,6 +21,11 @@ Future<void> pumpApp(WidgetTester tester, AppDatabase db) async {
     ProviderScope(
       overrides: [
         appDatabaseProvider.overrideWithValue(db),
+        syncOverviewProvider.overrideWith(
+          (ref) => Stream<SyncOverview>.value(
+            const SyncOverview(enabled: false, syncing: false),
+          ),
+        ),
       ],
       child: const SuicunApp(),
     ),
@@ -44,6 +51,7 @@ void main() {
   late AppDatabase db;
 
   setUp(() async {
+    SharedPreferences.setMockInitialValues({});
     db = await freshDb();
   });
 
@@ -54,7 +62,7 @@ void main() {
   testWidgets('home shows empty state on first launch', (tester) async {
     await pumpApp(tester, db);
 
-    expect(find.text('Suicun'), findsOneWidget); // app bar title (en locale)
+    expect(find.text('My Info'), findsOneWidget); // app bar / header title (en locale)
     expect(find.text('No records yet'), findsOneWidget);
     expect(find.byTooltip('New Record'), findsOneWidget);
   });
@@ -128,10 +136,10 @@ void main() {
     await tester.pageBack();
     await tester.pumpAndSettle();
 
-    // Not favorited yet: no gold star shown; favorite via the ⋮ menu
-    expect(find.byIcon(Icons.star), findsNothing);
+    // Not favorited yet: star_border shown; favorite via the more_horiz menu
+    expect(find.byIcon(Icons.star_border), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.more_vert));
+    await tester.tap(find.byIcon(Icons.more_horiz));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Favorite'));
     await tester.pumpAndSettle();
@@ -147,13 +155,13 @@ void main() {
     await tester.enterText(findByHint('Title (optional)'), 'Doomed');
     await tester.pump(const Duration(milliseconds: 700));
     await tester.pumpAndSettle();
+    await tester.pageBack();
+    await tester.pumpAndSettle();
 
     // Delete via the overflow menu
-    await tester.tap(find.byIcon(Icons.more_vert));
+    await tester.tap(find.byIcon(Icons.more_horiz));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Delete'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Confirm'));
     await tester.pumpAndSettle();
 
     // Gone from home, snackbar offers undo
@@ -180,6 +188,48 @@ void main() {
     await tester.pageBack(); // settings -> home
     await tester.pumpAndSettle();
     expect(find.text('Doomed'), findsOneWidget);
+  });
+
+  testWidgets('sort mode persists and reorders the list', (tester) async {
+    await pumpApp(tester, db);
+
+    // Seed two records: 'B note' first, 'A note' second.
+    // 'A note' is created later so by default (Recently edited), B is below A.
+    for (final title in ['B note', 'A note']) {
+      await tester.tap(find.byTooltip('New Record'));
+      await tester.pumpAndSettle();
+      await tester.enterText(findByHint('Title (optional)'), title);
+      await tester.pump(const Duration(milliseconds: 700));
+      await tester.pumpAndSettle();
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+    }
+
+    // Default: Recently edited -> 'A note' on top (earlier y), 'B note' below (later y)
+    expect(find.text('Recently edited'), findsOneWidget);
+    var posA = tester.getTopLeft(find.text('A note'));
+    var posB = tester.getTopLeft(find.text('B note'));
+    expect(posA.dy < posB.dy, isTrue);
+
+    // Open sort sheet and select 'Title A–Z'
+    await tester.tap(find.text('Recently edited'));
+    await tester.pumpAndSettle();
+    expect(find.text('Title A–Z'), findsOneWidget);
+    await tester.tap(find.text('Title A–Z'));
+    await tester.pumpAndSettle();
+
+    // With Title A–Z: A note is before B note
+    expect(find.text('Title A–Z'), findsOneWidget);
+    posA = tester.getTopLeft(find.text('A note'));
+    posB = tester.getTopLeft(find.text('B note'));
+    expect(posA.dy < posB.dy, isTrue);
+
+    // Restart pump (re-pump with the same db) -> preference persists
+    await pumpApp(tester, db);
+    expect(find.text('Title A–Z'), findsOneWidget);
+    posA = tester.getTopLeft(find.text('A note'));
+    posB = tester.getTopLeft(find.text('B note'));
+    expect(posA.dy < posB.dy, isTrue);
   });
 
   testWidgets('theme switch persists in settings', (tester) async {

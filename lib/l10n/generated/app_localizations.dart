@@ -260,6 +260,12 @@ abstract class AppLocalizations {
   /// **'分类名称'**
   String get categoryName;
 
+  /// No description provided for @changeCategory.
+  ///
+  /// In zh, this message translates to:
+  /// **'修改分类'**
+  String get changeCategory;
+
   /// No description provided for @changePin.
   ///
   /// In zh, this message translates to:
@@ -367,6 +373,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'创建新库'**
   String get createNewVault;
+
+  /// No description provided for @createdAtPrefix.
+  ///
+  /// In zh, this message translates to:
+  /// **'创建于'**
+  String get createdAtPrefix;
 
   /// No description provided for @data.
   ///
@@ -548,6 +560,12 @@ abstract class AppLocalizations {
   /// **'收藏'**
   String get favorite;
 
+  /// No description provided for @favoriteFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'收藏失败，请重试'**
+  String get favoriteFailed;
+
   /// No description provided for @favorites.
   ///
   /// In zh, this message translates to:
@@ -619,6 +637,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'成功导入 {count} 条记录'**
   String importSuccess(int count);
+
+  /// No description provided for @infoCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count} 条信息'**
+  String infoCount(int count);
 
   /// No description provided for @joinExistingVault.
   ///
@@ -716,6 +740,12 @@ abstract class AppLocalizations {
   /// **'尝试次数过多，请 {seconds} 秒后再试'**
   String lockoutTryLater(Object seconds);
 
+  /// No description provided for @manage.
+  ///
+  /// In zh, this message translates to:
+  /// **'管理'**
+  String get manage;
+
   /// No description provided for @manualMerge.
   ///
   /// In zh, this message translates to:
@@ -751,6 +781,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'修改于 {time}'**
   String modified(String time);
+
+  /// No description provided for @myRecords.
+  ///
+  /// In zh, this message translates to:
+  /// **'我的信息'**
+  String get myRecords;
 
   /// No description provided for @newInfo.
   ///
@@ -959,7 +995,7 @@ abstract class AppLocalizations {
   /// No description provided for @recordsEmptyHint.
   ///
   /// In zh, this message translates to:
-  /// **'点击右下角新建记录'**
+  /// **'点击下方「新建信息」开始记录'**
   String get recordsEmptyHint;
 
   /// No description provided for @recoverDesc.
@@ -1208,6 +1244,30 @@ abstract class AppLocalizations {
   /// **'智能推荐'**
   String get smartRecommend;
 
+  /// No description provided for @sortRecentlyCreated.
+  ///
+  /// In zh, this message translates to:
+  /// **'最近创建'**
+  String get sortRecentlyCreated;
+
+  /// No description provided for @sortRecentlyEdited.
+  ///
+  /// In zh, this message translates to:
+  /// **'最近编辑'**
+  String get sortRecentlyEdited;
+
+  /// No description provided for @sortTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'排序'**
+  String get sortTitle;
+
+  /// No description provided for @sortTitleAZ.
+  ///
+  /// In zh, this message translates to:
+  /// **'标题 A–Z'**
+  String get sortTitleAZ;
+
   /// No description provided for @startRecovery.
   ///
   /// In zh, this message translates to:
@@ -1375,6 +1435,18 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'立即'**
   String get timeoutImmediately;
+
+  /// No description provided for @timeToday.
+  ///
+  /// In zh, this message translates to:
+  /// **'今天 {time}'**
+  String timeToday(String time);
+
+  /// No description provided for @timeYesterday.
+  ///
+  /// In zh, this message translates to:
+  /// **'昨天'**
+  String get timeYesterday;
 
   /// No description provided for @titleHint.
   ///
