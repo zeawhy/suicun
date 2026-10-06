@@ -5,16 +5,19 @@
 // - Never pretend "sync completed" or invent numbers.
 // - All numbers and sync states come strictly from SyncOverview.
 // - Password/secrets are never printed or logged.
+// - Recovery key is displayed once from consumePendingRecoveryKey and never persisted.
 // - No network activity is triggered automatically when disabled/unconfigured,
-//   except when the user explicitly taps "Test Connection".
+//   except when the user explicitly taps "Connect & sync" or "Test Connection".
 
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:suicun/features/sync/sync_contract.dart';
 import 'package:suicun/features/sync/sync_errors.dart';
+import 'package:suicun/features/sync/sync_provider.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
 import 'package:suicun/services/webdav_service.dart';
 import 'package:suicun/shared/utils/date_formatter.dart';
@@ -27,13 +30,26 @@ class WebdavSyncPage extends ConsumerStatefulWidget {
 }
 
 class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
+  // WebDAV connection controllers
   late final TextEditingController _urlController;
   late final TextEditingController _userController;
   late final TextEditingController _passController;
   late final TextEditingController _dirController;
 
+  // Vault branch controllers: noVault branch
+  late final TextEditingController _newVaultPassController;
+  late final TextEditingController _confirmVaultPassController;
+
+  // Vault branch controllers: hasVault branch
+  late final TextEditingController _existingPassController;
+  late final TextEditingController _recoveryKeyController;
+
+  // Vault branch controllers: hasV1Vault (migration) branch
+  late final TextEditingController _migrationPassController;
+
   bool _obscurePassword = true;
   bool _testing = false;
+  bool _busy = false;
   bool _syncingAction = false;
   bool _disablingAction = false;
   bool _loaded = false;
@@ -42,6 +58,24 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
   /// Validation errors returned by WebdavService.validateConfig.
   List<String> _errors = [];
 
+  // Vault probe check state
+  RemoteVaultCheck? _vaultCheck;
+
+  // noVault branch state
+  bool _obscureNewPass = true;
+  bool _obscureConfirmPass = true;
+  bool _vaultCreated = false;
+  bool _hasSavedPassword = false;
+  String? _pendingRecoveryKey;
+  bool _joinedExisting = false;
+
+  // hasVault branch state
+  bool _useRecoveryKey = false; // false = password, true = recovery key
+  bool _obscureExistingPass = true;
+
+  // hasV1Vault branch state
+  bool _obscureMigrationPass = true;
+
   @override
   void initState() {
     super.initState();
@@ -49,6 +83,13 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
     _userController = TextEditingController();
     _passController = TextEditingController();
     _dirController = TextEditingController(text: '/suicun/');
+
+    _newVaultPassController = TextEditingController();
+    _confirmVaultPassController = TextEditingController();
+    _existingPassController = TextEditingController();
+    _recoveryKeyController = TextEditingController();
+    _migrationPassController = TextEditingController();
+
     _loadSaved();
   }
 
@@ -59,6 +100,12 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
     _userController.dispose();
     _passController.dispose();
     _dirController.dispose();
+
+    _newVaultPassController.dispose();
+    _confirmVaultPassController.dispose();
+    _existingPassController.dispose();
+    _recoveryKeyController.dispose();
+    _migrationPassController.dispose();
     super.dispose();
   }
 
@@ -88,7 +135,13 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
   void _onFieldChanged() {
     final errors =
         ref.read(webdavServiceProvider).validateConfig(_currentConfig);
-    setState(() => _errors = errors);
+    setState(() {
+      _errors = errors;
+      _vaultCheck = null;
+      _vaultCreated = false;
+      _hasSavedPassword = false;
+      _pendingRecoveryKey = null;
+    });
     _autosaveTimer?.cancel();
     if (errors.isEmpty) {
       _autosaveTimer = Timer(const Duration(milliseconds: 800), () async {
@@ -119,6 +172,19 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
       WebdavProbeFailure.serverError => l10n.probeServerError,
       _ => l10n.probeUnknown,
     };
+  }
+
+  int _calculateStrength(String password) {
+    if (password.length >= 12 &&
+        RegExp(r'[a-zA-Z]').hasMatch(password) &&
+        RegExp(r'[0-9]').hasMatch(password) &&
+        RegExp(r'[^a-zA-Z0-9]').hasMatch(password)) {
+      return 2; // strong
+    }
+    if (password.length >= 8) {
+      return 1; // fair
+    }
+    return 0; // weak
   }
 
   Future<void> _testConnection(AppLocalizations l10n) async {
@@ -153,6 +219,223 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
+    }
+  }
+
+  Future<void> _handleConnectAndSync(AppLocalizations l10n) async {
+    final service = ref.read(webdavServiceProvider);
+    final errors = service.validateConfig(_currentConfig);
+    setState(() => _errors = errors);
+    if (errors.isNotEmpty) return;
+
+    setState(() {
+      _busy = true;
+      _vaultCheck = null;
+    });
+
+    try {
+      await service.saveConfig(_currentConfig);
+      final testResult = await service.testConnection(_currentConfig);
+      if (!mounted) return;
+      if (!testResult.ok) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.connectionFailed(_probeMessage(l10n, testResult))),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+        return;
+      }
+
+      final actions = ref.read(syncActionsProvider);
+      final check = await actions.checkRemoteVault(_currentConfig);
+      if (!mounted) return;
+      setState(() {
+        _vaultCheck = check;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      final isEn = Localizations.localeOf(context).languageCode == 'en';
+      final msg = e is SyncError
+          ? e.message(english: isEn)
+          : e is SyncProviderException
+              ? providerErrorMessage(e, english: isEn)
+              : e.toString();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(msg),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _handleCreateVault(AppLocalizations l10n) async {
+    final newPass = _newVaultPassController.text;
+    final confirmPass = _confirmVaultPassController.text;
+
+    if (newPass.length < 8) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.passwordTooShort),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+      return;
+    }
+    if (newPass != confirmPass) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.passwordMismatch),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _busy = true);
+    try {
+      final actions = ref.read(syncActionsProvider);
+      await actions.createVault(_currentConfig, newPass);
+      final recoveryKey = actions.consumePendingRecoveryKey();
+      final joinedExisting = actions.lastCreateJoinedExisting;
+      if (!mounted) return;
+      if (joinedExisting) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.existingVaultJoined),
+            backgroundColor: Theme.of(context).colorScheme.primary,
+          ),
+        );
+      }
+      setState(() {
+        _vaultCreated = true;
+        _joinedExisting = joinedExisting;
+        _pendingRecoveryKey = recoveryKey;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      final isEn = Localizations.localeOf(context).languageCode == 'en';
+      final msg = e is SyncError
+          ? e.message(english: isEn)
+          : e is SyncProviderException
+              ? providerErrorMessage(e, english: isEn)
+              : e.toString();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(msg),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _handleJoinVault(AppLocalizations l10n) async {
+    setState(() => _busy = true);
+    try {
+      final actions = ref.read(syncActionsProvider);
+      if (_useRecoveryKey) {
+        final key = _recoveryKeyController.text.trim();
+        await actions.joinVault(_currentConfig, recoveryKey: key);
+      } else {
+        final pass = _existingPassController.text;
+        await actions.joinVault(_currentConfig, password: pass);
+      }
+      if (!mounted) return;
+      await _finishSetup(l10n);
+    } catch (e) {
+      if (!mounted) return;
+      final isEn = Localizations.localeOf(context).languageCode == 'en';
+      final msg = e is SyncError
+          ? e.message(english: isEn)
+          : e is SyncProviderException
+              ? providerErrorMessage(e, english: isEn)
+              : e.toString();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(msg),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _handleMigrateVault(AppLocalizations l10n) async {
+    final pass = _migrationPassController.text;
+    if (pass.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.passwordRequired),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _busy = true);
+    try {
+      final actions = ref.read(syncActionsProvider);
+      await actions.migrateV1ToV2(_currentConfig, pass);
+      if (!mounted) return;
+      await _finishSetup(l10n);
+    } catch (e) {
+      if (!mounted) return;
+      final isEn = Localizations.localeOf(context).languageCode == 'en';
+      final msg = e is SyncError
+          ? e.message(english: isEn)
+          : e is SyncProviderException
+              ? providerErrorMessage(e, english: isEn)
+              : e.toString();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(msg),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _finishSetup(AppLocalizations l10n) async {
+    setState(() => _busy = true);
+    try {
+      final actions = ref.read(syncActionsProvider);
+      await actions.setEnabled(true);
+      await actions.syncNow();
+      if (!mounted) return;
+      setState(() {
+        _vaultCheck = null;
+        _pendingRecoveryKey = null;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.wizardDone),
+          backgroundColor: Theme.of(context).colorScheme.primary,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      final isEn = Localizations.localeOf(context).languageCode == 'en';
+      final msg = e is SyncError
+          ? e.message(english: isEn)
+          : e is SyncProviderException
+              ? providerErrorMessage(e, english: isEn)
+              : e.toString();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(msg),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _busy = false);
     }
   }
 
@@ -251,6 +534,10 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
         _passController.clear();
         _dirController.text = '/suicun/';
         _errors.clear();
+        _vaultCheck = null;
+        _vaultCreated = false;
+        _hasSavedPassword = false;
+        _pendingRecoveryKey = null;
       });
     } catch (e) {
       if (!mounted) return;
@@ -372,9 +659,11 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
                 _buildStatusSection(l10n, theme, colorScheme, overviewAsync),
                 const SizedBox(height: 12),
                 if (!isEnabled) ...[
-                  _buildStartSetupCard(l10n, theme, colorScheme),
-                  const SizedBox(height: 12),
-                  _buildFormCard(l10n, theme, colorScheme),
+                  _buildSetupCard(l10n, theme, colorScheme),
+                  if (_vaultCheck != null) ...[
+                    const SizedBox(height: 12),
+                    _buildVaultBranchCard(l10n, theme, colorScheme),
+                  ],
                 ] else ...[
                   _buildReadOnlyConfigCard(l10n, theme, colorScheme),
                 ],
@@ -781,62 +1070,6 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
     );
   }
 
-  Widget _buildStartSetupCard(
-    AppLocalizations l10n,
-    ThemeData theme,
-    ColorScheme colorScheme,
-  ) {
-    return Card(
-      color: colorScheme.primaryContainer,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Icon(
-              Icons.sync_alt_outlined,
-              size: 32,
-              color: colorScheme.onPrimaryContainer,
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l10n.webdavSync,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      color: colorScheme.onPrimaryContainer,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    l10n.syncStatusDisabled,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onPrimaryContainer.withValues(alpha: 0.8),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            SizedBox(
-              height: 48,
-              child: FilledButton(
-                style: FilledButton.styleFrom(
-                  backgroundColor: colorScheme.primary,
-                  foregroundColor: colorScheme.onPrimary,
-                ),
-                onPressed: () => context.push('/settings/webdav/wizard'),
-                child: Text(l10n.startSyncSetup),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildReadOnlyConfigCard(
     AppLocalizations l10n,
     ThemeData theme,
@@ -930,7 +1163,7 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
     );
   }
 
-  Widget _buildFormCard(
+  Widget _buildSetupCard(
     AppLocalizations l10n,
     ThemeData theme,
     ColorScheme colorScheme,
@@ -939,7 +1172,15 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            Text(
+              l10n.wizardConnectionDesc,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 16),
             _formRow(
               l10n: l10n,
               theme: theme,
@@ -988,8 +1229,30 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
             SizedBox(
               width: double.infinity,
               height: 48,
+              child: FilledButton(
+                onPressed: (_testing || _busy)
+                    ? null
+                    : () => _handleConnectAndSync(l10n),
+                child: _busy
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text(l10n.connectAndSync),
+              ),
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              height: 48,
               child: OutlinedButton(
-                onPressed: _testing ? null : () => _testConnection(l10n),
+                onPressed: (_testing || _busy)
+                    ? null
+                    : () => _testConnection(l10n),
                 child: _testing
                     ? const SizedBox(
                         width: 20,
@@ -1002,6 +1265,589 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildVaultBranchCard(
+    AppLocalizations l10n,
+    ThemeData theme,
+    ColorScheme colorScheme,
+  ) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: switch (_vaultCheck) {
+          RemoteVaultCheck.noVault =>
+            _buildNoVaultBranch(l10n, theme, colorScheme),
+          RemoteVaultCheck.hasV1Vault =>
+            _buildMigrationBranch(l10n, theme, colorScheme),
+          _ => _buildHasVaultBranch(l10n, theme, colorScheme),
+        },
+      ),
+    );
+  }
+
+  Widget _buildNoVaultBranch(
+    AppLocalizations l10n,
+    ThemeData theme,
+    ColorScheme colorScheme,
+  ) {
+    if (_vaultCreated) {
+      // Sub-step: confirm password safety & recovery key (if present)
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (_joinedExisting) ...[
+            Card(
+              color: colorScheme.primaryContainer,
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.info_outline,
+                      color: colorScheme.onPrimaryContainer,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        l10n.existingVaultJoined,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.onPrimaryContainer,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+          if (_pendingRecoveryKey != null) ...[
+            Card(
+              color: colorScheme.surfaceContainerHighest,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.vpn_key_outlined,
+                          color: colorScheme.primary,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          l10n.recoveryKeyTitle,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: theme.scaffoldBackgroundColor,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: colorScheme.outlineVariant,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: SelectableText(
+                              _pendingRecoveryKey!,
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontFamily: 'monospace',
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.2,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          FilledButton.tonalIcon(
+                            onPressed: () {
+                              Clipboard.setData(
+                                ClipboardData(text: _pendingRecoveryKey!),
+                              );
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(l10n.recoveryKeyCopied),
+                                ),
+                              );
+                            },
+                            icon: const Icon(Icons.copy, size: 18),
+                            label: Text(l10n.copyRecoveryKey),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          Icons.warning_amber_rounded,
+                          color: colorScheme.error,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            l10n.recoveryKeyWarning,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: colorScheme.error,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+          Card(
+            color: colorScheme.errorContainer.withValues(alpha: 0.3),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.warning_amber_rounded,
+                    color: colorScheme.error,
+                    size: 28,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      l10n.keepPasswordSafe,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onErrorContainer,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          CheckboxListTile(
+            value: _hasSavedPassword,
+            onChanged: (val) {
+              setState(() => _hasSavedPassword = val ?? false);
+            },
+            title: Text(l10n.iHaveSavedPassword),
+            controlAffinity: ListTileControlAffinity.leading,
+            contentPadding: EdgeInsets.zero,
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              OutlinedButton(
+                onPressed: _busy
+                    ? null
+                    : () {
+                        setState(() {
+                          _vaultCreated = false;
+                          _pendingRecoveryKey = null;
+                        });
+                      },
+                child: Text(l10n.cancel),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: SizedBox(
+                  height: 48,
+                  child: FilledButton(
+                    onPressed: _hasSavedPassword && !_busy
+                        ? () => _finishSetup(l10n)
+                        : null,
+                    child: _busy
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : Text(l10n.confirm),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      );
+    }
+
+    final strength = _calculateStrength(_newVaultPassController.text);
+    final (strengthText, strengthIcon, strengthColor) = switch (strength) {
+      2 => (
+          l10n.passwordStrengthStrong,
+          Icons.check_circle_outline,
+          Colors.green.shade700
+        ),
+      1 => (
+          l10n.passwordStrengthFair,
+          Icons.info_outline,
+          Colors.amber.shade800
+        ),
+      _ => (
+          l10n.passwordStrengthWeak,
+          Icons.shield_outlined,
+          colorScheme.error
+        ),
+    };
+
+    final mismatch = _newVaultPassController.text.isNotEmpty &&
+        _confirmVaultPassController.text.isNotEmpty &&
+        _newVaultPassController.text != _confirmVaultPassController.text;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          l10n.wizardNoVaultDesc,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: colorScheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: 16),
+        TextField(
+          controller: _newVaultPassController,
+          obscureText: _obscureNewPass,
+          autocorrect: false,
+          enableSuggestions: false,
+          onChanged: (_) => setState(() {}),
+          decoration: InputDecoration(
+            labelText: l10n.newVaultPassword,
+            filled: true,
+            fillColor: colorScheme.surfaceContainerHighest,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+            suffixIcon: IconButton(
+              icon: Icon(_obscureNewPass
+                  ? Icons.visibility_off_outlined
+                  : Icons.visibility_outlined),
+              tooltip:
+                  _obscureNewPass ? l10n.showPassword : l10n.hidePassword,
+              onPressed: () =>
+                  setState(() => _obscureNewPass = !_obscureNewPass),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Icon(strengthIcon, size: 16, color: strengthColor),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Text(
+                strengthText,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: strengthColor,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          controller: _confirmVaultPassController,
+          obscureText: _obscureConfirmPass,
+          autocorrect: false,
+          enableSuggestions: false,
+          onChanged: (_) => setState(() {}),
+          decoration: InputDecoration(
+            labelText: l10n.confirmVaultPassword,
+            filled: true,
+            fillColor: colorScheme.surfaceContainerHighest,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+            suffixIcon: IconButton(
+              icon: Icon(_obscureConfirmPass
+                  ? Icons.visibility_off_outlined
+                  : Icons.visibility_outlined),
+              tooltip:
+                  _obscureConfirmPass ? l10n.showPassword : l10n.hidePassword,
+              onPressed: () =>
+                  setState(() => _obscureConfirmPass = !_obscureConfirmPass),
+            ),
+          ),
+        ),
+        if (mismatch) ...[
+          const SizedBox(height: 6),
+          Text(
+            l10n.passwordMismatch,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: colorScheme.error,
+            ),
+          ),
+        ],
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            OutlinedButton(
+              onPressed: _busy
+                  ? null
+                  : () {
+                      setState(() => _vaultCheck = null);
+                    },
+              child: Text(l10n.cancel),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: SizedBox(
+                height: 48,
+                child: FilledButton(
+                  onPressed: _busy || mismatch
+                      ? null
+                      : () => _handleCreateVault(l10n),
+                  child: _busy
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(l10n.wizardCreating),
+                          ],
+                        )
+                      : Text(l10n.createNewVault),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHasVaultBranch(
+    AppLocalizations l10n,
+    ThemeData theme,
+    ColorScheme colorScheme,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          l10n.wizardHasVaultDesc,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: colorScheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: 16),
+        SegmentedButton<bool>(
+          segments: [
+            ButtonSegment(
+              value: false,
+              label: Text(l10n.usePassword),
+              icon: const Icon(Icons.password_outlined),
+            ),
+            ButtonSegment(
+              value: true,
+              label: Text(l10n.useRecoveryKey),
+              icon: const Icon(Icons.key_outlined),
+            ),
+          ],
+          selected: {_useRecoveryKey},
+          onSelectionChanged: (val) {
+            setState(() => _useRecoveryKey = val.first);
+          },
+        ),
+        const SizedBox(height: 16),
+        if (!_useRecoveryKey)
+          TextField(
+            controller: _existingPassController,
+            obscureText: _obscureExistingPass,
+            autocorrect: false,
+            enableSuggestions: false,
+            decoration: InputDecoration(
+              labelText: l10n.vaultPassword,
+              filled: true,
+              fillColor: colorScheme.surfaceContainerHighest,
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              suffixIcon: IconButton(
+                icon: Icon(_obscureExistingPass
+                    ? Icons.visibility_off_outlined
+                    : Icons.visibility_outlined),
+                tooltip: _obscureExistingPass
+                    ? l10n.showPassword
+                    : l10n.hidePassword,
+                onPressed: () => setState(
+                    () => _obscureExistingPass = !_obscureExistingPass),
+              ),
+            ),
+          )
+        else
+          TextField(
+            controller: _recoveryKeyController,
+            autocorrect: false,
+            enableSuggestions: false,
+            decoration: InputDecoration(
+              labelText: l10n.vaultRecoveryKey,
+              filled: true,
+              fillColor: colorScheme.surfaceContainerHighest,
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+          ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            OutlinedButton(
+              onPressed: _busy
+                  ? null
+                  : () {
+                      setState(() => _vaultCheck = null);
+                    },
+              child: Text(l10n.cancel),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: SizedBox(
+                height: 48,
+                child: FilledButton(
+                  onPressed: _busy ? null : () => _handleJoinVault(l10n),
+                  child: _busy
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(l10n.wizardJoining),
+                          ],
+                        )
+                      : Text(l10n.joinExistingVault),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMigrationBranch(
+    AppLocalizations l10n,
+    ThemeData theme,
+    ColorScheme colorScheme,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Card(
+          color: colorScheme.surfaceContainerHighest,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.history_toggle_off,
+                      color: colorScheme.primary,
+                      size: 24,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      l10n.migrationTitle,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  l10n.migrationBody,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        TextField(
+          controller: _migrationPassController,
+          obscureText: _obscureMigrationPass,
+          autocorrect: false,
+          enableSuggestions: false,
+          decoration: InputDecoration(
+            labelText: l10n.vaultPassword,
+            filled: true,
+            fillColor: colorScheme.surfaceContainerHighest,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+            suffixIcon: IconButton(
+              icon: Icon(_obscureMigrationPass
+                  ? Icons.visibility_off_outlined
+                  : Icons.visibility_outlined),
+              tooltip: _obscureMigrationPass
+                  ? l10n.showPassword
+                  : l10n.hidePassword,
+              onPressed: () => setState(
+                  () => _obscureMigrationPass = !_obscureMigrationPass),
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            OutlinedButton(
+              onPressed: _busy
+                  ? null
+                  : () {
+                      setState(() => _vaultCheck = null);
+                    },
+              child: Text(l10n.cancel),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: SizedBox(
+                height: 48,
+                child: FilledButton(
+                  onPressed: _busy ? null : () => _handleMigrateVault(l10n),
+                  child: _busy
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Text(l10n.migrationBackupAndMigrate),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 

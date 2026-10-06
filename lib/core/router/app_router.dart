@@ -3,9 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:suicun/features/records/presentation/home_page.dart';
 import 'package:suicun/features/records/presentation/edit_record_page.dart';
 import 'package:suicun/features/settings/presentation/conflicts_page.dart';
-import 'package:suicun/features/settings/presentation/recover_page.dart';
 import 'package:suicun/features/settings/presentation/settings_page.dart';
-import 'package:suicun/features/settings/presentation/sync_wizard_page.dart';
 import 'package:suicun/features/settings/presentation/webdav_sync_page.dart';
 import 'package:suicun/features/security/presentation/security_page.dart';
 import 'package:suicun/features/trash/presentation/trash_page.dart';
@@ -56,18 +54,10 @@ GoRouter appRouter(Ref ref) {
                 builder: (context, state) => const WebdavSyncPage(),
                 routes: [
                   GoRoute(
-                    path: 'wizard',
-                    builder: (context, state) => const SyncWizardPage(),
-                  ),
-                  GoRoute(
                     path: 'conflicts',
                     builder: (context, state) => const ConflictsPage(),
                   ),
                 ],
-              ),
-              GoRoute(
-                path: 'recover',
-                builder: (context, state) => const RecoverPage(),
               ),
               GoRoute(
                 path: 'security',

@@ -134,6 +134,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get conflictsTitle => '同步冲突';
 
   @override
+  String get connectAndSync => '连接并同步';
+
+  @override
   String connectionFailed(String error) {
     return '连接失败：$error';
   }

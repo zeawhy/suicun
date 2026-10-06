@@ -192,6 +192,7 @@
   "conflictTypeTag": "标签",
   "conflictsEmpty": "没有未解决的冲突",
   "conflictsTitle": "同步冲突",
+  "connectAndSync": "连接并同步",
   "connectionFailed": "连接失败：{error}",
   "connectionSuccess": "连接成功",
   "createNewVault": "创建新库",

@@ -192,6 +192,7 @@
   "conflictTypeTag": "Tag",
   "conflictsEmpty": "No unresolved conflicts",
   "conflictsTitle": "Sync conflicts",
+  "connectAndSync": "Connect & sync",
   "connectionFailed": "Connection failed: {error}",
   "connectionSuccess": "Connection successful",
   "createNewVault": "Create new vault",

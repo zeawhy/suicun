@@ -136,6 +136,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get conflictsTitle => 'Sync conflicts';
 
   @override
+  String get connectAndSync => 'Connect & sync';
+
+  @override
   String connectionFailed(String error) {
     return 'Connection failed: $error';
   }

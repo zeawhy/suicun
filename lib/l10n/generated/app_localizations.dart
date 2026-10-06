@@ -344,6 +344,12 @@ abstract class AppLocalizations {
   /// **'同步冲突'**
   String get conflictsTitle;
 
+  /// No description provided for @connectAndSync.
+  ///
+  /// In zh, this message translates to:
+  /// **'连接并同步'**
+  String get connectAndSync;
+
   /// No description provided for @connectionFailed.
   ///
   /// In zh, this message translates to:

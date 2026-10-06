@@ -89,28 +89,6 @@ class SettingsPage extends ConsumerWidget {
           _buildSectionHeader(context, l10n.sync),
           Card(
             margin: EdgeInsets.zero,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _navTile(
-                  context,
-                  icon: Icons.cloud_outlined,
-                  title: l10n.webdavSync,
-                  onTap: () => context.push('/settings/webdav'),
-                ),
-                const Divider(height: 1, indent: 56, endIndent: 16),
-                _navTile(
-                  context,
-                  icon: Icons.cloud_download_outlined,
-                  title: l10n.recoverFromWebdav,
-                  onTap: () => context.push('/settings/recover'),
-                ),
-              ],
-            ),
-          ),
-          _buildSectionHeader(context, l10n.sync),
-          Card(
-            margin: EdgeInsets.zero,
             child: _navTile(
               context,
               icon: Icons.cloud_outlined,
