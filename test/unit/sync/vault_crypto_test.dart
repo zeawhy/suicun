@@ -329,8 +329,9 @@ void main() {
       final base = await envelopeJson();
       Map<String, dynamic> with_(String k, Object? v) => {...base, k: v};
 
+      // version 3 throws unsupportedVersion
       expect(
-          () => crypto.parseEnvelope(enc(with_('protocol_version', 2))),
+          () => crypto.parseEnvelope(enc(with_('protocol_version', 3))),
           throwsA(isA<VaultCryptoError>().having(
               (e) => e.code, 'code', VaultCryptoCode.unsupportedVersion)));
       expect(() => crypto.parseEnvelope(enc(with_('format', 'nope'))),
@@ -372,6 +373,184 @@ void main() {
           throwsA(isA<VaultCryptoError>()));
       expect(() => VaultCrypto.parseRecoveryKey('ab' * 33),
           throwsA(isA<VaultCryptoError>()));
+    });
+  });
+
+  group('v2 vault crypto', () {
+    final crypto = VaultCrypto(random: Random(42));
+
+    test('key object create/parse roundtrip and open with password/recovery', () async {
+      final created = await crypto.createKeyObject(
+        password: 'secure-password',
+        kdf: _fastKdf,
+        origin: 'created',
+        createdByDevice: 'device-test',
+      );
+      expect(created.keyId, hasLength(16));
+      expect(created.variant, hasLength(8));
+      expect(created.kvault, hasLength(32));
+
+      final parsed = VaultKeyObject.parse(created.keyJson);
+      expect(parsed.protocolVersion, kVaultProtocolVersionV2);
+      expect(parsed.keyId, created.keyId);
+      expect(parsed.variant, created.variant);
+      expect(parsed.origin, 'created');
+      expect(parsed.createdByDevice, 'device-test');
+      expect(parsed.slots, hasLength(2));
+
+      // Open with password
+      final unlockedPass = await crypto.openKeyObjectWithPassword(
+        created.keyJson,
+        'secure-password',
+      );
+      expect(unlockedPass.keyId, created.keyId);
+      expect(unlockedPass.kvault, created.kvault);
+
+      // Open with recovery key
+      final unlockedRec = await crypto.openKeyObjectWithRecoveryKey(
+        created.keyJson,
+        created.recoveryKey,
+      );
+      expect(unlockedRec.keyId, created.keyId);
+      expect(unlockedRec.kvault, created.kvault);
+
+      // Wrong password fails
+      expect(
+        () => crypto.openKeyObjectWithPassword(created.keyJson, 'wrong-pass'),
+        _cryptoError(VaultCryptoCode.wrongPasswordOrKey),
+      );
+
+      // Wrong recovery key fails
+      final otherRecovery = VaultCrypto.formatRecoveryKey(Uint8List(32));
+      expect(
+        () => crypto.openKeyObjectWithRecoveryKey(created.keyJson, otherRecovery),
+        _cryptoError(VaultCryptoCode.wrongPasswordOrKey),
+      );
+    });
+
+    test('slot AAD binding tamper -> wrongPasswordOrKey', () async {
+      final created = await crypto.createKeyObject(
+        password: 'test-pwd',
+        kdf: _fastKdf,
+      );
+      final map = jsonDecode(created.keyJson) as Map<String, dynamic>;
+      // Tamper key_id in json to change unwrap AAD
+      map['key_id'] = '0123456789abcdef';
+      final tamperedJson = jsonEncode(map);
+
+      expect(
+        () => crypto.openKeyObjectWithPassword(tamperedJson, 'test-pwd'),
+        _cryptoError(VaultCryptoCode.wrongPasswordOrKey),
+      );
+    });
+
+    test('envelope v2 encrypt/decrypt roundtrip', () async {
+      final created = await crypto.createKeyObject(password: 'pwd', kdf: _fastKdf);
+      final payload = _payload('rev-201', 'record', 'rec-99');
+      final encryptedBytes = await crypto.encryptRevisionV2(
+        kvault: created.kvault,
+        keyId: created.keyId,
+        revisionId: 'rev-201',
+        entityType: 'record',
+        entityId: 'rec-99',
+        payload: payload,
+      );
+
+      final envelope = crypto.parseEnvelope(encryptedBytes);
+      expect(envelope.protocolVersion, kVaultProtocolVersionV2);
+      expect(envelope.keyId, created.keyId);
+      expect(envelope.vaultId, isNull);
+      expect(envelope.revisionId, 'rev-201');
+
+      final decrypted = await crypto.decryptRevisionV2(
+        kvault: created.kvault,
+        objectBytes: encryptedBytes,
+      );
+      expect(decrypted['revision_id'], 'rev-201');
+      expect(decrypted['snapshot'], payload['snapshot']);
+    });
+
+    test('key_id mismatch / AAD tamper -> tampered', () async {
+      final created = await crypto.createKeyObject(password: 'pwd', kdf: _fastKdf);
+      final payload = _payload('rev-202', 'record', 'rec-99');
+      final encryptedBytes = await crypto.encryptRevisionV2(
+        kvault: created.kvault,
+        keyId: created.keyId,
+        revisionId: 'rev-202',
+        entityType: 'record',
+        entityId: 'rec-99',
+        payload: payload,
+      );
+
+      final map = jsonDecode(utf8.decode(encryptedBytes)) as Map<String, dynamic>;
+      map['key_id'] = 'fedcba9876543210';
+      final tamperedBytes = Uint8List.fromList(utf8.encode(jsonEncode(map)));
+
+      expect(
+        () => crypto.decryptRevisionV2(
+          kvault: created.kvault,
+          objectBytes: tamperedBytes,
+        ),
+        _cryptoError(VaultCryptoCode.tampered),
+      );
+    });
+
+    test('legacy decrypt via decryptLegacyRevision', () async {
+      final v1Created = await crypto.createVault(password: 'v1pass', kdf: _fastKdf);
+      final payload = _payload('rev-v1', 'record', 'rec-v1');
+      final v1Bytes = await crypto.encryptRevision(
+        session: v1Created.session,
+        revisionId: 'rev-v1',
+        entityType: 'record',
+        entityId: 'rec-v1',
+        payload: payload,
+      );
+
+      final decrypted = await crypto.decryptLegacyRevision(
+        kvault: v1Created.session.kvault,
+        legacyVaultId: v1Created.session.vaultId,
+        objectBytes: v1Bytes,
+      );
+      expect(decrypted['revision_id'], 'rev-v1');
+      expect(decrypted['entity_id'], 'rec-v1');
+
+      // Wrong legacyVaultId throws malformed / legacy vault mismatch
+      expect(
+        () => crypto.decryptLegacyRevision(
+          kvault: v1Created.session.kvault,
+          legacyVaultId: 'other-vault-id',
+          objectBytes: v1Bytes,
+        ),
+        _cryptoError(VaultCryptoCode.malformed),
+      );
+    });
+
+    test('parseEnvelope rejects protocol_version 3 with unsupportedVersion', () {
+      final badEnvelope = utf8.encode(jsonEncode({
+        'format': 'suicun-revision',
+        'protocol_version': 3,
+        'key_id': '0123456789abcdef',
+        'revision_id': 'rev-3',
+        'entity_type': 'record',
+        'entity_id': 'rec-3',
+        'nonce_b64': base64Encode(Uint8List(12)),
+        'ciphertext_b64': base64Encode(Uint8List(32)),
+      }));
+
+      expect(
+        () => crypto.parseEnvelope(badEnvelope),
+        throwsA(isA<VaultCryptoError>().having(
+          (e) => e.code,
+          'code',
+          VaultCryptoCode.unsupportedVersion,
+        )),
+      );
+    });
+
+    test('MultiKeySession pickActiveKeyId returns lexicographic minimum', () {
+      expect(MultiKeySession.pickActiveKeyId([]), '');
+      expect(MultiKeySession.pickActiveKeyId(['b', 'a', 'c']), 'a');
+      expect(MultiKeySession.pickActiveKeyId(['0002', '0001', '0003']), '0001');
     });
   });
 }
