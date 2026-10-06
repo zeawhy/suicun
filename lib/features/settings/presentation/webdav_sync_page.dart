@@ -538,6 +538,16 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
                   ),
                 ],
               ),
+              if (overview.currentStep != null)
+                Padding(
+                  padding: const EdgeInsets.only(left: 24, top: 6),
+                  child: Text(
+                    overview.currentStep!,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
               const SizedBox(height: 12),
             ],
             Row(
