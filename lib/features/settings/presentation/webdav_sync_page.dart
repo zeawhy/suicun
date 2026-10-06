@@ -576,6 +576,26 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
               ],
             ),
             const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(
+                  Icons.description_outlined,
+                  size: 20,
+                  color: colorScheme.onSurfaceVariant,
+                  semanticLabel: l10n.syncedRecordCount(
+                      overview.syncedRecords, overview.totalRecords),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    l10n.syncedRecordCount(
+                        overview.syncedRecords, overview.totalRecords),
+                    style: theme.textTheme.bodyMedium,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
             InkWell(
               borderRadius: BorderRadius.circular(8),
               onTap: overview.conflictCount > 0

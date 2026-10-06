@@ -397,6 +397,11 @@ class AppLocalizationsZh extends AppLocalizations {
   String get pendingUpload => '待上传';
 
   @override
+  String syncedRecordCount(int synced, int total) {
+    return '已同步 $synced / 共 $total 条记录';
+  }
+
+  @override
   String get permanentDelete => '彻底删除';
 
   @override

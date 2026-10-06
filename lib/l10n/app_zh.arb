@@ -75,6 +75,16 @@
       }
     }
   },
+  "@syncedRecordCount": {
+    "placeholders": {
+      "synced": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "@recordCount": {
     "placeholders": {
       "count": {
@@ -263,6 +273,7 @@
   "passwordTooShort": "密码至少 8 位",
   "pendingCount": "待上传：{count}",
   "pendingUpload": "待上传",
+  "syncedRecordCount": "已同步 {synced} / 共 {total} 条记录",
   "permanentDelete": "彻底删除",
   "permanentDeleteConfirm": "彻底删除后无法恢复。确认吗？",
   "pinLabel": "PIN",

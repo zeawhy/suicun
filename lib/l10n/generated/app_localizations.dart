@@ -830,6 +830,12 @@ abstract class AppLocalizations {
   /// **'待上传'**
   String get pendingUpload;
 
+  /// No description provided for @syncedRecordCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'已同步 {synced} / 共 {total} 条记录'**
+  String syncedRecordCount(int synced, int total);
+
   /// No description provided for @permanentDelete.
   ///
   /// In zh, this message translates to:

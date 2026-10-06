@@ -26,6 +26,8 @@ class SyncOverview {
     this.conflictCount = 0,
     this.lockedKeyCount = 0,
     this.keyCount = 0,
+    this.totalRecords = 0,
+    this.syncedRecords = 0,
     this.vaultId,
     this.lastError,
   });
@@ -50,6 +52,12 @@ class SyncOverview {
 
   /// Total number of keys known on server.
   final int keyCount;
+
+  /// Number of live (non-deleted) local records.
+  final int totalRecords;
+
+  /// Live local records whose head revision(s) are all confirmed on the server.
+  final int syncedRecords;
 
   /// The vault id of the joined sync library, if any.
   final String? vaultId;

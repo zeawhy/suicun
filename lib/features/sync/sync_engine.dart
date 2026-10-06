@@ -302,6 +302,7 @@ class SyncEngine implements SyncActions {
 
   Future<SyncOverview> getOverview() async {
     final state = await _store.getState();
+    final counts = await _recordSyncCounts();
     return SyncOverview(
       enabled: _session != null && _stateEnabled,
       syncing: _syncing,
@@ -310,9 +311,34 @@ class SyncEngine implements SyncActions {
       conflictCount: await _store.openConflictCount(),
       lockedKeyCount: _session?.lockedKeyIds.length ?? 0,
       keyCount: _session?.allKeyIds.length ?? _session?.vault.keys.length ?? 0,
+      totalRecords: counts.total,
+      syncedRecords: counts.synced,
       vaultId: state?.vaultId,
       lastError: _lastError?.message(english: _isEnglish),
     );
+  }
+
+  /// Live local records vs. those whose head revisions all have a remote
+  /// receipt (receipts are written only after a verified upload/download).
+  Future<({int total, int synced})> _recordSyncCounts() async {
+    final rows = await (_db.select(_db.records)
+          ..where((r) => r.deletedAt.isNull()))
+        .get();
+    var synced = 0;
+    for (final r in rows) {
+      final heads =
+          await _store.computeHeads(EntitySnapshots.recordType, r.id);
+      if (heads.isEmpty) continue;
+      var all = true;
+      for (final h in heads) {
+        if (!await _store.hasReceipt(h.revisionId)) {
+          all = false;
+          break;
+        }
+      }
+      if (all) synced++;
+    }
+    return (total: rows.length, synced: synced);
   }
 
   void _emitOverview() {
@@ -1149,11 +1175,65 @@ class SyncEngine implements SyncActions {
         keys: {created.keyId: created.kvault},
       );
       await _finishJoinV2(config, provider, session, caps, password);
+      // A freshly created vault starts empty on the server: publish what this
+      // device already has. (joinVault deliberately does NOT do this.)
+      await backfillLocalEntities();
       _pendingRecoveryKey = created.recoveryKey;
       ok = true;
     } finally {
       if (!ok) provider.close();
     }
+  }
+
+  /// Enqueues snapshots of all live local categories, tags and records that
+  /// have no revisions yet. Idempotent. Requires an active vault session.
+  /// Entities in the trash stay local-only. Returns the number enqueued.
+  Future<int> backfillLocalEntities() async {
+    var enqueued = 0;
+    await _db.transaction(() async {
+      Future<bool> fresh(String type, String id) async =>
+          (await _store.computeHeads(type, id)).isEmpty;
+
+      // Categories and tags first so records reference known entities.
+      final cats = await (_db.select(_db.categories)
+            ..where((c) => c.deletedAt.isNull()))
+          .get();
+      for (final c in cats) {
+        if (!await fresh(EntitySnapshots.categoryType, c.id)) continue;
+        await syncEnqueuer.enqueueCategorySnapshot(
+            id: c.id, name: c.name, color: c.color);
+        enqueued++;
+      }
+      final tags = await (_db.select(_db.tags)
+            ..where((t) => t.deletedAt.isNull()))
+          .get();
+      for (final t in tags) {
+        if (!await fresh(EntitySnapshots.tagType, t.id)) continue;
+        await syncEnqueuer.enqueueTagSnapshot(id: t.id, name: t.name);
+        enqueued++;
+      }
+      final records = await (_db.select(_db.records)
+            ..where((r) => r.deletedAt.isNull()))
+          .get();
+      for (final r in records) {
+        if (!await fresh(EntitySnapshots.recordType, r.id)) continue;
+        final links = await (_db.select(_db.recordTags)
+              ..where((rt) => rt.recordId.equals(r.id)))
+            .get();
+        await syncEnqueuer.enqueueRecordSnapshot(
+          recordId: r.id,
+          title: r.title,
+          body: r.body,
+          categoryId: r.categoryId,
+          tagIds: links.map((l) => l.tagId).toList(),
+          isFavorite: r.isFavorite,
+          createdAt: r.createdAt,
+          updatedAt: r.updatedAt,
+        );
+        enqueued++;
+      }
+    });
+    return enqueued;
   }
 
   @override

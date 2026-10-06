@@ -407,6 +407,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pendingUpload => 'Pending upload';
 
   @override
+  String syncedRecordCount(int synced, int total) {
+    return 'Synced $synced / $total records';
+  }
+
+  @override
   String get permanentDelete => 'Delete Permanently';
 
   @override

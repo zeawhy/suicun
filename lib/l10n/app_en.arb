@@ -75,6 +75,16 @@
       }
     }
   },
+  "@syncedRecordCount": {
+    "placeholders": {
+      "synced": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "@recordCount": {
     "placeholders": {
       "count": {
@@ -263,6 +273,7 @@
   "passwordTooShort": "Password must be at least 8 characters",
   "pendingCount": "Pending upload: {count}",
   "pendingUpload": "Pending upload",
+  "syncedRecordCount": "Synced {synced} / {total} records",
   "permanentDelete": "Delete Permanently",
   "permanentDeleteConfirm": "This cannot be undone. Delete permanently?",
   "pinLabel": "PIN",
