@@ -223,7 +223,9 @@ class AppLockService {
     try {
       return await _auth.canCheckBiometrics ||
           await _auth.isDeviceSupported();
-    } on PlatformException {
+    } catch (_) {
+      // Any failure (PlatformException, MissingPluginException from a
+      // stale build, ...) means "can't offer biometric" — never crash.
       return false;
     }
   }

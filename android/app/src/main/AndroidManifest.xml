@@ -1,6 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Required for the WebDAV connection test / sync (release builds). -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Required by local_auth for biometric authentication. -->
+    <uses-permission android:name="android.permission.USE_BIOMETRIC"/>
     <application
         android:label="suicun"
         android:name="${applicationName}"

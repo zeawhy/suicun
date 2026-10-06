@@ -57,22 +57,28 @@ class _AppLockGateState extends ConsumerState<AppLockGate>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused) {
-      _pausedAt = DateTime.now();
+      // Only count pauses that happen while the app content is visible.
+      // Pauses caused by the system biometric prompt occur while locked
+      // and must not feed the re-lock timeout.
+      if (!ref.read(appLockControllerProvider)) {
+        _pausedAt ??= DateTime.now();
+      }
     } else if (state == AppLifecycleState.resumed) {
       _relockIfTimedOut();
     }
   }
 
   Future<void> _relockIfTimedOut() async {
+    // Consume synchronously, before any await, so ordering vs. unlock()
+    // can't re-lock a just-completed unlock (the "immediately" timeout
+    // compares 0 >= 0, which is always true).
+    final pausedAt = _pausedAt;
+    _pausedAt = null;
+    // No real background period (e.g. biometric-prompt-only pause).
+    if (pausedAt == null) return;
     final service = ref.read(appLockServiceProvider);
     if (!await service.isEnabled()) return;
     if (ref.read(appLockControllerProvider)) return; // already locked
-    final pausedAt = _pausedAt;
-    if (pausedAt == null) {
-      // No pause recorded (e.g. first resume); lock to be safe.
-      ref.read(appLockControllerProvider.notifier).lock();
-      return;
-    }
     final timeout = await service.getTimeout();
     if (DateTime.now().difference(pausedAt).inSeconds >= timeout.seconds) {
       if (mounted) ref.read(appLockControllerProvider.notifier).lock();
@@ -80,13 +86,8 @@ class _AppLockGateState extends ConsumerState<AppLockGate>
   }
 
   /// Called when the user authenticates on the lock screen.
-  ///
-  /// Resets [_pausedAt] to now: the system biometric prompt pauses and
-  /// resumes the app, and without this the resume handler would measure
-  /// from before the prompt and instantly re-lock (especially with the
-  /// "immediately" timeout), making a successful unlock appear to fail.
   void _handleUnlocked() {
-    _pausedAt = DateTime.now();
+    _pausedAt = null;
     ref.read(appLockControllerProvider.notifier).unlock();
   }
 
