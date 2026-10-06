@@ -5,14 +5,17 @@ import 'package:uuid/uuid.dart';
 
 import 'package:suicun/core/database/app_database.dart';
 import 'package:suicun/core/errors/app_errors.dart';
+import 'package:suicun/features/sync/sync_enqueuer.dart';
 import 'package:suicun/features/tags/domain/tag_model.dart';
 
 const _uuid = Uuid();
 
 class TagRepository {
-  TagRepository(this._db);
+  TagRepository(this._db, {SyncEnqueuer? syncEnqueuer})
+      : _syncEnqueuer = syncEnqueuer;
 
   final AppDatabase _db;
+  final SyncEnqueuer? _syncEnqueuer;
 
   static TagModel _toModel(Tag t) => TagModel(
         id: t.id,
@@ -67,8 +70,12 @@ class TagRepository {
         final tag = match.first;
         if (tag.deletedAt != null) {
           // Restore the soft-deleted tag
-          await (_db.update(_db.tags)..where((t) => t.id.equals(tag.id)))
-              .write(const TagsCompanion(deletedAt: Value(null)));
+          await _db.transaction(() async {
+            await (_db.update(_db.tags)..where((t) => t.id.equals(tag.id)))
+                .write(const TagsCompanion(deletedAt: Value(null)));
+            await _syncEnqueuer?.enqueueTagSnapshot(
+                id: tag.id, name: tag.name);
+          });
         }
         return _toModel(await (_db.select(_db.tags)
               ..where((t) => t.id.equals(tag.id)))
@@ -77,10 +84,13 @@ class TagRepository {
 
       // Create new tag
       final id = _uuid.v4();
-      await _db.into(_db.tags).insert(TagsCompanion.insert(
-            id: id,
-            name: trimmed,
-          ));
+      await _db.transaction(() async {
+        await _db.into(_db.tags).insert(TagsCompanion.insert(
+              id: id,
+              name: trimmed,
+            ));
+        await _syncEnqueuer?.enqueueTagSnapshot(id: id, name: trimmed);
+      });
       return _toModel(await (_db.select(_db.tags)
             ..where((t) => t.id.equals(id)))
           .getSingle());
@@ -101,8 +111,11 @@ class TagRepository {
     if (dup) throw const ValidationError('Tag name already exists');
 
     try {
-      await (_db.update(_db.tags)..where((t) => t.id.equals(id)))
-          .write(TagsCompanion(name: Value(trimmed)));
+      await _db.transaction(() async {
+        await (_db.update(_db.tags)..where((t) => t.id.equals(id)))
+            .write(TagsCompanion(name: Value(trimmed)));
+        await _syncEnqueuer?.enqueueTagSnapshot(id: id, name: trimmed);
+      });
       return _toModel(await (_db.select(_db.tags)
             ..where((t) => t.id.equals(id)))
           .getSingle());
@@ -115,6 +128,8 @@ class TagRepository {
   Future<void> deleteTag(String id) async {
     try {
       await _db.transaction(() async {
+        // Tombstone first (the last head is still known).
+        await _syncEnqueuer?.enqueueTagTombstone(id);
         await (_db.delete(_db.recordTags)
               ..where((rt) => rt.tagId.equals(id)))
             .go();

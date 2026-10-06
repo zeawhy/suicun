@@ -12,12 +12,13 @@ part 'app_database.g.dart';
   Categories,
   Tags,
   RecordTags,
-  // Stage C sync seam stubs
+  // Stage C sync tables
   Revisions,
   Outbox,
   RemoteReceipts,
   SyncState,
   Conflicts,
+  SyncSkipped,
 ])
 class AppDatabase extends _$AppDatabase {
   /// The executor must be provided by the caller.
@@ -30,7 +31,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -48,6 +49,24 @@ class AppDatabase extends _$AppDatabase {
           if (from < 2) {
             // v2: auto-category keywords on Categories
             await m.addColumn(categories, categories.keywords);
+          }
+          if (from < 3) {
+            // The v1/v2 sync tables were empty stubs (never written by stage A/B code).
+            for (final name in [
+              'revisions',
+              'outbox',
+              'remote_receipts',
+              'sync_state',
+              'conflicts',
+            ]) {
+              await m.deleteTable(name);
+            }
+            await m.createTable(revisions);
+            await m.createTable(outbox);
+            await m.createTable(remoteReceipts);
+            await m.createTable(syncState);
+            await m.createTable(conflicts);
+            await m.createTable(syncSkipped);
           }
         },
         beforeOpen: (OpeningDetails details) async {

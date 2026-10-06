@@ -8,13 +8,16 @@ import 'package:uuid/uuid.dart';
 import 'package:suicun/core/database/app_database.dart';
 import 'package:suicun/core/errors/app_errors.dart';
 import 'package:suicun/features/categories/domain/category_model.dart';
+import 'package:suicun/features/sync/sync_enqueuer.dart';
 
 const _uuid = Uuid();
 
 class CategoryRepository {
-  CategoryRepository(this._db);
+  CategoryRepository(this._db, {SyncEnqueuer? syncEnqueuer})
+      : _syncEnqueuer = syncEnqueuer;
 
   final AppDatabase _db;
+  final SyncEnqueuer? _syncEnqueuer;
 
   static CategoryModel _toModel(Category c) => CategoryModel(
         id: c.id,
@@ -45,13 +48,17 @@ class CategoryRepository {
     }
     try {
       final id = _uuid.v4();
-      await _db.into(_db.categories).insert(
-            CategoriesCompanion.insert(
-              id: id,
-              name: trimmed,
-              color: Value(color),
-            ),
-          );
+      await _db.transaction(() async {
+        await _db.into(_db.categories).insert(
+              CategoriesCompanion.insert(
+                id: id,
+                name: trimmed,
+                color: Value(color),
+              ),
+            );
+        await _syncEnqueuer?.enqueueCategorySnapshot(
+            id: id, name: trimmed, color: color);
+      });
       return _toModel(await (_db.select(_db.categories)
             ..where((c) => c.id.equals(id)))
           .getSingle());
@@ -74,12 +81,22 @@ class CategoryRepository {
       }
     }
     try {
-      await (_db.update(_db.categories)..where((c) => c.id.equals(id))).write(
-        CategoriesCompanion(
-          name: name != null ? Value(name.trim()) : const Value.absent(),
-          color: color != null ? Value(color) : const Value.absent(),
-        ),
-      );
+      await _db.transaction(() async {
+        await (_db.update(_db.categories)..where((c) => c.id.equals(id)))
+            .write(
+          CategoriesCompanion(
+            name: name != null ? Value(name.trim()) : const Value.absent(),
+            color: color != null ? Value(color) : const Value.absent(),
+          ),
+        );
+        final row = await (_db.select(_db.categories)
+              ..where((c) => c.id.equals(id)))
+            .getSingleOrNull();
+        if (row != null) {
+          await _syncEnqueuer?.enqueueCategorySnapshot(
+              id: id, name: row.name, color: row.color);
+        }
+      });
       return _toModel(await (_db.select(_db.categories)
             ..where((c) => c.id.equals(id)))
           .getSingle());
@@ -92,6 +109,10 @@ class CategoryRepository {
   Future<void> deleteCategory(String id) async {
     try {
       await _db.transaction(() async {
+        // Tombstone first (the last head is still known). Records touched by
+        // the nullification below get NO record revisions: remote peers apply
+        // the same nullification when applying the category tombstone.
+        await _syncEnqueuer?.enqueueCategoryTombstone(id);
         // Nullify all records that belong to this category
         await (_db.update(_db.records)
               ..where((r) => r.categoryId.equals(id)))

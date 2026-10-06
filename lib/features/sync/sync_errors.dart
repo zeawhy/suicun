@@ -24,6 +24,7 @@ enum SyncErrorCode {
   verifyFailed,
   redirectBlocked,
   payloadTooLarge,
+  notJoined,
   unknown,
 }
 
@@ -130,6 +131,10 @@ class SyncError implements Exception {
     SyncErrorCode.payloadTooLarge: (
       '云端数据过大，已拒绝处理',
       'Server data is too large; refused',
+    ),
+    SyncErrorCode.notJoined: (
+      '尚未加入同步库，请先创建或加入',
+      'Not joined to a sync vault yet',
     ),
     SyncErrorCode.unknown: (
       '同步时发生未知错误',

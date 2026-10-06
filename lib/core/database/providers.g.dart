@@ -48,7 +48,48 @@ final class AppDatabaseProvider
   }
 }
 
-String _$appDatabaseHash() => r'98a09c6cfd43966155dfbdb0787fa18c85438e13';
+String _$appDatabaseHash() => r'06fdfb977c5a19f41b5a6fc7066db99dfba4499c';
+
+@ProviderFor(syncEnqueuer)
+final syncEnqueuerProvider = SyncEnqueuerProvider._();
+
+final class SyncEnqueuerProvider
+    extends $FunctionalProvider<SyncEnqueuer, SyncEnqueuer, SyncEnqueuer>
+    with $Provider<SyncEnqueuer> {
+  SyncEnqueuerProvider._()
+      : super(
+          from: null,
+          argument: null,
+          retry: null,
+          name: r'syncEnqueuerProvider',
+          isAutoDispose: false,
+          dependencies: null,
+          $allTransitiveDependencies: null,
+        );
+
+  @override
+  String debugGetCreateSourceHash() => _$syncEnqueuerHash();
+
+  @$internal
+  @override
+  $ProviderElement<SyncEnqueuer> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  SyncEnqueuer create(Ref ref) {
+    return syncEnqueuer(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(SyncEnqueuer value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<SyncEnqueuer>(value),
+    );
+  }
+}
+
+String _$syncEnqueuerHash() => r'4d30344fbb6ccf7e0b31d795987e2716e331b535';
 
 @ProviderFor(recordRepository)
 final recordRepositoryProvider = RecordRepositoryProvider._();
@@ -90,7 +131,7 @@ final class RecordRepositoryProvider extends $FunctionalProvider<
   }
 }
 
-String _$recordRepositoryHash() => r'611e705c22c333ddb8fb50db5d7d488bf19dba3b';
+String _$recordRepositoryHash() => r'd2d2a0683b20b4d011c5b88aa4029249b3c4e9e4';
 
 @ProviderFor(categoryRepository)
 final categoryRepositoryProvider = CategoryRepositoryProvider._();
@@ -134,7 +175,7 @@ final class CategoryRepositoryProvider extends $FunctionalProvider<
 }
 
 String _$categoryRepositoryHash() =>
-    r'3c55f83a36220df37819fe04644016dc0af7ee06';
+    r'c6769185144a92bb153da17a1eef8764bc0e4eb2';
 
 @ProviderFor(tagRepository)
 final tagRepositoryProvider = TagRepositoryProvider._();
@@ -175,4 +216,4 @@ final class TagRepositoryProvider
   }
 }
 
-String _$tagRepositoryHash() => r'5b46df521e48e8d1d005d0c1a65954f04c715a64';
+String _$tagRepositoryHash() => r'094cdf1d33dbdf9e0ee883cc8cf0a63a52bd4e99';

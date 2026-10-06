@@ -1,6 +1,7 @@
 // lib/core/database/tables.dart
 // Drift table definitions for 随存 Stage A
-// Schema version 2 — migration mechanism must be maintained
+// Schema version 3 — migration mechanism must be maintained
+// v3 replaced the empty sync stub tables with the real Stage C sync schema
 // v2 added: Categories.keywords (nullable TEXT, JSON string array)
 
 import 'package:drift/drift.dart';
@@ -56,24 +57,29 @@ class RecordTags extends Table {
   Set<Column> get primaryKey => {recordId, tagId};
 }
 
-// ── Sync seam tables (schema placeholder for Stage C) ────────────────────────
-// These tables are defined now to establish the migration baseline.
-// Stage A does NOT use these tables — they are empty stubs only.
+// ── Sync tables (Stage C, schema v3) ─────────────────────────────────────────
 
-/// Immutable version records for sync (Stage C)
+/// Immutable revisions: every local edit and every downloaded remote revision.
 class Revisions extends Table {
   TextColumn get revisionId => text()();
+  // 'record' | 'category' | 'tag'
   TextColumn get entityType => text()();
   TextColumn get entityId => text()();
   TextColumn get parentsJson => text().withDefault(const Constant('[]'))();
-  TextColumn get encryptedPayload => text().withDefault(const Constant(''))();
-  TextColumn get state => text().withDefault(const Constant('pending'))();
+  // Full encrypted revision JSON (exact bytes uploaded to / downloaded from
+  // the server, UTF-8 decoded).
+  TextColumn get payloadJson => text()();
+  // The revision's own creation time (from its payload).
+  DateTimeColumn get createdAt => dateTime()();
+  // Time this device stored it.
+  DateTimeColumn get receivedAt => dateTime()();
+  BoolColumn get isLocal => boolean().withDefault(const Constant(false))();
 
   @override
   Set<Column> get primaryKey => {revisionId};
 }
 
-/// Outbox for upload queue (Stage C)
+/// Outbox for the upload queue.
 class Outbox extends Table {
   TextColumn get operationId => text()();
   TextColumn get revisionId => text()();
@@ -81,40 +87,61 @@ class Outbox extends Table {
       text().withDefault(const Constant('pending'))(); // pending|uploading|done|failed
   IntColumn get attemptCount => integer().withDefault(const Constant(0))();
   DateTimeColumn get nextRetryAt => dateTime().nullable()();
+  DateTimeColumn get createdAt => dateTime()();
+  // SyncErrorCode name only.
+  TextColumn get lastError => text().nullable()();
 
   @override
   Set<Column> get primaryKey => {operationId};
 }
 
-/// Remote receipts (Stage C)
+/// Remote receipts: revisions confirmed present on the server.
 class RemoteReceipts extends Table {
   TextColumn get revisionId => text()();
   TextColumn get remotePath => text()();
+  TextColumn get etag => text().nullable()();
   DateTimeColumn get observedAt => dateTime()();
 
   @override
   Set<Column> get primaryKey => {revisionId};
 }
 
-/// Sync state (Stage C)
+/// Sync state (one row per joined vault).
 class SyncState extends Table {
   TextColumn get vaultId => text()();
   TextColumn get deviceId => text()();
   IntColumn get protocolVersion => integer().withDefault(const Constant(1))();
   DateTimeColumn get lastSuccessAt => dateTime().nullable()();
+  BoolColumn get enabled => boolean().withDefault(const Constant(true))();
+  // SyncErrorCode name only.
+  TextColumn get lastError => text().nullable()();
 
   @override
   Set<Column> get primaryKey => {vaultId};
 }
 
-/// Conflicts (Stage C)
+/// Conflicts: entities with more than one head revision.
 class Conflicts extends Table {
   TextColumn get id => text()();
   TextColumn get entityId => text()();
+  TextColumn get entityType => text()();
   TextColumn get headRevisionIdsJson =>
       text().withDefault(const Constant('[]'))();
+  DateTimeColumn get createdAt => dateTime()();
   TextColumn get resolutionRevisionId => text().nullable()();
+  DateTimeColumn get resolvedAt => dateTime().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};
+}
+
+/// Remote objects permanently skipped (undecryptable / oversize / malformed),
+/// so they are not downloaded again on every pass.
+class SyncSkipped extends Table {
+  TextColumn get revisionId => text()();
+  TextColumn get reason => text()();
+  DateTimeColumn get skippedAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {revisionId};
 }

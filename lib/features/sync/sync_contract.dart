@@ -165,6 +165,11 @@ abstract interface class SyncActions {
     String? mergedTitle,
     String? mergedBody,
   });
+
+  /// Returns the recovery key produced by the most recent [createVault] and
+  /// forgets it (one-shot). Returns null if there is none. The UI must show
+  /// it to the user exactly once; it is never persisted.
+  String? consumePendingRecoveryKey();
 }
 
 // ── Providers (implemented by the functional side) ───────────────────────────

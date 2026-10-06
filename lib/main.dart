@@ -5,6 +5,8 @@ import 'package:suicun/core/database/app_database.dart';
 import 'package:suicun/core/database/providers.dart';
 import 'package:suicun/core/router/app_router.dart';
 import 'package:suicun/features/security/presentation/app_lock_gate.dart';
+import 'package:suicun/features/sync/sync_contract.dart';
+import 'package:suicun/features/sync/sync_providers.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
 import 'package:suicun/shared/theme/app_theme.dart';
 import 'package:suicun/shared/theme/theme_providers.dart';
@@ -40,6 +42,12 @@ Future<void> main() async {
     ProviderScope(
       overrides: [
         appDatabaseProvider.overrideWithValue(db),
+        syncOverviewProvider
+            .overrideWith((ref) => ref.watch(syncEngineProvider).overviewStream),
+        conflictsProvider
+            .overrideWith((ref) => ref.watch(syncEngineProvider).conflictsStream),
+        syncActionsProvider
+            .overrideWith((ref) => ref.watch(syncEngineProvider)),
       ],
       child: const AppLockGate(child: SuicunApp()),
     ),

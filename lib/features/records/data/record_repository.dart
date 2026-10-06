@@ -8,15 +8,18 @@ import 'package:suicun/core/database/app_database.dart';
 import 'package:suicun/core/errors/app_errors.dart';
 import 'package:suicun/features/categories/domain/category_model.dart';
 import 'package:suicun/features/records/domain/record_model.dart';
+import 'package:suicun/features/sync/sync_enqueuer.dart';
 import 'package:suicun/features/tags/domain/tag_model.dart';
 
 const _uuid = Uuid();
 
 /// Repository for all record CRUD and search operations.
 class RecordRepository {
-  RecordRepository(this._db);
+  RecordRepository(this._db, {SyncEnqueuer? syncEnqueuer})
+      : _syncEnqueuer = syncEnqueuer;
 
   final AppDatabase _db;
+  final SyncEnqueuer? _syncEnqueuer;
 
   // ── Mapping ───────────────────────────────────────────────────────────────
 
@@ -82,6 +85,17 @@ class RecordRepository {
                 RecordTagsCompanion.insert(recordId: id, tagId: tagId),
               );
         }
+
+        await _syncEnqueuer?.enqueueRecordSnapshot(
+          recordId: id,
+          title: title,
+          body: body,
+          categoryId: categoryId,
+          tagIds: tagIds,
+          isFavorite: isFavorite,
+          createdAt: now,
+          updatedAt: now,
+        );
       });
 
       final detail = await getRecord(id);
@@ -136,6 +150,8 @@ class RecordRepository {
                 );
           }
         }
+
+        await _enqueueCurrentSnapshot(id);
       });
 
       final detail = await getRecord(id);
@@ -153,9 +169,12 @@ class RecordRepository {
   /// Soft-deletes a record by setting [deletedAt] to UTC now.
   Future<void> softDeleteRecord(String id) async {
     try {
-      await (_db.update(_db.records)..where((r) => r.id.equals(id))).write(
-        RecordsCompanion(deletedAt: Value(DateTime.now().toUtc())),
-      );
+      await _db.transaction(() async {
+        await (_db.update(_db.records)..where((r) => r.id.equals(id))).write(
+          RecordsCompanion(deletedAt: Value(DateTime.now().toUtc())),
+        );
+        await _syncEnqueuer?.enqueueRecordTombstone(id);
+      });
     } catch (e) {
       throw DatabaseError('Failed to soft-delete record $id', e);
     }
@@ -164,9 +183,12 @@ class RecordRepository {
   /// Restores a soft-deleted record by clearing [deletedAt].
   Future<void> restoreRecord(String id) async {
     try {
-      await (_db.update(_db.records)..where((r) => r.id.equals(id))).write(
-        const RecordsCompanion(deletedAt: Value(null)),
-      );
+      await _db.transaction(() async {
+        await (_db.update(_db.records)..where((r) => r.id.equals(id))).write(
+          const RecordsCompanion(deletedAt: Value(null)),
+        );
+        await _enqueueCurrentSnapshot(id);
+      });
     } catch (e) {
       throw DatabaseError('Failed to restore record $id', e);
     }
@@ -176,6 +198,8 @@ class RecordRepository {
   Future<void> permanentDeleteRecord(String id) async {
     try {
       await _db.transaction(() async {
+        // Enqueue the tombstone first so the last head is still known.
+        await _syncEnqueuer?.enqueueRecordTombstone(id);
         await (_db.delete(_db.recordTags)
               ..where((rt) => rt.recordId.equals(id)))
             .go();
@@ -184,6 +208,29 @@ class RecordRepository {
     } catch (e) {
       throw DatabaseError('Failed to permanently delete record $id', e);
     }
+  }
+
+  /// Reads the record back and enqueues a full snapshot. Must run inside the
+  /// caller's transaction.
+  Future<void> _enqueueCurrentSnapshot(String id) async {
+    final enqueuer = _syncEnqueuer;
+    if (enqueuer == null) return;
+    final row = await (_db.select(_db.records)..where((r) => r.id.equals(id)))
+        .getSingleOrNull();
+    if (row == null) return;
+    final tags = await (_db.select(_db.recordTags)
+          ..where((rt) => rt.recordId.equals(id)))
+        .get();
+    await enqueuer.enqueueRecordSnapshot(
+      recordId: id,
+      title: row.title,
+      body: row.body,
+      categoryId: row.categoryId,
+      tagIds: tags.map((t) => t.tagId).toList(),
+      isFavorite: row.isFavorite,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+    );
   }
 
   /// Returns a single record with its details, or null if not found.
