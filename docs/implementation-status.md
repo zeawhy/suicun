@@ -578,3 +578,38 @@ UI 走 Gemini 3.8（agy gemini-3.8-flash-low）。UI/功能之间用
    记录转未分类且分类不复活；飞行模式编辑→恢复网络后自动补传；
    新机"从 WebDAV 恢复"→记录/分类/标签/收藏完整。
 6. 密码与恢复密钥都丢失**无法找回**（无开发者重置入口），请用户务必保存。
+
+---
+
+## 10. 阶段 C v2 协议重构实现状态（2026-10-06 实测）
+
+分支：`antigravity/stage-c`
+
+### 10.1 完成内容
+1. **密码学与密钥槽（vault_crypto.dart）**：
+   - 保持所有 v1 接口与测试完全不变；
+   - 引入 `kVaultProtocolVersionV2 = 2`、`VaultKeyObject`（双包装槽：password + recovery）、`MultiKeySession`、`CreatedKeyObject`、`UnlockedKey`；
+   - 实现 `encryptRevisionV2` / `decryptRevisionV2`（AAD 强绑定 `suicun/v2/object/<key_id>/<rev_id>/<entity_type>`）；
+   - 实现 `decryptLegacyRevision`（AAD 重建兼容 v1 历史对象）；
+   - 实现 `buildMigratedKeyObject` 迁移旧库主密钥 $K_{vault}$。
+2. **Provider 扩展（sync_provider.dart & webdav_sync_provider.dart）**：
+   - 添加 WebDAV `move` 方法支持原地重命名备份；
+   - 移除条件写入（Conditional Write / 412）门控，兼容坚果云等不支持条件写入的网盘；
+   - `probe` 降级为诊断用途，上传采用能力感知（支持条件则用，不支持则随机 ID + 读回校验）。
+3. **同步引擎（sync_engine.dart）**：
+   - 支持多密钥对象管理、会话密码暂存（用于无感知自动解锁后续到达的密钥）；
+   - 每次同步 pass 启动时执行 `refreshKeys()`；
+   - 确定性选择 `activeKeyId = min(unlockedKeyIds)`；
+   - 遇到未解锁/不同密码创建的密钥时标记 `locked-key`，不丢弃、不入库，提供 `unlockKeys()` 接口解锁；
+   - 实现 `migrateV1ToV2()` 迁移流程（密码验证 → 生成 v2 密钥 → 拷贝对象 → `move` 备份 `header.json`）；
+   - 发生解锁时通过 `unmarkSkippedByReason(['locked-key', 'unknown-key'])` 触发重新拉取与解密。
+4. **UI 与国际化**：
+   - `sync_wizard_page.dart`、`webdav_sync_page.dart`、`conflicts_page.dart` 错误信息展示安全化（不暴露原始信息）；
+   - 新增未解锁密钥横幅提示与弹窗输入密码解锁能力；
+   - 新增 v1 迁移向导分支与确认流程；中英文文案全部对齐。
+5. **测试与质量验证**：
+   - `test/unit/sync/sync_v2_test.dart`（10 个场景全覆盖，支持条件创建与无条件创建场景）；
+   - `test/unit/sync/sync_engine_test.dart`（更新断言适配 v2 协议）；
+   - 全套 sync 测试 81 个用例全部通过（`test/unit/sync/` 81 passed）；
+   - `flutter analyze`：0 issues。
+
