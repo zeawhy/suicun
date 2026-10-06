@@ -9,6 +9,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:suicun/features/sync/sync_contract.dart';
+import 'package:suicun/features/sync/sync_errors.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
 import 'package:suicun/shared/utils/date_formatter.dart';
 
@@ -53,9 +54,11 @@ class _ConflictsPageState extends ConsumerState<ConflictsPage> {
       );
     } catch (e) {
       if (!mounted) return;
+      final isEn = Localizations.localeOf(context).languageCode == 'en';
+      final msg = e is SyncError ? e.message(english: isEn) : e.toString();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(e.toString()),
+          content: Text(msg),
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );

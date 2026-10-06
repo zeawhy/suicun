@@ -794,4 +794,30 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get wrongPin => 'PIN 错误，请重试';
+
+  @override
+  String get existingVaultJoined => '检测到已有同步库，已为你加入';
+
+  @override
+  String lockedKeysNotice(int count) {
+    return '有 $count 把密钥未解锁，部分内容暂时无法显示';
+  }
+
+  @override
+  String get migrationTitle => '发现旧协议同步库';
+
+  @override
+  String get migrationBody => '旧目录原样保留作备份，迁移为一次性拷贝。迁移后可使用新协议进行无冲突追加同步。';
+
+  @override
+  String get migrationBackupAndMigrate => '备份并迁移';
+
+  @override
+  String get passwordChangeDeferred => '密码修改功能暂未开放，普通同步不受影响';
+
+  @override
+  String get unlockKeyPrompt => '解锁密钥';
+
+  @override
+  String get enterKeyPassword => '输入密钥加密密码';
 }

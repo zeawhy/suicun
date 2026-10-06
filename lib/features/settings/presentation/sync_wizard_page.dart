@@ -11,6 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:suicun/features/sync/sync_contract.dart';
+import 'package:suicun/features/sync/sync_errors.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
 import 'package:suicun/services/webdav_service.dart';
 
@@ -51,6 +52,12 @@ class _SyncWizardPageState extends ConsumerState<SyncWizardPage> {
   late final TextEditingController _recoveryKeyController;
   bool _obscureExistingPass = true;
 
+  // Step 1 - hasV1Vault (migration) branch
+  late final TextEditingController _migrationPassController;
+  bool _obscureMigrationPass = true;
+
+  bool _joinedExisting = false;
+
   @override
   void initState() {
     super.initState();
@@ -63,6 +70,7 @@ class _SyncWizardPageState extends ConsumerState<SyncWizardPage> {
     _confirmVaultPassController = TextEditingController();
     _existingPassController = TextEditingController();
     _recoveryKeyController = TextEditingController();
+    _migrationPassController = TextEditingController();
 
     _loadConfig();
   }
@@ -78,6 +86,7 @@ class _SyncWizardPageState extends ConsumerState<SyncWizardPage> {
     _confirmVaultPassController.dispose();
     _existingPassController.dispose();
     _recoveryKeyController.dispose();
+    _migrationPassController.dispose();
     super.dispose();
   }
 
@@ -147,9 +156,11 @@ class _SyncWizardPageState extends ConsumerState<SyncWizardPage> {
       });
     } catch (e) {
       if (!mounted) return;
+      final isEn = Localizations.localeOf(context).languageCode == 'en';
+      final msg = e is SyncError ? e.message(english: isEn) : e.toString();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(e.toString()),
+          content: Text(msg),
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
@@ -187,16 +198,28 @@ class _SyncWizardPageState extends ConsumerState<SyncWizardPage> {
       final actions = ref.read(syncActionsProvider);
       await actions.createVault(_config, newPass);
       final recoveryKey = actions.consumePendingRecoveryKey();
+      final joinedExisting = actions.lastCreateJoinedExisting;
       if (!mounted) return;
+      if (joinedExisting) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.existingVaultJoined),
+            backgroundColor: Theme.of(context).colorScheme.primary,
+          ),
+        );
+      }
       setState(() {
         _vaultCreated = true;
+        _joinedExisting = joinedExisting;
         _pendingRecoveryKey = recoveryKey;
       });
     } catch (e) {
       if (!mounted) return;
+      final isEn = Localizations.localeOf(context).languageCode == 'en';
+      final msg = e is SyncError ? e.message(english: isEn) : e.toString();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(e.toString()),
+          content: Text(msg),
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
@@ -223,9 +246,47 @@ class _SyncWizardPageState extends ConsumerState<SyncWizardPage> {
       });
     } catch (e) {
       if (!mounted) return;
+      final isEn = Localizations.localeOf(context).languageCode == 'en';
+      final msg = e is SyncError ? e.message(english: isEn) : e.toString();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(e.toString()),
+          content: Text(msg),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  // --- Step 1 Action (Migrate v1 Vault) ---
+  Future<void> _handleMigrateVault(AppLocalizations l10n) async {
+    final pass = _migrationPassController.text;
+    if (pass.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.passwordRequired),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _busy = true);
+    try {
+      final actions = ref.read(syncActionsProvider);
+      await actions.migrateV1ToV2(_config, pass);
+      if (!mounted) return;
+      setState(() {
+        _currentStep = 2;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      final isEn = Localizations.localeOf(context).languageCode == 'en';
+      final msg = e is SyncError ? e.message(english: isEn) : e.toString();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(msg),
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
@@ -247,9 +308,11 @@ class _SyncWizardPageState extends ConsumerState<SyncWizardPage> {
       });
     } catch (e) {
       if (!mounted) return;
+      final isEn = Localizations.localeOf(context).languageCode == 'en';
+      final msg = e is SyncError ? e.message(english: isEn) : e.toString();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(e.toString()),
+          content: Text(msg),
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
@@ -437,6 +500,8 @@ class _SyncWizardPageState extends ConsumerState<SyncWizardPage> {
   ) {
     if (_vaultCheck == RemoteVaultCheck.noVault) {
       return _buildNoVaultBranch(l10n, theme, colorScheme);
+    } else if (_vaultCheck == RemoteVaultCheck.hasV1Vault) {
+      return _buildMigrationBranch(l10n, theme, colorScheme);
     } else {
       return _buildHasVaultBranch(l10n, theme, colorScheme);
     }
@@ -452,6 +517,34 @@ class _SyncWizardPageState extends ConsumerState<SyncWizardPage> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          if (_joinedExisting) ...[
+            Card(
+              color: colorScheme.primaryContainer,
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.info_outline,
+                      color: colorScheme.onPrimaryContainer,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        l10n.existingVaultJoined,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.onPrimaryContainer,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
           if (_pendingRecoveryKey != null) ...[
             Card(
               color: colorScheme.surfaceContainerHighest,
@@ -866,6 +959,107 @@ class _SyncWizardPageState extends ConsumerState<SyncWizardPage> {
                           ],
                         )
                       : Text(l10n.joinExistingVault),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMigrationBranch(
+    AppLocalizations l10n,
+    ThemeData theme,
+    ColorScheme colorScheme,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Card(
+          color: colorScheme.surfaceContainerHighest,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.history_toggle_off,
+                      color: colorScheme.primary,
+                      size: 24,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      l10n.migrationTitle,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  l10n.migrationBody,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        TextField(
+          controller: _migrationPassController,
+          obscureText: _obscureMigrationPass,
+          autocorrect: false,
+          enableSuggestions: false,
+          decoration: InputDecoration(
+            labelText: l10n.vaultPassword,
+            filled: true,
+            fillColor: colorScheme.surfaceContainerHighest,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+            suffixIcon: IconButton(
+              icon: Icon(_obscureMigrationPass
+                  ? Icons.visibility_off_outlined
+                  : Icons.visibility_outlined),
+              tooltip: _obscureMigrationPass
+                  ? l10n.showPassword
+                  : l10n.hidePassword,
+              onPressed: () => setState(
+                  () => _obscureMigrationPass = !_obscureMigrationPass),
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            OutlinedButton(
+              onPressed: _busy
+                  ? null
+                  : () {
+                      setState(() => _currentStep = 0);
+                    },
+              child: Text(l10n.cancel),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: SizedBox(
+                height: 48,
+                child: FilledButton(
+                  onPressed: _busy ? null : () => _handleMigrateVault(l10n),
+                  child: _busy
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Text(l10n.migrationBackupAndMigrate),
                 ),
               ),
             ),

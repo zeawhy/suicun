@@ -813,4 +813,33 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get wrongPin => 'Wrong PIN, try again';
+
+  @override
+  String get existingVaultJoined =>
+      'An existing sync vault was found and joined';
+
+  @override
+  String lockedKeysNotice(int count) {
+    return '$count keys are still locked; some content is temporarily unavailable';
+  }
+
+  @override
+  String get migrationTitle => 'Old protocol vault found';
+
+  @override
+  String get migrationBody =>
+      'The legacy directory will be kept as a backup; migration is a one-time copy. After migrating, append-only sync with protocol v2 will be used.';
+
+  @override
+  String get migrationBackupAndMigrate => 'Backup and Migrate';
+
+  @override
+  String get passwordChangeDeferred =>
+      'Password change is not available yet; normal sync is unaffected';
+
+  @override
+  String get unlockKeyPrompt => 'Unlock Key';
+
+  @override
+  String get enterKeyPassword => 'Enter password to unlock keys';
 }

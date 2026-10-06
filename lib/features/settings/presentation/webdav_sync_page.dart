@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:suicun/features/sync/sync_contract.dart';
+import 'package:suicun/features/sync/sync_errors.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
 import 'package:suicun/services/webdav_service.dart';
 import 'package:suicun/shared/utils/date_formatter.dart';
@@ -162,9 +163,11 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
       await actions.syncNow();
     } catch (e) {
       if (!mounted) return;
+      final isEn = Localizations.localeOf(context).languageCode == 'en';
+      final msg = e is SyncError ? e.message(english: isEn) : e.toString();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(e.toString()),
+          content: Text(msg),
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
@@ -199,9 +202,11 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
       await actions.disableSync(removeCredentials: false);
     } catch (e) {
       if (!mounted) return;
+      final isEn = Localizations.localeOf(context).languageCode == 'en';
+      final msg = e is SyncError ? e.message(english: isEn) : e.toString();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(e.toString()),
+          content: Text(msg),
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
@@ -249,9 +254,11 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
       });
     } catch (e) {
       if (!mounted) return;
+      final isEn = Localizations.localeOf(context).languageCode == 'en';
+      final msg = e is SyncError ? e.message(english: isEn) : e.toString();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(e.toString()),
+          content: Text(msg),
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
@@ -274,6 +281,73 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
         ],
       ),
     );
+  }
+
+  Future<void> _promptUnlockKeys(AppLocalizations l10n) async {
+    final controller = TextEditingController();
+    bool obscure = true;
+    final password = await showDialog<String>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: Text(l10n.unlockKeyPrompt),
+          content: TextField(
+            controller: controller,
+            obscureText: obscure,
+            autofocus: true,
+            decoration: InputDecoration(
+              labelText: l10n.vaultPassword,
+              hintText: l10n.enterKeyPassword,
+              suffixIcon: IconButton(
+                icon: Icon(obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined),
+                onPressed: () => setDialogState(() => obscure = !obscure),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text(l10n.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(ctx).pop(controller.text),
+              child: Text(l10n.confirm),
+            ),
+          ],
+        ),
+      ),
+    );
+    controller.dispose();
+    if (password == null || password.isEmpty || !mounted) return;
+
+    try {
+      final actions = ref.read(syncActionsProvider);
+      final unlocked = await actions.unlockKeys(password: password);
+      if (!mounted) return;
+      if (unlocked > 0) {
+        await actions.syncNow();
+      } else {
+        final isEn = Localizations.localeOf(context).languageCode == 'en';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              const SyncError(SyncErrorCode.wrongPasswordOrKey).message(english: isEn),
+            ),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      final isEn = Localizations.localeOf(context).languageCode == 'en';
+      final msg = e is SyncError ? e.message(english: isEn) : e.toString();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(msg),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    }
   }
 
   @override
@@ -432,9 +506,11 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
                             await actions.setEnabled(val);
                           } catch (e) {
                             if (!mounted) return;
+                            final isEn = Localizations.localeOf(context).languageCode == 'en';
+                            final msg = e is SyncError ? e.message(english: isEn) : e.toString();
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text(e.toString()),
+                                content: Text(msg),
                                 backgroundColor: colorScheme.error,
                               ),
                             );
@@ -552,6 +628,40 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
                 ),
               ),
             ),
+            if (overview.lockedKeyCount > 0) ...[
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: colorScheme.tertiaryContainer.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.lock_clock_outlined,
+                      size: 20,
+                      color: colorScheme.onTertiaryContainer,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        l10n.lockedKeysNotice(overview.lockedKeyCount),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onTertiaryContainer,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    FilledButton.tonal(
+                      onPressed: () => _promptUnlockKeys(l10n),
+                      child: Text(l10n.unlockKeyPrompt),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             if (overview.lastError != null &&
                 overview.lastError!.isNotEmpty) ...[
               const SizedBox(height: 12),

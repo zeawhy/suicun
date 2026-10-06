@@ -1591,6 +1591,54 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'PIN 错误，请重试'**
   String get wrongPin;
+
+  /// No description provided for @existingVaultJoined.
+  ///
+  /// In zh, this message translates to:
+  /// **'检测到已有同步库，已为你加入'**
+  String get existingVaultJoined;
+
+  /// No description provided for @lockedKeysNotice.
+  ///
+  /// In zh, this message translates to:
+  /// **'有 {count} 把密钥未解锁，部分内容暂时无法显示'**
+  String lockedKeysNotice(int count);
+
+  /// No description provided for @migrationTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'发现旧协议同步库'**
+  String get migrationTitle;
+
+  /// No description provided for @migrationBody.
+  ///
+  /// In zh, this message translates to:
+  /// **'旧目录原样保留作备份，迁移为一次性拷贝。迁移后可使用新协议进行无冲突追加同步。'**
+  String get migrationBody;
+
+  /// No description provided for @migrationBackupAndMigrate.
+  ///
+  /// In zh, this message translates to:
+  /// **'备份并迁移'**
+  String get migrationBackupAndMigrate;
+
+  /// No description provided for @passwordChangeDeferred.
+  ///
+  /// In zh, this message translates to:
+  /// **'密码修改功能暂未开放，普通同步不受影响'**
+  String get passwordChangeDeferred;
+
+  /// No description provided for @unlockKeyPrompt.
+  ///
+  /// In zh, this message translates to:
+  /// **'解锁密钥'**
+  String get unlockKeyPrompt;
+
+  /// No description provided for @enterKeyPassword.
+  ///
+  /// In zh, this message translates to:
+  /// **'输入密钥加密密码'**
+  String get enterKeyPassword;
 }
 
 class _AppLocalizationsDelegate

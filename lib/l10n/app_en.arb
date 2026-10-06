@@ -134,6 +134,13 @@
       }
     }
   },
+  "@lockedKeysNotice": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "about": "About",
   "addCategory": "Add Category",
   "addKeyword": "Add keyword",
@@ -382,5 +389,13 @@
   "wizardStepVault": "Choose vault",
   "wizardTestAndContinue": "Test & continue",
   "wizardTitle": "Sync setup wizard",
-  "wrongPin": "Wrong PIN, try again"
+  "wrongPin": "Wrong PIN, try again",
+  "existingVaultJoined": "An existing sync vault was found and joined",
+  "lockedKeysNotice": "{count} keys are still locked; some content is temporarily unavailable",
+  "migrationTitle": "Old protocol vault found",
+  "migrationBody": "The legacy directory will be kept as a backup; migration is a one-time copy. After migrating, append-only sync with protocol v2 will be used.",
+  "migrationBackupAndMigrate": "Backup and Migrate",
+  "passwordChangeDeferred": "Password change is not available yet; normal sync is unaffected",
+  "unlockKeyPrompt": "Unlock Key",
+  "enterKeyPassword": "Enter password to unlock keys"
 }

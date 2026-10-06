@@ -134,6 +134,13 @@
       }
     }
   },
+  "@lockedKeysNotice": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "about": "关于",
   "addCategory": "新增分类",
   "addKeyword": "添加关键词",
@@ -382,5 +389,13 @@
   "wizardStepVault": "选择同步库",
   "wizardTestAndContinue": "测试并继续",
   "wizardTitle": "同步设置向导",
-  "wrongPin": "PIN 错误，请重试"
+  "wrongPin": "PIN 错误，请重试",
+  "existingVaultJoined": "检测到已有同步库，已为你加入",
+  "lockedKeysNotice": "有 {count} 把密钥未解锁，部分内容暂时无法显示",
+  "migrationTitle": "发现旧协议同步库",
+  "migrationBody": "旧目录原样保留作备份，迁移为一次性拷贝。迁移后可使用新协议进行无冲突追加同步。",
+  "migrationBackupAndMigrate": "备份并迁移",
+  "passwordChangeDeferred": "密码修改功能暂未开放，普通同步不受影响",
+  "unlockKeyPrompt": "解锁密钥",
+  "enterKeyPassword": "输入密钥加密密码"
 }
