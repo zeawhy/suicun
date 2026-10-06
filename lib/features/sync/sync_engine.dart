@@ -23,6 +23,8 @@
 
 import 'dart:async';
 import 'dart:convert';
+
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'dart:math';
 import 'dart:ui' show Locale, PlatformDispatcher;
 
@@ -179,6 +181,49 @@ class SyncEngine implements SyncActions {
   Future<void>? _initFuture;
   bool _disposed = false;
   String? _pendingRecoveryKey;
+
+  /// Watchdog: a single sync pass must finish within this window, otherwise
+  /// it fails visibly instead of spinning forever. Generous on purpose —
+  /// 7 small objects finish in seconds; 3 minutes only trips on a real stall.
+  static const Duration _syncWatchdogTimeout = Duration(minutes: 3);
+
+  /// Incremented on every syncNow entry. Lets an orphaned pass (abandoned by
+  /// the watchdog) exit quietly instead of racing a newer pass.
+  int _syncGeneration = 0;
+
+  /// Current phase of the in-flight sync pass, for diagnostics. Set via
+  /// [_setStep]; exposed on [SyncOverview.currentStep] while syncing.
+  String? _syncStep;
+  DateTime? _syncStepStartedAt;
+
+  /// Records a phase transition. Identifiers only in logs — never titles,
+  /// bodies, keys or credentials.
+  void _setStep(String? step) {
+    _syncStep = step;
+    _syncStepStartedAt = step == null ? null : DateTime.now().toUtc();
+    if (step != null) debugPrint('[sync] step: $step');
+    _emitOverview();
+  }
+
+  /// Localized one-line label for a sync phase (null phase → null).
+  String? _stepLabel(String? step) {
+    if (step == null) return null;
+    final en = _isEnglish;
+    switch (step) {
+      case 'refreshKeys':
+        return en ? 'Refreshing keys…' : '正在刷新密钥…';
+      case 'probe':
+        return en ? 'Checking connection…' : '正在检查连接…';
+      case 'download':
+        return en ? 'Downloading…' : '正在下载…';
+      case 'upload':
+        return en ? 'Uploading…' : '正在上传…';
+      case 'finalDownload':
+        return en ? 'Finalizing…' : '正在收尾…';
+      default:
+        return step;
+    }
+  }
 
   bool _lastCreateJoinedExisting = false;
 
@@ -337,6 +382,7 @@ class SyncEngine implements SyncActions {
       syncedRecords: counts.synced,
       vaultId: state?.vaultId,
       lastError: _lastError?.message(english: _isEnglish),
+      currentStep: _syncing ? _stepLabel(_syncStep) : null,
     );
   }
 
@@ -429,9 +475,27 @@ class SyncEngine implements SyncActions {
     _emitOverview();
     final done = Completer<void>();
     _inFlight = done.future;
+    // Generation lets an orphaned pass (abandoned by the watchdog below)
+    // exit quietly instead of racing a newer pass over the same state.
+    final generation = ++_syncGeneration;
     try {
-      await _syncPass();
-      _lastError = null;
+      try {
+        await _syncPass(generation).timeout(_syncWatchdogTimeout);
+      } on TimeoutException {
+        // Watchdog: the pass never settled. Its in-flight network calls all
+        // carry their own 30s timeouts and will settle on their own; the
+        // outbox is untouched so nothing is lost. Fail LOUDLY instead of
+        // spinning the UI forever.
+        final stuckStep = _syncStep;
+        final stepAge = _syncStepStartedAt == null
+            ? 'n/a'
+            : DateTime.now().toUtc().difference(_syncStepStartedAt!);
+        debugPrint('[sync] WATCHDOG: pass $generation exceeded '
+            '$_syncWatchdogTimeout at step=$stuckStep (step age: $stepAge); '
+            'outbox preserved');
+        _setStep(null);
+        throw SyncError(SyncErrorCode.timeout, 'watchdog step=$stuckStep');
+      }
       _notBefore = null;
       await _store.setLastError(null);
     } on SyncError catch (e) {
@@ -464,23 +528,63 @@ class SyncEngine implements SyncActions {
     return line.length > 200 ? line.substring(0, 200) : line;
   }
 
-  Future<void> _syncPass() async {
+  /// One full seven-step pass. [generation] must match [_syncGeneration];
+  /// when it doesn't, this pass was abandoned by the watchdog and must exit
+  /// quietly (no state writes) instead of racing the newer pass.
+  Future<void> _syncPass(int generation) async {
     final session = _session!;
+    bool alive() => generation == _syncGeneration && !_disposed;
 
     // Step 1: refresh keys. If session has zero unlocked keys -> throw needsPassword.
+    _setStep('refreshKeys');
     await _refreshKeys(session);
+    if (!alive()) {
+      _setStep(null);
+      return;
+    }
     if (session.vault.keys.isEmpty) {
       throw const SyncError(SyncErrorCode.needsPassword);
     }
+    _setStep('probe');
     session.caps ??= await _guard(session.provider.probe);
 
     // Steps 2-3: list + download + validate + apply remote revisions.
+    if (!alive()) {
+      _setStep(null);
+      return;
+    }
+    _setStep('download');
     await _downloadNew();
     // Steps 4-6: upload outbox, verify.
-    await _uploadOutbox();
+    if (!alive()) {
+      _setStep(null);
+      return;
+    }
+    _setStep('upload');
+    final up = await _uploadOutbox();
     // Step 7: pick up anything that arrived meanwhile.
+    if (!alive()) {
+      _setStep(null);
+      return;
+    }
+    _setStep('finalDownload');
     await _downloadNew();
+    if (!alive()) {
+      _setStep(null);
+      return;
+    }
+    // Entry-level failures are swallowed per-entry (so one bad item never
+    // blocks the rest) but must NOT look like a clean success: surface a
+    // visible summary while keeping the failed entries in the outbox.
+    if (up.failed > 0) {
+      debugPrint(
+          '[sync] pass done with ${up.failed} failed / ${up.succeeded} succeeded uploads; outbox retained');
+      _lastError = const SyncError(SyncErrorCode.uploadFailed);
+    } else {
+      _lastError = null;
+    }
     await _store.setLastSuccess(DateTime.now().toUtc());
+    _setStep(null);
   }
 
   /// Lists v2/keys; downloads files whose key_id is unknown; unlocks with in-memory credential.
@@ -935,10 +1039,22 @@ class SyncEngine implements SyncActions {
 
   // ── Upload ────────────────────────────────────────────────────────────────
 
-  Future<void> _uploadOutbox() async {
+  /// Uploads all due outbox entries. Returns per-entry outcome counts so the
+  /// pass can surface a visible summary when some entries failed (they stay
+  /// in the outbox with backoff; the pass itself still completes).
+  Future<({int succeeded, int failed})> _uploadOutbox() async {
     final session = _session!;
     final pending = await _store.pendingOutbox(limit: 100);
-    await _forEachConcurrent(pending, 2, (e) => _uploadOne(session, e));
+    var succeeded = 0;
+    var failed = 0;
+    await _forEachConcurrent(pending, 2, (e) async {
+      if (await _uploadOne(session, e)) {
+        succeeded++;
+      } else {
+        failed++;
+      }
+    });
+    return (succeeded: succeeded, failed: failed);
   }
 
   bool _bytesEqual(Uint8List a, List<int> b) {
@@ -949,11 +1065,16 @@ class SyncEngine implements SyncActions {
     return true;
   }
 
-  Future<void> _uploadOne(_Session session, OutboxData entry) async {
+  /// Uploads one outbox entry. Returns true when the entry is confirmed
+  /// uploaded, false when the entry failed but the pass should continue
+  /// (the entry keeps its backoff retry; the caller surfaces a summary).
+  /// Fatal errors (auth, conflict, storage, network) still throw and abort
+  /// the pass so they stay visible.
+  Future<bool> _uploadOne(_Session session, OutboxData entry) async {
     final rev = await _store.getRevision(entry.revisionId);
     if (rev == null) {
       await _store.markOutboxDone(entry.operationId);
-      return;
+      return true;
     }
     final bytes = Uint8List.fromList(utf8.encode(rev.payloadJson));
     final path = 'v2/objects/${rev.revisionId}.enc';
@@ -965,7 +1086,7 @@ class SyncEngine implements SyncActions {
         final existing = await _tryGet(session, path);
         if (existing != null && _bytesEqual(existing.bytes, bytes)) {
           await _confirmUploaded(entry, rev.revisionId, path, existing.etag);
-          return;
+          return true;
         }
       }
       if (session.caps?.supportsConditionalCreate == true) {
@@ -978,7 +1099,7 @@ class SyncEngine implements SyncActions {
             if (_bytesEqual(existing.bytes, bytes)) {
               await _confirmUploaded(
                   entry, rev.revisionId, path, existing.etag);
-              return;
+              return true;
             }
             throw const SyncError(SyncErrorCode.contentConflict);
           }
@@ -986,7 +1107,7 @@ class SyncEngine implements SyncActions {
         }
       } else {
         await _putWithoutConditions(session, entry, rev.revisionId, path, bytes);
-        return;
+        return true;
       }
       // Step 6: confirm the object is complete and matches before "done".
       final verify = await _guardGet(session, path);
@@ -994,6 +1115,7 @@ class SyncEngine implements SyncActions {
         throw const SyncError(SyncErrorCode.verifyFailed);
       }
       await _confirmUploaded(entry, rev.revisionId, path, verify.etag);
+      return true;
     } on SyncError catch (e) {
       if (e.code == SyncErrorCode.contentConflict) rethrow;
       if (e.code == SyncErrorCode.unauthorized ||
@@ -1007,6 +1129,10 @@ class SyncEngine implements SyncActions {
           e.code == SyncErrorCode.rateLimited) {
         rethrow;
       }
+      // Swallowed per-entry (bounded backoff via _markRetry): one bad item
+      // must not block the rest. The caller counts it for a visible summary.
+      debugPrint('[sync] entry upload failed (${e.code.name}), kept for retry');
+      return false;
     }
   }
 

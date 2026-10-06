@@ -33,6 +33,10 @@ class FakeSyncProvider implements SyncProvider {
   bool offline = false;
   final Set<String> failOnGet = <String>{};
   final Set<String> failOnPut = <String>{};
+
+  /// When true, every PUT to v2/objects/ fails with a server error
+  /// (persistent, non-fatal: swallowed per-entry with backoff).
+  bool failAllObjectPuts = false;
   final Set<String> failOnMove = <String>{};
   final Set<String> hiddenFromList = <String>{};
   bool timeoutAfterPut = false;
@@ -176,6 +180,10 @@ class FakeSyncProvider implements SyncProvider {
   }) async {
     _checkOffline();
     requestLog.add('PUT $path');
+    if (failAllObjectPuts && path.startsWith('v2/objects/')) {
+      throw const SyncProviderException(ProviderErrorKind.serverError,
+          statusCode: 500, detail: 'simulated persistent put failure');
+    }
     if (failOnPut.contains(path)) {
       throw const SyncProviderException(ProviderErrorKind.network,
           detail: 'simulated put failure');

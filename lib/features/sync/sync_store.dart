@@ -21,6 +21,11 @@ class SyncStore {
 
   final AppDatabase _db;
 
+  /// Runs [fn] inside a DB transaction. Use for multi-row atomic writes
+  /// (e.g. revision + outbox) so a crash can never leave a dangling
+  /// outbox entry without its revision (or vice versa).
+  Future<T> transaction<T>(Future<T> Function() fn) => _db.transaction(fn);
+
   // ── Revisions ─────────────────────────────────────────────────────────────
 
   /// Inserts a revision. Revisions are immutable, so an existing row with the

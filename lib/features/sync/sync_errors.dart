@@ -29,6 +29,7 @@ enum SyncErrorCode {
   notJoined,
   needsMigration,
   needsPassword,
+  uploadFailed,
   unknown,
 }
 
@@ -147,6 +148,10 @@ class SyncError implements Exception {
     SyncErrorCode.needsPassword: (
       '需要输入同步密码以继续同步',
       'Sync password is required to continue syncing',
+    ),
+    SyncErrorCode.uploadFailed: (
+      '部分数据上传失败，已保留待下次重试',
+      'Some items failed to upload and were kept for retry',
     ),
     SyncErrorCode.unknown: (
       '同步时发生未知错误',

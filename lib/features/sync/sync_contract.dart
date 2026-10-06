@@ -30,6 +30,7 @@ class SyncOverview {
     this.syncedRecords = 0,
     this.vaultId,
     this.lastError,
+    this.currentStep,
   });
 
   /// Whether the user has enabled sync (config + vault joined).
@@ -64,6 +65,11 @@ class SyncOverview {
 
   /// Last sync error as a user-facing message (already localized), if any.
   final String? lastError;
+
+  /// Localized label of the sync phase currently running (only when
+  /// [syncing] is true). Lets the UI — and bug reports — show exactly
+  /// where a stuck pass is instead of a bare spinner.
+  final String? currentStep;
 }
 
 /// One unresolved conflict for the conflict resolution page.

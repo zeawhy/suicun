@@ -138,22 +138,27 @@ class SyncEnqueuer {
       entityId: entityId,
       payload: payload,
     );
-    await _store.insertRevision(RevisionsCompanion.insert(
-      revisionId: revisionId,
-      entityType: entityType,
-      entityId: entityId,
-      parentsJson: Value(jsonEncode(parents)),
-      payloadJson: utf8.decode(bytes),
-      createdAt: now,
-      receivedAt: now,
-      isLocal: const Value(true),
-    ));
-    await _store.enqueueOutbox(OutboxCompanion.insert(
-      operationId: _uuid.v4(),
-      revisionId: revisionId,
-      status: const Value('pending'),
-      createdAt: now,
-    ));
+    // Revision + outbox must be atomic: a crash between the two would leave
+    // a dangling outbox entry (or an un-uploadable revision). Nested inside
+    // backfillLocalEntities' transaction via savepoint — safe.
+    await _store.transaction(() async {
+      await _store.insertRevision(RevisionsCompanion.insert(
+        revisionId: revisionId,
+        entityType: entityType,
+        entityId: entityId,
+        parentsJson: Value(jsonEncode(parents)),
+        payloadJson: utf8.decode(bytes),
+        createdAt: now,
+        receivedAt: now,
+        isLocal: const Value(true),
+      ));
+      await _store.enqueueOutbox(OutboxCompanion.insert(
+        operationId: _uuid.v4(),
+        revisionId: revisionId,
+        status: const Value('pending'),
+        createdAt: now,
+      ));
+    });
     onEnqueued?.call();
     return revisionId;
   }
