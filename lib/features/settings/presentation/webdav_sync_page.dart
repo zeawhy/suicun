@@ -256,11 +256,7 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
     } catch (e) {
       if (!mounted) return;
       final isEn = Localizations.localeOf(context).languageCode == 'en';
-      final msg = e is SyncError
-          ? e.message(english: isEn)
-          : e is SyncProviderException
-              ? providerErrorMessage(e, english: isEn)
-              : e.toString();
+      final msg = _formatErrorMessage(e, english: isEn);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(msg),
@@ -318,11 +314,7 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
     } catch (e) {
       if (!mounted) return;
       final isEn = Localizations.localeOf(context).languageCode == 'en';
-      final msg = e is SyncError
-          ? e.message(english: isEn)
-          : e is SyncProviderException
-              ? providerErrorMessage(e, english: isEn)
-              : e.toString();
+      final msg = _formatErrorMessage(e, english: isEn);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(msg),
@@ -350,11 +342,7 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
     } catch (e) {
       if (!mounted) return;
       final isEn = Localizations.localeOf(context).languageCode == 'en';
-      final msg = e is SyncError
-          ? e.message(english: isEn)
-          : e is SyncProviderException
-              ? providerErrorMessage(e, english: isEn)
-              : e.toString();
+      final msg = _formatErrorMessage(e, english: isEn);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(msg),
@@ -387,11 +375,7 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
     } catch (e) {
       if (!mounted) return;
       final isEn = Localizations.localeOf(context).languageCode == 'en';
-      final msg = e is SyncError
-          ? e.message(english: isEn)
-          : e is SyncProviderException
-              ? providerErrorMessage(e, english: isEn)
-              : e.toString();
+      final msg = _formatErrorMessage(e, english: isEn);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(msg),
@@ -423,11 +407,7 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
     } catch (e) {
       if (!mounted) return;
       final isEn = Localizations.localeOf(context).languageCode == 'en';
-      final msg = e is SyncError
-          ? e.message(english: isEn)
-          : e is SyncProviderException
-              ? providerErrorMessage(e, english: isEn)
-              : e.toString();
+      final msg = _formatErrorMessage(e, english: isEn);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(msg),
@@ -439,6 +419,21 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
     }
   }
 
+  String _formatErrorMessage(Object e, {required bool english}) {
+    if (e is SyncError) {
+      return e.message(english: english);
+    }
+    if (e is SyncProviderException) {
+      return providerErrorMessage(e, english: english);
+    }
+    final raw = e.toString().split('\n').first.trim();
+    final sanitized =
+        raw.replaceAll(RegExp(r'://([^:]+):([^@]+)@'), r'://$1:***@');
+    return sanitized.length > 120
+        ? '${sanitized.substring(0, 117)}...'
+        : sanitized;
+  }
+
   Future<void> _handleSyncNow(AppLocalizations l10n) async {
     setState(() => _syncingAction = true);
     try {
@@ -447,7 +442,7 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
     } catch (e) {
       if (!mounted) return;
       final isEn = Localizations.localeOf(context).languageCode == 'en';
-      final msg = e is SyncError ? e.message(english: isEn) : e.toString();
+      final msg = _formatErrorMessage(e, english: isEn);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(msg),
@@ -486,7 +481,7 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
     } catch (e) {
       if (!mounted) return;
       final isEn = Localizations.localeOf(context).languageCode == 'en';
-      final msg = e is SyncError ? e.message(english: isEn) : e.toString();
+      final msg = _formatErrorMessage(e, english: isEn);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(msg),
@@ -542,7 +537,7 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
     } catch (e) {
       if (!mounted) return;
       final isEn = Localizations.localeOf(context).languageCode == 'en';
-      final msg = e is SyncError ? e.message(english: isEn) : e.toString();
+      final msg = _formatErrorMessage(e, english: isEn);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(msg),
@@ -627,7 +622,7 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
     } catch (e) {
       if (!mounted) return;
       final isEn = Localizations.localeOf(context).languageCode == 'en';
-      final msg = e is SyncError ? e.message(english: isEn) : e.toString();
+      final msg = _formatErrorMessage(e, english: isEn);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(msg),
@@ -796,7 +791,7 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
                           } catch (e) {
                             if (!mounted) return;
                             final isEn = Localizations.localeOf(context).languageCode == 'en';
-                            final msg = e is SyncError ? e.message(english: isEn) : e.toString();
+                            final msg = _formatErrorMessage(e, english: isEn);
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(msg),
@@ -981,7 +976,8 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
                 ),
               ),
             ],
-            if (overview.lastError != null &&
+            if (!isSyncing &&
+                overview.lastError != null &&
                 overview.lastError!.isNotEmpty) ...[
               const SizedBox(height: 12),
               Container(
