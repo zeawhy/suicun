@@ -8,6 +8,7 @@
 import 'dart:convert';
 
 import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:uuid/uuid.dart';
 
 import 'package:suicun/core/database/app_database.dart';
@@ -90,7 +91,12 @@ class SyncEnqueuer {
     bool deleted,
     Map<String, Object?> Function() snapshot,
   ) async {
-    if (await sessionProvider() == null) return;
+    if (await sessionProvider() == null) {
+      // Identifiers only: never log titles, bodies, keys or credentials.
+      debugPrint('[sync] enqueue skipped (no active session): '
+          'type=$type id=$entityId deleted=$deleted');
+      return;
+    }
     final heads = await _store.computeHeads(type, entityId);
     await enqueueParsed(
       entityType: type,

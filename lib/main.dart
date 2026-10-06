@@ -38,17 +38,26 @@ Future<void> main() async {
     return;
   }
 
+  final container = ProviderContainer(
+    overrides: [
+      appDatabaseProvider.overrideWithValue(db),
+      syncOverviewProvider
+          .overrideWith((ref) => ref.watch(syncEngineProvider).overviewStream),
+      conflictsProvider
+          .overrideWith((ref) => ref.watch(syncEngineProvider).conflictsStream),
+      syncActionsProvider.overrideWith((ref) => ref.watch(syncEngineProvider)),
+    ],
+  );
+  // The engine is lazy; create it now so the vault session is restored (and
+  // the enqueuer hook installed) before the user can save anything. Otherwise
+  // edits made before opening a sync page would silently skip the outbox.
+  container.read(syncEngineProvider);
+
+  // The container lives for the whole process lifetime; the OS reclaims it on
+  // exit (UncontrolledProviderScope does not dispose it).
   runApp(
-    ProviderScope(
-      overrides: [
-        appDatabaseProvider.overrideWithValue(db),
-        syncOverviewProvider
-            .overrideWith((ref) => ref.watch(syncEngineProvider).overviewStream),
-        conflictsProvider
-            .overrideWith((ref) => ref.watch(syncEngineProvider).conflictsStream),
-        syncActionsProvider
-            .overrideWith((ref) => ref.watch(syncEngineProvider)),
-      ],
+    UncontrolledProviderScope(
+      container: container,
       child: const AppLockGate(child: SuicunApp()),
     ),
   );

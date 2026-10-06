@@ -214,13 +214,35 @@ class SyncEngine implements SyncActions {
             if (c.name == name) _lastError = SyncError(c);
           }
         }
-        if (state.enabled) await _restoreSession(state);
+        if (state.enabled && await _restoreSession(state)) {
+          await _backfillOncePerVault(state.vaultId);
+        }
       }
     } catch (_) {
       // Initialization must never throw; sync simply stays inactive.
     }
     _emitOverview();
     _emitConflicts();
+  }
+
+  static String _backfillDoneKey(String vaultId) =>
+      'suicun.sync.backfilled.$vaultId';
+
+  /// Self-healing: publishes live local entities that never got a revision
+  /// (e.g. saved while the engine was not yet initialized). Runs at most once
+  /// per vault and only with an active session. Joins/creates mark the vault
+  /// as done in [_finishJoinV2], so the wizard's merge-confirmation flow stays
+  /// the sole owner of that decision. Never throws.
+  Future<void> _backfillOncePerVault(String vaultId) async {
+    try {
+      final flagKey = _backfillDoneKey(vaultId);
+      if (await _secureStore.read(flagKey) != null) return;
+      if (SyncSessionHolder.current == null) return;
+      await backfillLocalEntities();
+      await _secureStore.write(flagKey, '1');
+    } catch (_) {
+      // Retry on next startup; the flag is only written on success.
+    }
   }
 
   /// Rebuilds [_session] from stored config + keys2 secure storage. Returns false
@@ -1360,6 +1382,8 @@ class SyncEngine implements SyncActions {
           enabled: true,
         ));
     await _configStore.saveConfig(config);
+    // Explicit join/create already decided about local data; no startup backfill.
+    await _secureStore.write(_backfillDoneKey(v2VaultId), '1');
 
     // Save kvault2 and keys2
     for (final e in session.keys.entries) {
