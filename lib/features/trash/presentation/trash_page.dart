@@ -135,22 +135,30 @@ class TrashPage extends ConsumerWidget {
         data: (records) {
           if (records.isEmpty) {
             return Center(
-              child: Padding(
+              child: SingleChildScrollView(
                 padding: const EdgeInsets.all(32),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      Icons.delete_outline,
-                      size: 64,
-                      color: theme.colorScheme.onSurfaceVariant
-                          .withValues(alpha: 0.5),
+                    Container(
+                      width: 88,
+                      height: 88,
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.error.withValues(alpha: 0.08),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.delete_sweep_outlined,
+                        size: 44,
+                        color: theme.colorScheme.error.withValues(alpha: 0.8),
+                      ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 20),
                     Text(
                       l10n.trashEmpty,
-                      style: theme.textTheme.titleLarge?.copyWith(
+                      style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
+                        fontSize: 18,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -160,11 +168,13 @@ class TrashPage extends ConsumerWidget {
             );
           }
           return ListView.separated(
+            padding: const EdgeInsets.symmetric(vertical: 8),
             itemCount: records.length,
-            separatorBuilder: (_, __) => const Divider(
+            separatorBuilder: (_, __) => Divider(
               height: 1,
-              indent: 76,
+              indent: 78,
               endIndent: 16,
+              color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
             ),
             itemBuilder: (context, index) {
               final r = records[index];

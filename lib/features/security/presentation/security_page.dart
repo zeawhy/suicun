@@ -321,79 +321,154 @@ class _SecurityPageState extends ConsumerState<SecurityPage> {
           LockTimeout.fiveMinutes => l10n.timeout5Min,
         };
 
+    Widget sectionHeader(String title) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(4, 16, 4, 8),
+        child: Text(
+          title,
+          style: theme.textTheme.titleSmall?.copyWith(
+            color: theme.colorScheme.primary,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 0.2,
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(title: Text(l10n.securityPageTitle)),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               children: [
                 // Database encryption status (informational).
-                ListTile(
-                  leading: const Icon(Icons.enhanced_encryption_outlined),
-                  title: Text(l10n.encryptionOn),
-                  subtitle: Text(l10n.encryptionOnDesc),
-                ),
-                const Divider(height: 1),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-                  child: Text(
-                    l10n.appLock,
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      color: theme.colorScheme.primary,
-                      fontWeight: FontWeight.bold,
+                Card(
+                  margin: EdgeInsets.zero,
+                  child: ListTile(
+                    leading: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2FA36B).withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          Icons.verified_user_outlined,
+                          color: Color(0xFF2FA36B),
+                          size: 22,
+                        ),
+                      ),
                     ),
+                    title: Text(
+                      l10n.encryptionOn,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    subtitle: Text(l10n.encryptionOnDesc),
                   ),
                 ),
-                SwitchListTile(
-                  title: Text(l10n.enableAppLock),
-                  value: _enabled,
-                  onChanged: _busy ? null : _toggleEnabled,
-                ),
-                ListTile(
-                  title: Text(_hasPin ? l10n.changePin : l10n.setPin),
-                  subtitle: Text(_hasPin ? l10n.pinSet : l10n.pinNotSet),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: _busy ? null : () => _askPin(context, ref),
-                ),
-                SwitchListTile(
-                  title: Text(l10n.useBiometric),
-                  value: _biometric,
-                  onChanged:
-                      _deviceSupportsAuth && !_busy ? _toggleBiometric : null,
-                ),
-                ListTile(
-                  title: Text(l10n.lockTimeout),
-                  trailing: DropdownButton<LockTimeout>(
-                    value: _timeout,
-                    items: [
-                      for (final t in LockTimeout.values)
-                        DropdownMenuItem(
-                            value: t, child: Text(timeoutLabel(t))),
+                sectionHeader(l10n.appLock),
+                Card(
+                  margin: EdgeInsets.zero,
+                  child: Column(
+                    children: [
+                      SwitchListTile(
+                        secondary: const Icon(Icons.screen_lock_portrait_outlined),
+                        title: Text(l10n.enableAppLock),
+                        value: _enabled,
+                        onChanged: _busy ? null : _toggleEnabled,
+                      ),
+                      const Divider(height: 1, indent: 56, endIndent: 16),
+                      ListTile(
+                        leading: const Icon(Icons.pin_outlined),
+                        title: Text(_hasPin ? l10n.changePin : l10n.setPin),
+                        subtitle: Text(_hasPin ? l10n.pinSet : l10n.pinNotSet),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: _busy ? null : () => _askPin(context, ref),
+                      ),
+                      const Divider(height: 1, indent: 56, endIndent: 16),
+                      SwitchListTile(
+                        secondary: const Icon(Icons.fingerprint),
+                        title: Text(l10n.useBiometric),
+                        value: _biometric,
+                        onChanged:
+                            _deviceSupportsAuth && !_busy ? _toggleBiometric : null,
+                      ),
+                      const Divider(height: 1, indent: 56, endIndent: 16),
+                      ListTile(
+                        leading: const Icon(Icons.timer_outlined),
+                        title: Text(l10n.lockTimeout),
+                        trailing: DropdownButton<LockTimeout>(
+                          value: _timeout,
+                          underline: const SizedBox.shrink(),
+                          borderRadius: BorderRadius.circular(12),
+                          items: [
+                            for (final t in LockTimeout.values)
+                              DropdownMenuItem(
+                                  value: t, child: Text(timeoutLabel(t))),
+                          ],
+                          onChanged: _busy ? null : _changeTimeout,
+                        ),
+                      ),
                     ],
-                    onChanged: _busy ? null : _changeTimeout,
                   ),
                 ),
-                const Divider(height: 1),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-                  child: Text(
-                    l10n.encryptedBackup,
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      color: theme.colorScheme.primary,
-                      fontWeight: FontWeight.bold,
-                    ),
+                sectionHeader(l10n.encryptedBackup),
+                Card(
+                  margin: EdgeInsets.zero,
+                  child: Column(
+                    children: [
+                      ListTile(
+                        leading: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primary.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Center(
+                            child: Icon(
+                              Icons.upload_outlined,
+                              size: 20,
+                              color: theme.colorScheme.primary,
+                            ),
+                          ),
+                        ),
+                        title: Text(
+                          l10n.exportEncryptedBackup,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        subtitle: Text(l10n.backupPasswordHint),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: _busy ? null : () => _exportEncrypted(l10n),
+                      ),
+                      const Divider(height: 1, indent: 56, endIndent: 16),
+                      ListTile(
+                        leading: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primary.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Center(
+                            child: Icon(
+                              Icons.download_outlined,
+                              size: 20,
+                              color: theme.colorScheme.primary,
+                            ),
+                          ),
+                        ),
+                        title: Text(
+                          l10n.importEncryptedBackup,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: _busy ? null : () => _importEncrypted(l10n),
+                      ),
+                    ],
                   ),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.upload_outlined),
-                  title: Text(l10n.exportEncryptedBackup),
-                  subtitle: Text(l10n.backupPasswordHint),
-                  onTap: _busy ? null : () => _exportEncrypted(l10n),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.download_outlined),
-                  title: Text(l10n.importEncryptedBackup),
-                  onTap: _busy ? null : () => _importEncrypted(l10n),
                 ),
                 const SizedBox(height: 24),
               ],

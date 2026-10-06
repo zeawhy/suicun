@@ -161,6 +161,7 @@ class _BackupPageState extends ConsumerState<BackupPage> {
           style: theme.textTheme.titleSmall?.copyWith(
             color: theme.colorScheme.primary,
             fontWeight: FontWeight.bold,
+            letterSpacing: 0.2,
           ),
         ),
       );
@@ -172,8 +173,27 @@ class _BackupPageState extends ConsumerState<BackupPage> {
       required VoidCallback? onTap,
     }) {
       return ListTile(
-        leading: Icon(icon),
-        title: Text(title),
+        leading: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: theme.colorScheme.primary.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Center(
+            child: Icon(
+              icon,
+              size: 20,
+              color: theme.colorScheme.primary,
+            ),
+          ),
+        ),
+        title: Text(
+          title,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         trailing: Icon(
           Icons.chevron_right,
           color: theme.colorScheme.onSurfaceVariant,
@@ -201,7 +221,7 @@ class _BackupPageState extends ConsumerState<BackupPage> {
                           ? null
                           : () => _runExport(l10n, service.exportJson),
                     ),
-                    const Divider(height: 1, indent: 16, endIndent: 16),
+                    const Divider(height: 1, indent: 56, endIndent: 16),
                     actionTile(
                       icon: Icons.archive_outlined,
                       title: l10n.exportMarkdownZip,
@@ -209,7 +229,7 @@ class _BackupPageState extends ConsumerState<BackupPage> {
                           ? null
                           : () => _runExport(l10n, service.exportMarkdownZip),
                     ),
-                    const Divider(height: 1, indent: 16, endIndent: 16),
+                    const Divider(height: 1, indent: 56, endIndent: 16),
                     actionTile(
                       icon: Icons.description_outlined,
                       title: l10n.exportTxt,
@@ -220,7 +240,7 @@ class _BackupPageState extends ConsumerState<BackupPage> {
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
               groupTitle(l10n.importData),
               Card(
                 margin: EdgeInsets.zero,
@@ -231,7 +251,7 @@ class _BackupPageState extends ConsumerState<BackupPage> {
                       title: l10n.importJson,
                       onTap: _busy ? null : () => _runJsonImport(l10n),
                     ),
-                    const Divider(height: 1, indent: 16, endIndent: 16),
+                    const Divider(height: 1, indent: 56, endIndent: 16),
                     actionTile(
                       icon: Icons.note_add_outlined,
                       title: l10n.importMarkdown,

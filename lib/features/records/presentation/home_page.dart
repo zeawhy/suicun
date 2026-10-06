@@ -123,29 +123,34 @@ class _HomePageState extends ConsumerState<HomePage> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
             child: TextField(
               onChanged: (v) =>
                   ref.read(recordsFilterProvider.notifier).setQuery(v),
               decoration: InputDecoration(
                 hintText: l10n.searchHint,
-                prefixIcon: const Icon(Icons.search),
+                prefixIcon: Icon(
+                  Icons.search_rounded,
+                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
+                  size: 22,
+                ),
                 filled: true,
-                fillColor: colorScheme.surfaceContainerHighest,
+                fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.65),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(16),
                   borderSide: BorderSide.none,
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(16),
                   borderSide: BorderSide.none,
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(16),
                   borderSide:
                       BorderSide(color: colorScheme.primary, width: 1.5),
                 ),
-                contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
             ),
           ),
@@ -177,10 +182,11 @@ class _HomePageState extends ConsumerState<HomePage> {
                 }
                 return ListView.separated(
                   itemCount: records.length,
-                  separatorBuilder: (_, __) => const Divider(
+                  separatorBuilder: (_, __) => Divider(
                     height: 1,
-                    indent: 76,
+                    indent: 78,
                     endIndent: 16,
+                    color: colorScheme.outlineVariant.withValues(alpha: 0.6),
                   ),
                   itemBuilder: (context, index) {
                     final r = records[index];
@@ -224,8 +230,10 @@ class _HomePageState extends ConsumerState<HomePage> {
           : FloatingActionButton(
               onPressed: () => context.push('/edit'),
               tooltip: l10n.newRecord,
-              shape: const CircleBorder(),
-              child: const Icon(Icons.add),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: const Icon(Icons.add, size: 28),
             ),
     );
   }
@@ -267,15 +275,20 @@ class _FilterChips extends StatelessWidget {
           showCheckmark: false,
           labelStyle: TextStyle(
             color: selected ? colorScheme.onPrimary : colorScheme.onSurface,
-            fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+            fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+            fontSize: 13,
           ),
           selectedColor: colorScheme.primary,
-          backgroundColor: colorScheme.surfaceContainerHighest,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-            side: BorderSide.none,
+          backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+          side: BorderSide(
+            color: selected
+                ? Colors.transparent
+                : colorScheme.outlineVariant.withValues(alpha: 0.4),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           materialTapTargetSize: MaterialTapTargetSize.padded,
         ),
       );
@@ -330,44 +343,62 @@ class _EmptyState extends StatelessWidget {
     if (hasQuery) {
       title = l10n.searchEmpty;
       hint = l10n.searchEmptyHint;
-      icon = Icons.search_off_outlined;
+      icon = Icons.search_off_rounded;
     } else if (hasFilter) {
       title = l10n.filterEmpty;
       hint = l10n.filterEmptyHint;
-      icon = Icons.filter_list_off_outlined;
+      icon = Icons.filter_alt_off_rounded;
     } else {
       title = l10n.recordsEmpty;
       hint = l10n.recordsEmptyHint;
-      icon = Icons.note_add_outlined;
+      icon = Icons.auto_stories_outlined;
     }
 
     return Center(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon,
-                size: 64, color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5)),
-            const SizedBox(height: 16),
+            Container(
+              width: 88,
+              height: 88,
+              decoration: BoxDecoration(
+                color: colorScheme.primary.withValues(alpha: 0.08),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                size: 44,
+                color: colorScheme.primary.withValues(alpha: 0.8),
+              ),
+            ),
+            const SizedBox(height: 20),
             Text(
               title,
-              style: theme.textTheme.titleLarge
-                  ?.copyWith(fontWeight: FontWeight.bold),
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
-            Text(
-              hint,
-              style: theme.textTheme.bodyMedium
-                  ?.copyWith(color: colorScheme.onSurfaceVariant),
-              textAlign: TextAlign.center,
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 280),
+              child: Text(
+                hint,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+                textAlign: TextAlign.center,
+              ),
             ),
             if (!hasQuery && hasFilter) ...[
-              const SizedBox(height: 16),
-              FilledButton.tonal(
+              const SizedBox(height: 20),
+              FilledButton.tonalIcon(
                 onPressed: onClearFilter,
-                child: Text(l10n.clearFilter),
+                icon: const Icon(Icons.refresh_rounded, size: 18),
+                label: Text(l10n.clearFilter),
               ),
             ],
           ],
