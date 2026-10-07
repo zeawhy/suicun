@@ -17,6 +17,7 @@ import 'package:suicun/features/records/presentation/records_notifier.dart';
 import 'package:suicun/features/tags/domain/tag_model.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
 import 'package:suicun/services/auto_category_service.dart';
+import 'package:suicun/shared/theme/app_theme.dart';
 
 class EditRecordPage extends ConsumerStatefulWidget {
   const EditRecordPage({super.key, this.recordId});
@@ -190,8 +191,9 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           _ColorDot(
-                            color: _parseColor(
-                              _suggestionColors[s.categoryId] ?? '#4866D5',
+                            color: AppTheme.getCategoryColor(
+                              s.categoryName,
+                              _suggestionColors[s.categoryId],
                             ),
                           ),
                           const SizedBox(width: 6),
@@ -234,7 +236,7 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
               onPressed: () => Navigator.of(ctx).pop(c.id),
               child: Row(
                 children: [
-                  _ColorDot(color: _parseColor(c.color)),
+                  _ColorDot(color: AppTheme.getCategoryColor(c.name, c.color)),
                   const SizedBox(width: 12),
                   Expanded(child: Text(c.name)),
                   if (record?.categoryId == c.id)
@@ -450,7 +452,15 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
                   style: theme.textTheme.titleLarge
                       ?.copyWith(fontWeight: FontWeight.bold),
                 )
-              : _SaveStatusTitle(saveState: state.saveState),
+              : _SaveStatusTitle(
+                  saveState: state.saveState,
+                  onRetry: () => ref
+                      .read(editRecordProvider(widget.recordId).notifier)
+                      .onInputChanged(
+                        _titleController.text,
+                        _bodyController.text,
+                      ),
+                ),
           actions: [
             IconButton(
               icon: Icon(
@@ -467,7 +477,7 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
               },
             ),
             PopupMenuButton<String>(
-              icon: const Icon(Icons.more_vert),
+              icon: const Icon(Icons.more_horiz),
               onSelected: (value) {
                 switch (value) {
                   case 'category':
@@ -729,7 +739,12 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
               ),
               const Spacer(),
               if (category != null) ...[
-                _ColorDot(color: _parseColor(category.color)),
+                _ColorDot(
+                  color: AppTheme.getCategoryColor(
+                    category.name,
+                    category.color,
+                  ),
+                ),
                 const SizedBox(width: 8),
                 Text(category.name,
                     style: theme.textTheme.bodyMedium?.copyWith(
@@ -842,9 +857,10 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
 
 /// App bar title showing the live auto-save status.
 class _SaveStatusTitle extends StatelessWidget {
-  const _SaveStatusTitle({required this.saveState});
+  const _SaveStatusTitle({required this.saveState, this.onRetry});
 
   final SaveState saveState;
+  final VoidCallback? onRetry;
 
   @override
   Widget build(BuildContext context) {
@@ -876,11 +892,26 @@ class _SaveStatusTitle extends StatelessWidget {
           ),
         );
       case SaveState.error:
-        return Text(
-          l10n.saveFailed,
-          style: TextStyle(
-            color: colorScheme.error,
-            fontSize: 14,
+        return InkWell(
+          borderRadius: BorderRadius.circular(8),
+          onTap: onRetry,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.error_outline, color: colorScheme.error, size: 16),
+                const SizedBox(width: 4),
+                Text(
+                  l10n.saveFailed,
+                  style: TextStyle(
+                    color: colorScheme.error,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
           ),
         );
     }
@@ -993,10 +1024,4 @@ class _ColorDot extends StatelessWidget {
       decoration: BoxDecoration(color: color, shape: BoxShape.circle),
     );
   }
-}
-
-Color _parseColor(String hexStr) {
-  hexStr = hexStr.toUpperCase().replaceAll('#', '');
-  if (hexStr.length == 6) hexStr = 'FF$hexStr';
-  return Color(int.tryParse(hexStr, radix: 16) ?? 0xFF4866D5);
 }

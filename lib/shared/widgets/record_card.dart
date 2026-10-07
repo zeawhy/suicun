@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:suicun/features/records/domain/record_model.dart';
 import 'package:suicun/features/records/presentation/home_sort_provider.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
+import 'package:suicun/shared/theme/app_theme.dart';
 import 'package:suicun/shared/utils/date_formatter.dart';
 
 class RecordCard extends StatelessWidget {
@@ -66,16 +67,17 @@ class RecordCard extends StatelessWidget {
     final categoryName = record.category?.name ?? uncategorizedLabel;
     final metaText = '$categoryName · $timeStr';
 
-    final categoryColor = record.category != null
-        ? _parseColor(record.category!.color)
-        : const Color(0xFF287B70);
+    final categoryColor = AppTheme.getCategoryColor(
+      record.category?.name,
+      record.category?.color,
+    );
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Container(
         decoration: BoxDecoration(
           color: colorScheme.surfaceContainerLowest,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: colorScheme.outlineVariant,
             width: 1,
@@ -262,13 +264,5 @@ class RecordCard extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  Color _parseColor(String hexStr) {
-    hexStr = hexStr.toUpperCase().replaceAll('#', '');
-    if (hexStr.length == 6) {
-      hexStr = 'FF$hexStr';
-    }
-    return Color(int.tryParse(hexStr, radix: 16) ?? 0xFF287B70);
   }
 }

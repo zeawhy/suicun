@@ -17,6 +17,7 @@ import 'package:suicun/features/records/presentation/home_sort_provider.dart';
 import 'package:suicun/features/records/presentation/records_notifier.dart';
 import 'package:suicun/features/sync/sync_contract.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
+import 'package:suicun/shared/theme/app_theme.dart';
 import 'package:suicun/shared/widgets/record_card.dart';
 
 class HomePage extends ConsumerStatefulWidget {
@@ -154,7 +155,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                         width: 10,
                         height: 10,
                         decoration: BoxDecoration(
-                          color: _parseColor(c.color),
+                          color: AppTheme.getCategoryColor(c.name, c.color),
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -231,14 +232,6 @@ class _HomePageState extends ConsumerState<HomePage> {
         );
       },
     );
-  }
-
-  Color _parseColor(String hexStr) {
-    hexStr = hexStr.toUpperCase().replaceAll('#', '');
-    if (hexStr.length == 6) {
-      hexStr = 'FF$hexStr';
-    }
-    return Color(int.tryParse(hexStr, radix: 16) ?? 0xFF287B70);
   }
 
   @override

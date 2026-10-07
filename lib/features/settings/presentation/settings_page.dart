@@ -4,6 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:suicun/features/sync/sync_contract.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
 import 'package:suicun/shared/theme/theme_providers.dart';
 
@@ -93,6 +94,13 @@ class SettingsPage extends ConsumerWidget {
               context,
               icon: Icons.cloud_outlined,
               title: l10n.webdavSync,
+              trailingText: ref.watch(syncOverviewProvider).when(
+                    data: (overview) => overview.enabled
+                        ? l10n.syncStatusEnabled
+                        : l10n.syncStatusDisabled,
+                    loading: () => null,
+                    error: (_, __) => null,
+                  ),
               onTap: () => context.push('/settings/webdav'),
             ),
           ),
@@ -114,7 +122,7 @@ class SettingsPage extends ConsumerWidget {
             child: ListTile(
               leading: const Icon(Icons.info_outline),
               title: Text(l10n.version),
-              subtitle: const Text('0.1.0 (Stage A)'),
+              subtitle: const Text('0.1.0+1'),
             ),
           ),
           const SizedBox(height: 24),
@@ -127,14 +135,29 @@ class SettingsPage extends ConsumerWidget {
     BuildContext context, {
     required IconData icon,
     required String title,
+    String? trailingText,
     required VoidCallback onTap,
   }) {
     return ListTile(
       leading: Icon(icon),
       title: Text(title),
-      trailing: Icon(
-        Icons.chevron_right,
-        color: Theme.of(context).colorScheme.onSurfaceVariant,
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (trailingText != null) ...[
+            Text(
+              trailingText,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+            ),
+            const SizedBox(width: 4),
+          ],
+          Icon(
+            Icons.chevron_right,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ],
       ),
       onTap: onTap,
     );

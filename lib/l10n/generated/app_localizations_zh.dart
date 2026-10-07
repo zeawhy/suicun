@@ -311,10 +311,21 @@ class AppLocalizationsZh extends AppLocalizations {
   String get keepRemote => '保留另一版本';
 
   @override
+  String keywordCount(int count) {
+    return '$count 个关键词';
+  }
+
+  @override
   String get keywordHint => '输入关键词，回车添加';
 
   @override
   String get keywords => '关键词';
+
+  @override
+  String get manageKeywords => '管理关键词';
+
+  @override
+  String get renameCategory => '重命名';
 
   @override
   String get keywordsEmpty => '暂无关键词，添加后可自动推荐分类';
@@ -481,10 +492,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get recordDeleted => '已移至回收站';
 
   @override
-  String get recordsEmpty => '还没有记录';
+  String get recordsEmpty => '还没有保存的信息';
 
   @override
-  String get recordsEmptyHint => '点击下方「新建信息」开始记录';
+  String get recordsEmptyHint => '点击下方「＋ 新建信息」开始保存';
 
   @override
   String get recoverDesc =>
@@ -569,22 +580,22 @@ class AppLocalizationsZh extends AppLocalizations {
   String get save => '保存';
 
   @override
-  String get saveFailed => '保存失败，重试';
+  String get saveFailed => '保存失败，点击重试';
 
   @override
   String get saved => '已保存';
 
   @override
-  String get saving => '保存中';
+  String get saving => '保存中…';
 
   @override
-  String get searchEmpty => '没有找到相关记录';
+  String get searchEmpty => '没有找到相关信息';
 
   @override
-  String get searchEmptyHint => '试试其他关键词，或清除筛选条件';
+  String get searchEmptyHint => '试试其他关键词，或清除搜索条件';
 
   @override
-  String get searchHint => '搜索保存的信息';
+  String get searchHint => '搜索信息';
 
   @override
   String get security => '安全';

@@ -674,6 +674,12 @@ abstract class AppLocalizations {
   /// **'保留另一版本'**
   String get keepRemote;
 
+  /// No description provided for @keywordCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count} 个关键词'**
+  String keywordCount(int count);
+
   /// No description provided for @keywordHint.
   ///
   /// In zh, this message translates to:
@@ -685,6 +691,18 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'关键词'**
   String get keywords;
+
+  /// No description provided for @manageKeywords.
+  ///
+  /// In zh, this message translates to:
+  /// **'管理关键词'**
+  String get manageKeywords;
+
+  /// No description provided for @renameCategory.
+  ///
+  /// In zh, this message translates to:
+  /// **'重命名'**
+  String get renameCategory;
 
   /// No description provided for @keywordsEmpty.
   ///
@@ -989,13 +1007,13 @@ abstract class AppLocalizations {
   /// No description provided for @recordsEmpty.
   ///
   /// In zh, this message translates to:
-  /// **'还没有记录'**
+  /// **'还没有保存的信息'**
   String get recordsEmpty;
 
   /// No description provided for @recordsEmptyHint.
   ///
   /// In zh, this message translates to:
-  /// **'点击下方「新建信息」开始记录'**
+  /// **'点击下方「＋ 新建信息」开始保存'**
   String get recordsEmptyHint;
 
   /// No description provided for @recoverDesc.
@@ -1145,7 +1163,7 @@ abstract class AppLocalizations {
   /// No description provided for @saveFailed.
   ///
   /// In zh, this message translates to:
-  /// **'保存失败，重试'**
+  /// **'保存失败，点击重试'**
   String get saveFailed;
 
   /// No description provided for @saved.
@@ -1157,25 +1175,25 @@ abstract class AppLocalizations {
   /// No description provided for @saving.
   ///
   /// In zh, this message translates to:
-  /// **'保存中'**
+  /// **'保存中…'**
   String get saving;
 
   /// No description provided for @searchEmpty.
   ///
   /// In zh, this message translates to:
-  /// **'没有找到相关记录'**
+  /// **'没有找到相关信息'**
   String get searchEmpty;
 
   /// No description provided for @searchEmptyHint.
   ///
   /// In zh, this message translates to:
-  /// **'试试其他关键词，或清除筛选条件'**
+  /// **'试试其他关键词，或清除搜索条件'**
   String get searchEmptyHint;
 
   /// No description provided for @searchHint.
   ///
   /// In zh, this message translates to:
-  /// **'搜索保存的信息'**
+  /// **'搜索信息'**
   String get searchHint;
 
   /// No description provided for @security.

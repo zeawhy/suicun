@@ -49,6 +49,13 @@
       }
     }
   },
+  "@keywordCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "@lastSuccess": {
     "placeholders": {
       "time": {
@@ -261,8 +268,11 @@
   "keepLocal": "Keep this version",
   "keepPasswordSafe": "Keep your encryption password safe: it cannot be recovered if lost. Your WebDAV login cannot restore note contents.",
   "keepRemote": "Keep other version",
+  "keywordCount": "{count} keywords",
   "keywordHint": "Type a keyword, Enter to add",
   "keywords": "Keywords",
+  "manageKeywords": "Manage keywords",
+  "renameCategory": "Rename",
   "keywordsEmpty": "No keywords yet — add some to enable smart suggestions",
   "lastSuccess": "Last success: {time}",
   "lastSuccessNever": "Never synced successfully",
@@ -313,8 +323,8 @@
   "probeUnreachable": "Cannot reach the server",
   "recordCount": "{count} records",
   "recordDeleted": "Moved to trash",
-  "recordsEmpty": "No records yet",
-  "recordsEmptyHint": "Tap \"New Info\" below to get started",
+  "recordsEmpty": "No info saved yet",
+  "recordsEmptyHint": "Tap \"+ New Info\" below to start saving",
   "recoverDesc": "On a new device, download previously uploaded data from WebDAV and rebuild the local library. Only successfully uploaded data can be restored; offline edits that were never uploaded cannot be recovered.",
   "recoverFailedObjects": "Failed objects: {count}",
   "recoverFromWebdav": "Restore from WebDAV",
@@ -339,12 +349,12 @@
   "restore": "Restore",
   "retry": "Retry",
   "save": "Save",
-  "saveFailed": "Save failed, retry",
+  "saveFailed": "Save failed, tap to retry",
   "saved": "Saved",
   "saving": "Saving…",
-  "searchEmpty": "No results found",
-  "searchEmptyHint": "Try different keywords or clear filters",
-  "searchHint": "Search saved info",
+  "searchEmpty": "No matching info found",
+  "searchEmptyHint": "Try different keywords or clear search",
+  "searchHint": "Search info",
   "security": "Security",
   "securityNotImplemented": "Security features will be available in a future version",
   "securityPageTitle": "Security",

@@ -49,6 +49,13 @@
       }
     }
   },
+  "@keywordCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "@lastSuccess": {
     "placeholders": {
       "time": {
@@ -261,8 +268,11 @@
   "keepLocal": "保留本机版本",
   "keepPasswordSafe": "请妥善保管加密密码：丢失后无法找回，WebDAV 账号密码不能恢复笔记内容。",
   "keepRemote": "保留另一版本",
+  "keywordCount": "{count} 个关键词",
   "keywordHint": "输入关键词，回车添加",
   "keywords": "关键词",
+  "manageKeywords": "管理关键词",
+  "renameCategory": "重命名",
   "keywordsEmpty": "暂无关键词，添加后可自动推荐分类",
   "lastSuccess": "上次成功：{time}",
   "lastSuccessNever": "从未成功同步",
@@ -313,8 +323,8 @@
   "probeUnreachable": "无法连接到服务器",
   "recordCount": "{count} 条记录",
   "recordDeleted": "已移至回收站",
-  "recordsEmpty": "还没有记录",
-  "recordsEmptyHint": "点击下方「新建信息」开始记录",
+  "recordsEmpty": "还没有保存的信息",
+  "recordsEmptyHint": "点击下方「＋ 新建信息」开始保存",
   "recoverDesc": "在新设备上从 WebDAV 下载已上传的数据，重建本地库。只能恢复已成功上传的数据；尚未上传的离线编辑无法找回。",
   "recoverFailedObjects": "失败对象：{count}",
   "recoverFromWebdav": "从 WebDAV 恢复",
@@ -339,12 +349,12 @@
   "restore": "恢复",
   "retry": "重试",
   "save": "保存",
-  "saveFailed": "保存失败，重试",
+  "saveFailed": "保存失败，点击重试",
   "saved": "已保存",
-  "saving": "保存中",
-  "searchEmpty": "没有找到相关记录",
-  "searchEmptyHint": "试试其他关键词，或清除筛选条件",
-  "searchHint": "搜索保存的信息",
+  "saving": "保存中…",
+  "searchEmpty": "没有找到相关信息",
+  "searchEmptyHint": "试试其他关键词，或清除搜索条件",
+  "searchHint": "搜索信息",
   "security": "安全",
   "securityNotImplemented": "安全功能将在后续版本推出",
   "securityPageTitle": "安全",

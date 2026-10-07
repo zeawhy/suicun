@@ -319,10 +319,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get keepRemote => 'Keep other version';
 
   @override
+  String keywordCount(int count) {
+    return '$count keywords';
+  }
+
+  @override
   String get keywordHint => 'Type a keyword, Enter to add';
 
   @override
   String get keywords => 'Keywords';
+
+  @override
+  String get manageKeywords => 'Manage keywords';
+
+  @override
+  String get renameCategory => 'Rename';
 
   @override
   String get keywordsEmpty =>
@@ -492,10 +503,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recordDeleted => 'Moved to trash';
 
   @override
-  String get recordsEmpty => 'No records yet';
+  String get recordsEmpty => 'No info saved yet';
 
   @override
-  String get recordsEmptyHint => 'Tap \"New Info\" below to get started';
+  String get recordsEmptyHint => 'Tap \"+ New Info\" below to start saving';
 
   @override
   String get recoverDesc =>
@@ -581,7 +592,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get save => 'Save';
 
   @override
-  String get saveFailed => 'Save failed, retry';
+  String get saveFailed => 'Save failed, tap to retry';
 
   @override
   String get saved => 'Saved';
@@ -590,13 +601,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get saving => 'Saving…';
 
   @override
-  String get searchEmpty => 'No results found';
+  String get searchEmpty => 'No matching info found';
 
   @override
-  String get searchEmptyHint => 'Try different keywords or clear filters';
+  String get searchEmptyHint => 'Try different keywords or clear search';
 
   @override
-  String get searchHint => 'Search saved info';
+  String get searchHint => 'Search info';
 
   @override
   String get security => 'Security';

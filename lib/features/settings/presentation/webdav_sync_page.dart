@@ -467,45 +467,6 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
     }
   }
 
-  Future<void> _confirmDisableSync(AppLocalizations l10n) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.disableSync),
-        content: Text(l10n.disableSyncConfirm),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text(l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(l10n.confirm),
-          ),
-        ],
-      ),
-    );
-    if (confirmed != true || !mounted) return;
-
-    setState(() => _disablingAction = true);
-    try {
-      final actions = ref.read(syncActionsProvider);
-      await actions.disableSync(removeCredentials: false);
-    } catch (e) {
-      if (!mounted) return;
-      final isEn = Localizations.localeOf(context).languageCode == 'en';
-      final msg = _formatErrorMessage(e, english: isEn);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(msg),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
-      );
-    } finally {
-      if (mounted) setState(() => _disablingAction = false);
-    }
-  }
-
   Future<void> _confirmRemoveCredentials(AppLocalizations l10n) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -1054,35 +1015,16 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
             ),
             if (overview.enabled) ...[
               const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: SizedBox(
-                      height: 48,
-                      child: OutlinedButton(
-                        onPressed: _disablingAction
-                            ? null
-                            : () => _confirmDisableSync(l10n),
-                        child: Text(l10n.disableSync),
-                      ),
-                    ),
+              Center(
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    foregroundColor: colorScheme.error,
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: SizedBox(
-                      height: 48,
-                      child: TextButton(
-                        style: TextButton.styleFrom(
-                          foregroundColor: colorScheme.error,
-                        ),
-                        onPressed: _disablingAction
-                            ? null
-                            : () => _confirmRemoveCredentials(l10n),
-                        child: Text(l10n.removeCredentials),
-                      ),
-                    ),
-                  ),
-                ],
+                  onPressed: _disablingAction
+                      ? null
+                      : () => _confirmRemoveCredentials(l10n),
+                  child: Text(l10n.removeCredentials),
+                ),
               ),
             ],
           ],
@@ -1137,7 +1079,7 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
                         style: theme.textTheme.bodyMedium?.copyWith(
                           fontWeight: FontWeight.w500,
                         ),
-                        maxLines: 1,
+                        maxLines: 3,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ],

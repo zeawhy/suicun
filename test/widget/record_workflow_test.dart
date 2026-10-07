@@ -63,7 +63,7 @@ void main() {
     await pumpApp(tester, db);
 
     expect(find.text('My Info'), findsOneWidget); // app bar / header title (en locale)
-    expect(find.text('No records yet'), findsOneWidget);
+    expect(find.text('No info saved yet'), findsOneWidget);
     expect(find.byTooltip('New Record'), findsOneWidget);
   });
 
@@ -114,13 +114,13 @@ void main() {
     expect(find.text('Beta note'), findsOneWidget);
 
     // Filter
-    await tester.enterText(findByHint('Search saved info'), 'Alpha');
+    await tester.enterText(findByHint('Search info'), 'Alpha');
     await tester.pumpAndSettle();
     expect(find.text('Alpha note'), findsOneWidget);
     expect(find.text('Beta note'), findsNothing);
 
     // Clear filter
-    await tester.enterText(findByHint('Search saved info'), '');
+    await tester.enterText(findByHint('Search info'), '');
     await tester.pumpAndSettle();
     expect(find.text('Beta note'), findsOneWidget);
   });
@@ -203,6 +203,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.pageBack();
       await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 100));
     }
 
     // Default: Recently edited -> 'A note' on top (earlier y), 'B note' below (later y)

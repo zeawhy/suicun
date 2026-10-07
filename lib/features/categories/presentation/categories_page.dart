@@ -7,15 +7,15 @@ import 'package:suicun/features/categories/domain/category_model.dart';
 import 'package:suicun/features/categories/presentation/categories_notifier.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
 import 'package:suicun/services/auto_category_service.dart';
+import 'package:suicun/shared/theme/app_theme.dart';
 
-/// Preset colors offered when creating/editing a category.
+/// Preset colors offered when creating/editing a category (C1 specification).
 const List<Color> _presetColors = [
-  Color(0xFF4866D5),
-  Color(0xFF7C5CD6),
-  Color(0xFF2FA36B),
-  Color(0xFFE39A2D),
-  Color(0xFFE15D5D),
-  Color(0xFF4AA3DF),
+  Color(0xFF805AD5), // 学习
+  Color(0xFF477FD0), // 工作
+  Color(0xFFD65C65), // 待办
+  Color(0xFFD49A25), // 灵感
+  Color(0xFF3C9567), // 生活
 ];
 
 class CategoriesPage extends ConsumerWidget {
@@ -168,119 +168,183 @@ class CategoriesPage extends ConsumerWidget {
       appBar: AppBar(title: Text(l10n.categories)),
       body: categoriesState.when(
         data: (categories) {
-          if (categories.isEmpty) {
-            return Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(32),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 88,
-                      height: 88,
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primary.withValues(alpha: 0.08),
-                        shape: BoxShape.circle,
+          return Column(
+            children: [
+              Expanded(
+                child: categories.isEmpty
+                    ? Center(
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.all(32),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                width: 88,
+                                height: 88,
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.primary
+                                      .withValues(alpha: 0.08),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Icons.folder_open_rounded,
+                                  size: 44,
+                                  color: theme.colorScheme.primary
+                                      .withValues(alpha: 0.8),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              Text(
+                                l10n.categoriesEmpty,
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : ListView.separated(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        itemCount: categories.length,
+                        separatorBuilder: (_, __) => Divider(
+                          height: 1,
+                          indent: 74,
+                          endIndent: 16,
+                          color: theme.colorScheme.outlineVariant
+                              .withValues(alpha: 0.5),
+                        ),
+                        itemBuilder: (context, index) {
+                          final cat = categories[index];
+                          final color =
+                              AppTheme.getCategoryColor(cat.name, cat.color);
+                          return ListTile(
+                            leading: Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: color.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: color.withValues(alpha: 0.20),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Center(
+                                child: Icon(Icons.folder_rounded,
+                                    color: color, size: 24),
+                              ),
+                            ),
+                            title: Text(
+                              cat.name,
+                              style: theme.textTheme.bodyLarge?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            subtitle: _KeywordCountLabel(categoryId: cat.id),
+                            trailing: PopupMenuButton<String>(
+                              icon: const Icon(Icons.more_horiz),
+                              tooltip: 'More',
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              onSelected: (val) {
+                                switch (val) {
+                                  case 'keywords':
+                                    _editKeywordsSheet(context, ref, l10n, cat);
+                                  case 'rename':
+                                    _editCategoryDialog(context, ref, l10n,
+                                        existing: cat);
+                                  case 'delete':
+                                    _confirmDelete(context, ref, l10n, cat);
+                                }
+                              },
+                              itemBuilder: (ctx) => [
+                                PopupMenuItem(
+                                  value: 'keywords',
+                                  child: Row(
+                                    children: [
+                                      const Icon(Icons.auto_awesome_outlined,
+                                          size: 20),
+                                      const SizedBox(width: 12),
+                                      Text(l10n.manageKeywords),
+                                    ],
+                                  ),
+                                ),
+                                PopupMenuItem(
+                                  value: 'rename',
+                                  child: Row(
+                                    children: [
+                                      const Icon(Icons.edit_outlined, size: 20),
+                                      const SizedBox(width: 12),
+                                      Text(l10n.renameCategory),
+                                    ],
+                                  ),
+                                ),
+                                PopupMenuItem(
+                                  value: 'delete',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.delete_outline,
+                                          size: 20,
+                                          color: theme.colorScheme.error),
+                                      const SizedBox(width: 12),
+                                      Text(
+                                        l10n.deleteCategory,
+                                        style: TextStyle(
+                                            color: theme.colorScheme.error),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 4),
+                          );
+                        },
                       ),
-                      child: Icon(
-                        Icons.folder_open_rounded,
-                        size: 44,
-                        color: theme.colorScheme.primary.withValues(alpha: 0.8),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      l10n.categoriesEmpty,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
               ),
-            );
-          }
-          return ListView.separated(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: categories.length,
-            separatorBuilder: (_, __) => Divider(
-              height: 1,
-              indent: 74,
-              endIndent: 16,
-              color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
-            ),
-            itemBuilder: (context, index) {
-              final cat = categories[index];
-              final color = _parseColor(cat.color);
-              return ListTile(
-                leading: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: color.withValues(alpha: 0.20),
+              Container(
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surfaceContainerLowest,
+                  border: Border(
+                    top: BorderSide(
+                      color: theme.colorScheme.outlineVariant,
                       width: 1,
                     ),
                   ),
-                  child: Center(
-                    child: Icon(Icons.folder_rounded, color: color, size: 24),
-                  ),
                 ),
-                title: Text(
-                  cat.name,
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                subtitle: _KeywordCountLabel(categoryId: cat.id),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.auto_awesome_outlined, size: 20),
-                      tooltip: l10n.keywords,
-                      onPressed: () =>
-                          _editKeywordsSheet(context, ref, l10n, cat),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.edit_outlined, size: 20),
-                      tooltip: l10n.editCategory,
-                      onPressed: () => _editCategoryDialog(
-                          context, ref, l10n,
-                          existing: cat),
-                    ),
-                    IconButton(
-                      icon: Icon(
-                        Icons.delete_outline,
-                        size: 20,
-                        color: theme.colorScheme.error,
+                child: SafeArea(
+                  top: false,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: FilledButton.icon(
+                        icon: const Icon(Icons.add, size: 22),
+                        label: Text(l10n.addCategory),
+                        style: FilledButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        onPressed: () =>
+                            _editCategoryDialog(context, ref, l10n),
                       ),
-                      tooltip: l10n.deleteCategory,
-                      onPressed: () =>
-                          _confirmDelete(context, ref, l10n, cat),
                     ),
-                  ],
+                  ),
                 ),
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              );
-            },
+              ),
+            ],
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, st) => Center(child: Text(e.toString())),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _editCategoryDialog(context, ref, l10n),
-        tooltip: l10n.addCategory,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18),
-        ),
-        child: const Icon(Icons.add, size: 28),
       ),
     );
   }
@@ -299,7 +363,7 @@ class _KeywordCountLabel extends ConsumerWidget {
         ref.watch(_categoryKeywordsProvider(categoryId));
     return keywordsAsync.maybeWhen(
       data: (kws) => Text(
-        '${l10n.keywords} · ${kws.length}',
+        l10n.keywordCount(kws.length),
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
