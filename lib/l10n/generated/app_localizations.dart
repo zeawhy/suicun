@@ -1825,6 +1825,54 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'密码已复制'**
   String get passwordCopied;
+
+  /// No description provided for @pinRecord.
+  ///
+  /// In zh, this message translates to:
+  /// **'置顶'**
+  String get pinRecord;
+
+  /// No description provided for @unpinRecord.
+  ///
+  /// In zh, this message translates to:
+  /// **'取消置顶'**
+  String get unpinRecord;
+
+  /// No description provided for @deleteRecordTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'删除这条记录？'**
+  String get deleteRecordTitle;
+
+  /// No description provided for @deleteRecordConfirm.
+  ///
+  /// In zh, this message translates to:
+  /// **'删除后可在回收站找回。'**
+  String get deleteRecordConfirm;
+
+  /// No description provided for @formatCheckbox.
+  ///
+  /// In zh, this message translates to:
+  /// **'勾选框'**
+  String get formatCheckbox;
+
+  /// No description provided for @formatHeading.
+  ///
+  /// In zh, this message translates to:
+  /// **'标题'**
+  String get formatHeading;
+
+  /// No description provided for @formatBold.
+  ///
+  /// In zh, this message translates to:
+  /// **'加粗'**
+  String get formatBold;
+
+  /// No description provided for @formatBullet.
+  ///
+  /// In zh, this message translates to:
+  /// **'无序列表'**
+  String get formatBullet;
 }
 
 class _AppLocalizationsDelegate

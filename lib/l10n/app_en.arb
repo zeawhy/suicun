@@ -459,5 +459,13 @@
   "templateTodoDesc": "Checklist with checkbox items",
   "templateContact": "Contact",
   "templateContactDesc": "Name, phone, email and address",
-  "passwordCopied": "Password copied"
+  "passwordCopied": "Password copied",
+  "pinRecord": "Pin to top",
+  "unpinRecord": "Unpin",
+  "deleteRecordTitle": "Delete this record?",
+  "deleteRecordConfirm": "You can restore it from Trash after deletion.",
+  "formatCheckbox": "Checkbox",
+  "formatHeading": "Heading",
+  "formatBold": "Bold",
+  "formatBullet": "Bulleted list"
 }

@@ -921,4 +921,28 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get passwordCopied => '密码已复制';
+
+  @override
+  String get pinRecord => '置顶';
+
+  @override
+  String get unpinRecord => '取消置顶';
+
+  @override
+  String get deleteRecordTitle => '删除这条记录？';
+
+  @override
+  String get deleteRecordConfirm => '删除后可在回收站找回。';
+
+  @override
+  String get formatCheckbox => '勾选框';
+
+  @override
+  String get formatHeading => '标题';
+
+  @override
+  String get formatBold => '加粗';
+
+  @override
+  String get formatBullet => '无序列表';
 }

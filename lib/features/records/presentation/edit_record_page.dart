@@ -14,6 +14,7 @@ import 'package:suicun/core/database/providers.dart';
 import 'package:suicun/features/records/domain/record_model.dart';
 import 'package:suicun/features/records/presentation/checklist_line.dart';
 import 'package:suicun/features/records/presentation/edit_record_notifier.dart';
+import 'package:suicun/features/records/presentation/markdown_line.dart';
 import 'package:suicun/features/records/presentation/note_template.dart';
 import 'package:suicun/features/records/presentation/records_notifier.dart';
 import 'package:suicun/features/records/presentation/secret_line.dart';
@@ -621,25 +622,31 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
   ) {
     final text = _bodyController.text;
     if (_bodyEditing) {
-      return TextField(
-        controller: _bodyController,
-        focusNode: _bodyFocusNode,
-        autofocus: _isNew,
-        decoration: InputDecoration(
-          hintText: l10n.bodyHint,
-          hintStyle: TextStyle(
-            color: colorScheme.onSurfaceVariant.withValues(alpha: 0.55),
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildFormatToolbar(l10n, theme, colorScheme),
+          TextField(
+            controller: _bodyController,
+            focusNode: _bodyFocusNode,
+            autofocus: _isNew,
+            decoration: InputDecoration(
+              hintText: l10n.bodyHint,
+              hintStyle: TextStyle(
+                color: colorScheme.onSurfaceVariant.withValues(alpha: 0.55),
+              ),
+              border: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              focusedBorder: InputBorder.none,
+              filled: false,
+              contentPadding: EdgeInsets.zero,
+            ),
+            style: theme.textTheme.bodyLarge?.copyWith(height: 1.5),
+            keyboardType: TextInputType.multiline,
+            maxLines: null,
+            onChanged: (_) => _onChanged(),
           ),
-          border: InputBorder.none,
-          enabledBorder: InputBorder.none,
-          focusedBorder: InputBorder.none,
-          filled: false,
-          contentPadding: EdgeInsets.zero,
-        ),
-        style: theme.textTheme.bodyLarge?.copyWith(height: 1.5),
-        keyboardType: TextInputType.multiline,
-        maxLines: null,
-        onChanged: (_) => _onChanged(),
+        ],
       );
     }
 
@@ -682,6 +689,88 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
         ),
       ),
     );
+  }
+
+  /// Formatting toolbar shown above the body TextField while editing.
+  /// Operates on plain-text markdown-ish markers; the read view renders them.
+  Widget _buildFormatToolbar(
+    AppLocalizations l10n,
+    ThemeData theme,
+    ColorScheme colorScheme,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Container(
+        decoration: BoxDecoration(
+          color: colorScheme.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: colorScheme.outlineVariant.withValues(alpha: 0.6),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _FormatToolButton(
+              icon: Icons.check_box_outlined,
+              tooltip: l10n.formatCheckbox,
+              onPressed: () => _applyLineFormat(toggleCheckboxAt),
+            ),
+            _FormatToolButton(
+              icon: Icons.title,
+              tooltip: l10n.formatHeading,
+              onPressed: () => _applyLineFormat(toggleHeadingAt),
+            ),
+            _FormatToolButton(
+              icon: Icons.format_bold,
+              tooltip: l10n.formatBold,
+              onPressed: _applyBoldFormat,
+            ),
+            _FormatToolButton(
+              icon: Icons.format_list_bulleted,
+              tooltip: l10n.formatBullet,
+              onPressed: () => _applyLineFormat(toggleBulletAt),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Applies a line-level format op at the current cursor position.
+  void _applyLineFormat(FormatEditResult Function(String, int) op) {
+    final selection = _bodyController.selection;
+    final offset = selection.isValid
+        ? selection.baseOffset
+        : _bodyController.text.length;
+    final result = op(_bodyController.text, offset);
+    _bodyController.value = TextEditingValue(
+      text: result.text,
+      selection: TextSelection.collapsed(offset: result.cursorOffset),
+    );
+    _onChanged();
+    if (!_bodyFocusNode.hasFocus) _bodyFocusNode.requestFocus();
+  }
+
+  /// Applies bold to the current selection, or inserts `****` with the
+  /// cursor in the middle when nothing is selected.
+  void _applyBoldFormat() {
+    final selection = _bodyController.selection;
+    final int start;
+    final int end;
+    if (selection.isValid) {
+      start = selection.start;
+      end = selection.end;
+    } else {
+      start = end = _bodyController.text.length;
+    }
+    final result = applyBold(_bodyController.text, start, end);
+    _bodyController.value = TextEditingValue(
+      text: result.text,
+      selection: TextSelection.collapsed(offset: result.cursorOffset),
+    );
+    _onChanged();
+    if (!_bodyFocusNode.hasFocus) _bodyFocusNode.requestFocus();
   }
 
   static final _linkRegExp = RegExp(r'https?://[^\s]+');
@@ -742,7 +831,14 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
         if (checklist.isChecklist) {
           _buildChecklistSpans(checklist, i, spans, l10n, theme, colorScheme);
         } else {
-          _buildLineSpansWithLinks(line.rawLine, spans, l10n, colorScheme);
+          final md = parseMarkdownLine(line.rawLine);
+          if (md.isHeading) {
+            _buildHeadingSpans(md, spans, l10n, theme, colorScheme);
+          } else if (md.isBullet) {
+            _buildBulletSpans(md, spans, l10n, colorScheme);
+          } else {
+            _buildLineSpansWithLinks(line.rawLine, spans, l10n, colorScheme);
+          }
         }
       }
 
@@ -814,6 +910,68 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
     );
   }
 
+  /// Renders a `# ` heading line: larger bold text, links and bold inside.
+  void _buildHeadingSpans(
+    MarkdownLine md,
+    List<InlineSpan> spans,
+    AppLocalizations l10n,
+    ThemeData theme,
+    ColorScheme colorScheme,
+  ) {
+    final inner = <InlineSpan>[];
+    _buildLineSpansWithLinks(md.content ?? '', inner, l10n, colorScheme);
+    final baseSize = theme.textTheme.bodyLarge?.fontSize ?? 16.0;
+    final extra = switch (md.headingLevel) {
+      1 => 6.0,
+      2 => 4.0,
+      _ => 2.0,
+    };
+    spans.add(
+      TextSpan(
+        children: inner,
+        style: TextStyle(
+          fontSize: baseSize + extra,
+          fontWeight: FontWeight.bold,
+          color: colorScheme.onSurface,
+          height: 1.5,
+        ),
+      ),
+    );
+  }
+
+  /// Renders a `- ` bullet line: dot prefix, then links and bold inside.
+  void _buildBulletSpans(
+    MarkdownLine md,
+    List<InlineSpan> spans,
+    AppLocalizations l10n,
+    ColorScheme colorScheme,
+  ) {
+    spans.add(
+      TextSpan(
+        text: '•  ',
+        style: TextStyle(
+          color: colorScheme.onSurfaceVariant,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+    _buildLineSpansWithLinks(md.content ?? '', spans, l10n, colorScheme);
+  }
+
+  /// Emits spans for a plain segment, splitting `**bold**` parts.
+  void _addBoldSpans(String segment, List<InlineSpan> spans) {
+    for (final part in parseBoldSegments(segment)) {
+      spans.add(
+        TextSpan(
+          text: part.text,
+          style: part.bold
+              ? const TextStyle(fontWeight: FontWeight.bold)
+              : null,
+        ),
+      );
+    }
+  }
+
   void _buildLineSpansWithLinks(
     String lineText,
     List<InlineSpan> spans,
@@ -823,7 +981,7 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
     var cursor = 0;
     for (final match in _linkRegExp.allMatches(lineText)) {
       if (match.start > cursor) {
-        spans.add(TextSpan(text: lineText.substring(cursor, match.start)));
+        _addBoldSpans(lineText.substring(cursor, match.start), spans);
       }
       var url = match.group(0)!;
       // Trim trailing CJK/ASCII punctuation accidentally captured.
@@ -851,7 +1009,7 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
       cursor = match.start + url.length;
     }
     if (cursor < lineText.length) {
-      spans.add(TextSpan(text: lineText.substring(cursor)));
+      _addBoldSpans(lineText.substring(cursor), spans);
     }
   }
 
@@ -1167,6 +1325,33 @@ class _ColorDot extends StatelessWidget {
       width: 14,
       height: 14,
       decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+    );
+  }
+}
+
+/// Single icon button in the formatting toolbar.
+class _FormatToolButton extends StatelessWidget {
+  const _FormatToolButton({
+    required this.icon,
+    required this.tooltip,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return IconButton(
+      icon: Icon(icon, size: 20),
+      tooltip: tooltip,
+      color: colorScheme.onSurfaceVariant,
+      visualDensity: VisualDensity.compact,
+      padding: const EdgeInsets.all(8),
+      constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+      onPressed: onPressed,
     );
   }
 }

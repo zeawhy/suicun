@@ -459,5 +459,13 @@
   "templateTodoDesc": "复选框式待办事项",
   "templateContact": "联系人",
   "templateContactDesc": "姓名、电话、邮箱与地址",
-  "passwordCopied": "密码已复制"
+  "passwordCopied": "密码已复制",
+  "pinRecord": "置顶",
+  "unpinRecord": "取消置顶",
+  "deleteRecordTitle": "删除这条记录？",
+  "deleteRecordConfirm": "删除后可在回收站找回。",
+  "formatCheckbox": "勾选框",
+  "formatHeading": "标题",
+  "formatBold": "加粗",
+  "formatBullet": "无序列表"
 }

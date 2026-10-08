@@ -944,4 +944,29 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get passwordCopied => 'Password copied';
+
+  @override
+  String get pinRecord => 'Pin to top';
+
+  @override
+  String get unpinRecord => 'Unpin';
+
+  @override
+  String get deleteRecordTitle => 'Delete this record?';
+
+  @override
+  String get deleteRecordConfirm =>
+      'You can restore it from Trash after deletion.';
+
+  @override
+  String get formatCheckbox => 'Checkbox';
+
+  @override
+  String get formatHeading => 'Heading';
+
+  @override
+  String get formatBold => 'Bold';
+
+  @override
+  String get formatBullet => 'Bulleted list';
 }
