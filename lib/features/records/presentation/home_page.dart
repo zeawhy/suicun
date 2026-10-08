@@ -7,6 +7,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:suicun/core/database/providers.dart';
@@ -457,45 +458,48 @@ class _HomePageState extends ConsumerState<HomePage> {
                         ),
                       ),
                       Expanded(
-                        child: ListView.builder(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
+                        child: SlidableAutoCloseBehavior(
+                          child: ListView.builder(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            itemCount: records.length,
+                            itemBuilder: (context, index) {
+                              final r = records[index];
+                              return RecordCard(
+                                record: r,
+                                sortMode: sortMode,
+                                isSelected: _selectedIds.contains(r.id),
+                                isMultiSelectMode: _isMultiSelect,
+                                untitledLabel: l10n.untitledRecord,
+                                uncategorizedLabel: l10n.uncategorized,
+                                favoriteTooltip: l10n.favorite,
+                                unfavoriteTooltip: l10n.unfavorite,
+                                onTap: () {
+                                  if (_isMultiSelect) {
+                                    _toggleMultiSelect(r.id);
+                                  } else {
+                                    context.push('/edit/${r.id}');
+                                  }
+                                },
+                                onLongPress: () {
+                                  if (!_isMultiSelect) {
+                                    setState(() {
+                                      _isMultiSelect = true;
+                                      _selectedIds.add(r.id);
+                                    });
+                                  }
+                                },
+                                onFavoriteToggle: () => _toggleFavorite(r),
+                                onPinToggle: () => _toggleFavorite(r),
+                                onEdit: () => context.push('/edit/${r.id}'),
+                                onChangeCategory: () =>
+                                    _showChangeCategoryDialog(r),
+                                onDelete: () => _deleteRecord(r.id),
+                              );
+                            },
                           ),
-                          itemCount: records.length,
-                          itemBuilder: (context, index) {
-                            final r = records[index];
-                            return RecordCard(
-                              record: r,
-                              sortMode: sortMode,
-                              isSelected: _selectedIds.contains(r.id),
-                              isMultiSelectMode: _isMultiSelect,
-                              untitledLabel: l10n.untitledRecord,
-                              uncategorizedLabel: l10n.uncategorized,
-                              favoriteTooltip: l10n.favorite,
-                              unfavoriteTooltip: l10n.unfavorite,
-                              onTap: () {
-                                if (_isMultiSelect) {
-                                  _toggleMultiSelect(r.id);
-                                } else {
-                                  context.push('/edit/${r.id}');
-                                }
-                              },
-                              onLongPress: () {
-                                if (!_isMultiSelect) {
-                                  setState(() {
-                                    _isMultiSelect = true;
-                                    _selectedIds.add(r.id);
-                                  });
-                                }
-                              },
-                              onFavoriteToggle: () => _toggleFavorite(r),
-                              onEdit: () => context.push('/edit/${r.id}'),
-                              onChangeCategory: () =>
-                                  _showChangeCategoryDialog(r),
-                              onDelete: () => _deleteRecord(r.id),
-                            );
-                          },
                         ),
                       ),
                     ],

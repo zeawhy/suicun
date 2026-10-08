@@ -1,6 +1,7 @@
 // lib/shared/widgets/record_card.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:suicun/features/records/domain/record_model.dart';
 import 'package:suicun/features/records/presentation/home_sort_provider.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
@@ -17,6 +18,7 @@ class RecordCard extends StatelessWidget {
     required this.onTap,
     required this.onLongPress,
     required this.onFavoriteToggle,
+    required this.onPinToggle,
     required this.onEdit,
     required this.onChangeCategory,
     required this.onDelete,
@@ -33,6 +35,10 @@ class RecordCard extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback onLongPress;
   final VoidCallback onFavoriteToggle;
+  /// Callback when pinning/unpinning is toggled via slide action.
+  /// Note: The data model has no dedicated pinned field, so pinning is mapped
+  /// to toggling [isFavorite] without DB schema changes.
+  final VoidCallback onPinToggle;
   final VoidCallback onEdit;
   final VoidCallback onChangeCategory;
   final VoidCallback onDelete;
@@ -74,17 +80,54 @@ class RecordCard extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: Container(
-        decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerLowest,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: colorScheme.outlineVariant,
-            width: 1,
-          ),
+      child: Slidable(
+        key: ValueKey(record.id),
+        enabled: !isMultiSelectMode,
+        endActionPane: ActionPane(
+          motion: const DrawerMotion(),
+          children: [
+            SlidableAction(
+              onPressed: (_) => onPinToggle(),
+              backgroundColor: colorScheme.primary,
+              foregroundColor: colorScheme.onPrimary,
+              icon: record.isFavorite
+                  ? Icons.push_pin
+                  : Icons.push_pin_outlined,
+              label: record.isFavorite
+                  ? l10n.unpinRecord
+                  : l10n.pinRecord,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            SlidableAction(
+              onPressed: (_) => onEdit(),
+              backgroundColor: colorScheme.secondary,
+              foregroundColor: colorScheme.onSecondary,
+              icon: Icons.edit_outlined,
+              label: l10n.editInfo,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            SlidableAction(
+              onPressed: (actionCtx) =>
+                  _confirmDelete(context, l10n),
+              backgroundColor: colorScheme.error,
+              foregroundColor: colorScheme.onError,
+              icon: Icons.delete_outline,
+              label: l10n.delete,
+              borderRadius: BorderRadius.circular(14),
+            ),
+          ],
         ),
-        padding: const EdgeInsets.all(16),
-        child: Row(
+        child: Container(
+          decoration: BoxDecoration(
+            color: colorScheme.surfaceContainerLowest,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: colorScheme.outlineVariant,
+              width: 1,
+            ),
+          ),
+          padding: const EdgeInsets.all(16),
+          child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (isMultiSelectMode)
@@ -263,6 +306,31 @@ class RecordCard extends StatelessWidget {
           ],
         ),
       ),
-    );
+    ),
+  );
+}
+
+Future<void> _confirmDelete(
+    BuildContext context, AppLocalizations l10n) async {
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text(l10n.deleteRecordTitle),
+      content: Text(l10n.deleteRecordConfirm),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(ctx).pop(false),
+          child: Text(l10n.cancel),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(ctx).pop(true),
+          child: Text(l10n.confirm),
+        ),
+      ],
+    ),
+  );
+  if (confirmed == true) {
+    onDelete();
   }
+}
 }
