@@ -12,6 +12,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:suicun/core/database/providers.dart';
 import 'package:suicun/features/records/domain/record_model.dart';
+import 'package:suicun/features/records/presentation/checklist_line.dart';
 import 'package:suicun/features/records/presentation/edit_record_notifier.dart';
 import 'package:suicun/features/records/presentation/note_template.dart';
 import 'package:suicun/features/records/presentation/records_notifier.dart';
@@ -737,7 +738,12 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
           ),
         );
       } else {
-        _buildLineSpansWithLinks(line.rawLine, spans, l10n, colorScheme);
+        final checklist = parseChecklistLine(line.rawLine);
+        if (checklist.isChecklist) {
+          _buildChecklistSpans(checklist, i, spans, l10n, theme, colorScheme);
+        } else {
+          _buildLineSpansWithLinks(line.rawLine, spans, l10n, colorScheme);
+        }
       }
 
       if (!isLastLine) {
@@ -746,6 +752,66 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
     }
 
     return spans;
+  }
+
+  /// Toggles the checklist item at [lineIndex] and writes the change back
+  /// through the normal auto-save chain.
+  void _toggleChecklistLine(int lineIndex) {
+    final newBody = toggleChecklistLineAt(_bodyController.text, lineIndex);
+    if (newBody == _bodyController.text) return;
+    _bodyController.text = newBody;
+    _onChanged();
+    if (mounted) setState(() {});
+  }
+
+  /// Renders one checklist line as a tappable checkbox + text row.
+  void _buildChecklistSpans(
+    ChecklistLine checklist,
+    int lineIndex,
+    List<InlineSpan> spans,
+    AppLocalizations l10n,
+    ThemeData theme,
+    ColorScheme colorScheme,
+  ) {
+    final textSpans = <InlineSpan>[];
+    _buildLineSpansWithLinks(
+        checklist.content ?? '', textSpans, l10n, colorScheme);
+    spans.add(
+      WidgetSpan(
+        alignment: PlaceholderAlignment.middle,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Checkbox(
+              value: checklist.checked,
+              visualDensity: VisualDensity.compact,
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              onChanged: (_) => _toggleChecklistLine(lineIndex),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 9),
+                child: Text.rich(
+                  TextSpan(
+                    children: textSpans,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      color: checklist.checked
+                          ? colorScheme.onSurfaceVariant
+                          : colorScheme.onSurface,
+                      height: 1.5,
+                      decoration: checklist.checked
+                          ? TextDecoration.lineThrough
+                          : null,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _buildLineSpansWithLinks(
