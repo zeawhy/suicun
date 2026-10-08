@@ -15,6 +15,7 @@ import 'package:suicun/features/categories/presentation/categories_notifier.dart
 import 'package:suicun/features/records/domain/record_model.dart';
 import 'package:suicun/features/records/presentation/home_sort_provider.dart';
 import 'package:suicun/features/records/presentation/records_notifier.dart';
+import 'package:suicun/features/records/presentation/template_sheet.dart';
 import 'package:suicun/features/sync/sync_contract.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
 import 'package:suicun/shared/theme/app_theme.dart';
@@ -539,7 +540,18 @@ class _HomePageState extends ConsumerState<HomePage> {
                                 borderRadius: BorderRadius.circular(14),
                               ),
                             ),
-                            onPressed: () => context.push('/edit'),
+                            onPressed: () async {
+                              final templateId =
+                                  await showTemplateSheet(context);
+                              if (templateId == null || !context.mounted) {
+                                return;
+                              }
+                              if (templateId == 'blank') {
+                                context.push('/edit');
+                              } else {
+                                context.push('/edit?template=$templateId');
+                              }
+                            },
                           ),
                         ),
                       ],

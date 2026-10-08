@@ -13,16 +13,23 @@ import 'package:go_router/go_router.dart';
 import 'package:suicun/core/database/providers.dart';
 import 'package:suicun/features/records/domain/record_model.dart';
 import 'package:suicun/features/records/presentation/edit_record_notifier.dart';
+import 'package:suicun/features/records/presentation/note_template.dart';
 import 'package:suicun/features/records/presentation/records_notifier.dart';
+import 'package:suicun/features/records/presentation/secret_line.dart';
 import 'package:suicun/features/tags/domain/tag_model.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
 import 'package:suicun/services/auto_category_service.dart';
 import 'package:suicun/shared/theme/app_theme.dart';
 
 class EditRecordPage extends ConsumerStatefulWidget {
-  const EditRecordPage({super.key, this.recordId});
+  const EditRecordPage({
+    super.key,
+    this.recordId,
+    this.templateId,
+  });
 
   final String? recordId;
+  final String? templateId;
 
   @override
   ConsumerState<EditRecordPage> createState() => _EditRecordPageState();
@@ -427,10 +434,21 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
     final colorScheme = theme.colorScheme;
     final state = ref.watch(editRecordProvider(widget.recordId));
 
-    if (!_initialized && state.record != null) {
-      _titleController.text = state.record!.title;
-      _bodyController.text = state.record!.body;
-      _initialized = true;
+    if (!_initialized) {
+      if (state.record != null) {
+        _titleController.text = state.record!.title;
+        _bodyController.text = state.record!.body;
+        _initialized = true;
+      } else if (_isNew &&
+          widget.templateId != null &&
+          widget.templateId != 'blank') {
+        final locale = Localizations.localeOf(context).languageCode;
+        final template = NoteTemplate.byId(widget.templateId);
+        if (template != null) {
+          _bodyController.text = template.getBody(locale);
+        }
+        _initialized = true;
+      }
     }
 
     final record = state.record;
@@ -673,11 +691,73 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
     ThemeData theme,
     ColorScheme colorScheme,
   ) {
+    final secretLines = parseSecretLines(text);
+    if (secretLines.isEmpty) return const [];
+
     final spans = <InlineSpan>[];
+    for (var i = 0; i < secretLines.length; i++) {
+      final line = secretLines[i];
+      final isLastLine = i == secretLines.length - 1;
+
+      if (line.isSecret) {
+        final label = line.label ?? '';
+        final secret = line.value ?? '';
+        spans.add(
+          TextSpan(
+            text: '$label••••••',
+            style: TextStyle(
+              color: colorScheme.onSurface,
+            ),
+          ),
+        );
+        spans.add(
+          WidgetSpan(
+            alignment: PlaceholderAlignment.middle,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.copy, size: 16),
+                  visualDensity: VisualDensity.compact,
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  constraints:
+                      const BoxConstraints(minWidth: 28, minHeight: 28),
+                  onPressed: () async {
+                    await Clipboard.setData(ClipboardData(text: secret));
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(l10n.passwordCopied)),
+                      );
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      } else {
+        _buildLineSpansWithLinks(line.rawLine, spans, l10n, colorScheme);
+      }
+
+      if (!isLastLine) {
+        spans.add(const TextSpan(text: '\n'));
+      }
+    }
+
+    return spans;
+  }
+
+  void _buildLineSpansWithLinks(
+    String lineText,
+    List<InlineSpan> spans,
+    AppLocalizations l10n,
+    ColorScheme colorScheme,
+  ) {
     var cursor = 0;
-    for (final match in _linkRegExp.allMatches(text)) {
+    for (final match in _linkRegExp.allMatches(lineText)) {
       if (match.start > cursor) {
-        spans.add(TextSpan(text: text.substring(cursor, match.start)));
+        spans.add(TextSpan(text: lineText.substring(cursor, match.start)));
       }
       var url = match.group(0)!;
       // Trim trailing CJK/ASCII punctuation accidentally captured.
@@ -704,10 +784,9 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
       );
       cursor = match.start + url.length;
     }
-    if (cursor < text.length) {
-      spans.add(TextSpan(text: text.substring(cursor)));
+    if (cursor < lineText.length) {
+      spans.add(TextSpan(text: lineText.substring(cursor)));
     }
-    return spans;
   }
 
   Widget _buildCategoryRow(

@@ -24,7 +24,10 @@ GoRouter appRouter(Ref ref) {
         routes: [
           GoRoute(
             path: 'edit',
-            builder: (context, state) => const EditRecordPage(),
+            builder: (context, state) {
+              final templateId = state.uri.queryParameters['template'];
+              return EditRecordPage(templateId: templateId);
+            },
           ),
           GoRoute(
             path: 'edit/:id',

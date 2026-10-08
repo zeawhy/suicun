@@ -447,5 +447,17 @@
   "migrationBackupAndMigrate": "备份并迁移",
   "passwordChangeDeferred": "密码修改功能暂未开放，普通同步不受影响",
   "unlockKeyPrompt": "解锁密钥",
-  "enterKeyPassword": "输入密钥加密密码"
+  "enterKeyPassword": "输入密钥加密密码",
+  "templateSheetTitle": "选择模版",
+  "templateBlank": "空白笔记",
+  "templateBlankDesc": "从空白开始自由记录",
+  "templatePassword": "记密码",
+  "templatePasswordDesc": "网站、账号与密码，密码自动掩码",
+  "templateIdea": "灵感速记",
+  "templateIdeaDesc": "灵感、来源与下一步行动",
+  "templateTodo": "待办清单",
+  "templateTodoDesc": "复选框式待办事项",
+  "templateContact": "联系人",
+  "templateContactDesc": "姓名、电话、邮箱与地址",
+  "passwordCopied": "密码已复制"
 }

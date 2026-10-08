@@ -447,5 +447,17 @@
   "migrationBackupAndMigrate": "Backup and Migrate",
   "passwordChangeDeferred": "Password change is not available yet; normal sync is unaffected",
   "unlockKeyPrompt": "Unlock Key",
-  "enterKeyPassword": "Enter password to unlock keys"
+  "enterKeyPassword": "Enter password to unlock keys",
+  "templateSheetTitle": "Choose a template",
+  "templateBlank": "Blank note",
+  "templateBlankDesc": "Start from a blank note",
+  "templatePassword": "Save a password",
+  "templatePasswordDesc": "Website, username and password with auto-masked password",
+  "templateIdea": "Quick idea",
+  "templateIdeaDesc": "Idea, source and next action",
+  "templateTodo": "To-do list",
+  "templateTodoDesc": "Checklist with checkbox items",
+  "templateContact": "Contact",
+  "templateContactDesc": "Name, phone, email and address",
+  "passwordCopied": "Password copied"
 }

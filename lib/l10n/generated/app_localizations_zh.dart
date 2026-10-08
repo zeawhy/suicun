@@ -885,4 +885,40 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get enterKeyPassword => '输入密钥加密密码';
+
+  @override
+  String get templateSheetTitle => '选择模版';
+
+  @override
+  String get templateBlank => '空白笔记';
+
+  @override
+  String get templateBlankDesc => '从空白开始自由记录';
+
+  @override
+  String get templatePassword => '记密码';
+
+  @override
+  String get templatePasswordDesc => '网站、账号与密码，密码自动掩码';
+
+  @override
+  String get templateIdea => '灵感速记';
+
+  @override
+  String get templateIdeaDesc => '灵感、来源与下一步行动';
+
+  @override
+  String get templateTodo => '待办清单';
+
+  @override
+  String get templateTodoDesc => '复选框式待办事项';
+
+  @override
+  String get templateContact => '联系人';
+
+  @override
+  String get templateContactDesc => '姓名、电话、邮箱与地址';
+
+  @override
+  String get passwordCopied => '密码已复制';
 }

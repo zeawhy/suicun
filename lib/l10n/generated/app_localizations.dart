@@ -1753,6 +1753,78 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'输入密钥加密密码'**
   String get enterKeyPassword;
+
+  /// No description provided for @templateSheetTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择模版'**
+  String get templateSheetTitle;
+
+  /// No description provided for @templateBlank.
+  ///
+  /// In zh, this message translates to:
+  /// **'空白笔记'**
+  String get templateBlank;
+
+  /// No description provided for @templateBlankDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'从空白开始自由记录'**
+  String get templateBlankDesc;
+
+  /// No description provided for @templatePassword.
+  ///
+  /// In zh, this message translates to:
+  /// **'记密码'**
+  String get templatePassword;
+
+  /// No description provided for @templatePasswordDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'网站、账号与密码，密码自动掩码'**
+  String get templatePasswordDesc;
+
+  /// No description provided for @templateIdea.
+  ///
+  /// In zh, this message translates to:
+  /// **'灵感速记'**
+  String get templateIdea;
+
+  /// No description provided for @templateIdeaDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'灵感、来源与下一步行动'**
+  String get templateIdeaDesc;
+
+  /// No description provided for @templateTodo.
+  ///
+  /// In zh, this message translates to:
+  /// **'待办清单'**
+  String get templateTodo;
+
+  /// No description provided for @templateTodoDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'复选框式待办事项'**
+  String get templateTodoDesc;
+
+  /// No description provided for @templateContact.
+  ///
+  /// In zh, this message translates to:
+  /// **'联系人'**
+  String get templateContact;
+
+  /// No description provided for @templateContactDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'姓名、电话、邮箱与地址'**
+  String get templateContactDesc;
+
+  /// No description provided for @passwordCopied.
+  ///
+  /// In zh, this message translates to:
+  /// **'密码已复制'**
+  String get passwordCopied;
 }
 
 class _AppLocalizationsDelegate

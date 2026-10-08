@@ -907,4 +907,41 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get enterKeyPassword => 'Enter password to unlock keys';
+
+  @override
+  String get templateSheetTitle => 'Choose a template';
+
+  @override
+  String get templateBlank => 'Blank note';
+
+  @override
+  String get templateBlankDesc => 'Start from a blank note';
+
+  @override
+  String get templatePassword => 'Save a password';
+
+  @override
+  String get templatePasswordDesc =>
+      'Website, username and password with auto-masked password';
+
+  @override
+  String get templateIdea => 'Quick idea';
+
+  @override
+  String get templateIdeaDesc => 'Idea, source and next action';
+
+  @override
+  String get templateTodo => 'To-do list';
+
+  @override
+  String get templateTodoDesc => 'Checklist with checkbox items';
+
+  @override
+  String get templateContact => 'Contact';
+
+  @override
+  String get templateContactDesc => 'Name, phone, email and address';
+
+  @override
+  String get passwordCopied => 'Password copied';
 }

@@ -47,6 +47,14 @@ Future<AppDatabase> freshDb() async {
   return db;
 }
 
+/// Opens the editor from home, selecting the blank note template.
+Future<void> openEditor(WidgetTester tester) async {
+  await tester.tap(find.byTooltip('New Record'));
+  await tester.pumpAndSettle();
+  await tester.tap(find.text('Blank note'));
+  await tester.pumpAndSettle();
+}
+
 void main() {
   late AppDatabase db;
 
@@ -71,8 +79,7 @@ void main() {
     await pumpApp(tester, db);
 
     // Open the editor
-    await tester.tap(find.byTooltip('New Record'));
-    await tester.pumpAndSettle();
+    await openEditor(tester);
     expect(find.text('New Info'), findsOneWidget);
     expect(findByHint('Title (optional)'), findsOneWidget);
 
@@ -102,8 +109,7 @@ void main() {
 
     // Seed two records through the UI
     for (final title in ['Alpha note', 'Beta note']) {
-      await tester.tap(find.byTooltip('New Record'));
-      await tester.pumpAndSettle();
+      await openEditor(tester);
       await tester.enterText(findByHint('Title (optional)'), title);
       await tester.pump(const Duration(milliseconds: 700));
       await tester.pumpAndSettle();
@@ -128,8 +134,7 @@ void main() {
   testWidgets('favorite toggle from the list', (tester) async {
     await pumpApp(tester, db);
 
-    await tester.tap(find.byTooltip('New Record'));
-    await tester.pumpAndSettle();
+    await openEditor(tester);
     await tester.enterText(findByHint('Title (optional)'), 'Star me');
     await tester.pump(const Duration(milliseconds: 700));
     await tester.pumpAndSettle();
@@ -150,8 +155,7 @@ void main() {
     await pumpApp(tester, db);
 
     // Create a record
-    await tester.tap(find.byTooltip('New Record'));
-    await tester.pumpAndSettle();
+    await openEditor(tester);
     await tester.enterText(findByHint('Title (optional)'), 'Doomed');
     await tester.pump(const Duration(milliseconds: 700));
     await tester.pumpAndSettle();
@@ -196,8 +200,7 @@ void main() {
     // Seed two records: 'B note' first, 'A note' second.
     // 'A note' is created later so by default (Recently edited), B is below A.
     for (final title in ['B note', 'A note']) {
-      await tester.tap(find.byTooltip('New Record'));
-      await tester.pumpAndSettle();
+      await openEditor(tester);
       await tester.enterText(findByHint('Title (optional)'), title);
       await tester.pump(const Duration(milliseconds: 700));
       await tester.pumpAndSettle();
@@ -249,5 +252,24 @@ void main() {
 
     // App still builds fine in dark mode
     expect(find.text('Settings'), findsOneWidget);
+  });
+
+  testWidgets('template selector pre-fills password template', (tester) async {
+    await pumpApp(tester, db);
+
+    await tester.tap(find.byTooltip('New Record'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Choose a template'), findsOneWidget);
+    expect(find.text('Save a password'), findsOneWidget);
+
+    await tester.tap(find.text('Save a password'));
+    await tester.pumpAndSettle();
+
+    // The editor opens with prefilled password template body
+    expect(
+      find.textContaining('Website/App:\nUsername:\nPassword:\nNotes:'),
+      findsOneWidget,
+    );
   });
 }
