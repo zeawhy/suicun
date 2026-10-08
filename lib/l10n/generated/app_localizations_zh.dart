@@ -589,6 +589,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get saving => '保存中…';
 
   @override
+  String get search => '搜索';
+
+  @override
   String get searchEmpty => '没有找到相关信息';
 
   @override

@@ -24,8 +24,6 @@ class RecordCard extends StatelessWidget {
     required this.onDelete,
     required this.untitledLabel,
     required this.uncategorizedLabel,
-    this.favoriteTooltip,
-    this.unfavoriteTooltip,
   });
 
   final RecordDetail record;
@@ -44,8 +42,6 @@ class RecordCard extends StatelessWidget {
   final VoidCallback onDelete;
   final String untitledLabel;
   final String uncategorizedLabel;
-  final String? favoriteTooltip;
-  final String? unfavoriteTooltip;
 
   @override
   Widget build(BuildContext context) {
@@ -79,7 +75,7 @@ class RecordCard extends StatelessWidget {
     );
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 8),
       child: Slidable(
         key: ValueKey(record.id),
         enabled: !isMultiSelectMode,
@@ -126,123 +122,115 @@ class RecordCard extends StatelessWidget {
               width: 1,
             ),
           ),
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(12),
           child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (isMultiSelectMode)
-              Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: Checkbox(
-                  value: isSelected,
-                  onChanged: (_) => onTap(),
-                  materialTapTargetSize: MaterialTapTargetSize.padded,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (isMultiSelectMode)
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: Checkbox(
+                    value: isSelected,
+                    onChanged: (_) => onTap(),
+                    materialTapTargetSize: MaterialTapTargetSize.padded,
+                  ),
                 ),
-              ),
-            Expanded(
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(12),
-                  onTap: onTap,
-                  onLongPress: onLongPress,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        displayTitle,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w600,
-                          color: titleColor,
-                        ),
-                      ),
-                      if (bodyPreview.isNotEmpty) ...[
-                        const SizedBox(height: 6),
-                        Text(
-                          bodyPreview,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: colorScheme.onSurfaceVariant,
-                            height: 1.4,
-                          ),
-                        ),
-                      ],
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          if (record.category != null) ...[
-                            Container(
-                              width: 8,
-                              height: 8,
-                              decoration: BoxDecoration(
-                                color: categoryColor,
-                                shape: BoxShape.circle,
+              Expanded(
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(12),
+                    onTap: onTap,
+                    onLongPress: onLongPress,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                displayTitle,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: titleColor,
+                                ),
                               ),
                             ),
-                            const SizedBox(width: 6),
-                          ],
-                          Expanded(
-                            child: Text(
-                              metaText,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: colorScheme.onSurfaceVariant,
+                            if (record.isFavorite)
+                              Icon(
+                                Icons.star_rounded,
+                                size: 14,
+                                color: colorScheme.primary,
                               ),
+                          ],
+                        ),
+                        if (bodyPreview.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            bodyPreview,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: colorScheme.onSurfaceVariant,
+                              height: 1.35,
                             ),
                           ),
                         ],
-                      ),
-                    ],
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            if (record.category != null) ...[
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: categoryColor,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                            ],
+                            Expanded(
+                              child: Text(
+                                metaText,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
-                  icon: Icon(
-                    record.isFavorite ? Icons.star : Icons.star_border,
-                    color: record.isFavorite
-                        ? colorScheme.primary
-                        : colorScheme.onSurfaceVariant,
-                    size: 24,
-                  ),
-                  tooltip: record.isFavorite
-                      ? (unfavoriteTooltip ?? l10n.unfavorite)
-                      : (favoriteTooltip ?? l10n.favorite),
-                  onPressed: onFavoriteToggle,
+              PopupMenuButton<String>(
+                icon: const Icon(Icons.more_horiz),
+                tooltip: 'More',
+                padding: EdgeInsets.zero,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                SizedBox(
-                  width: 48,
-                  height: 48,
-                  child: PopupMenuButton<String>(
-                    icon: const Icon(Icons.more_horiz),
-                    tooltip: 'More',
-                    padding: EdgeInsets.zero,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    onSelected: (value) {
-                      switch (value) {
-                        case 'edit':
-                          onEdit();
-                        case 'changeCategory':
-                          onChangeCategory();
-                        case 'favorite':
-                          onFavoriteToggle();
-                        case 'delete':
-                          onDelete();
-                      }
-                    },
+                onSelected: (value) {
+                  switch (value) {
+                    case 'edit':
+                      onEdit();
+                    case 'changeCategory':
+                      onChangeCategory();
+                    case 'favorite':
+                      onFavoriteToggle();
+                    case 'delete':
+                      onDelete();
+                  }
+                },
                     itemBuilder: (ctx) => [
                       PopupMenuItem(
                         value: 'edit',
@@ -300,15 +288,12 @@ class RecordCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ],
-        ),
-      ),
-    ),
-  );
-}
+          ),
+        );
+      }
 
 Future<void> _confirmDelete(
     BuildContext context, AppLocalizations l10n) async {

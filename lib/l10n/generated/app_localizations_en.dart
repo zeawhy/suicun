@@ -601,6 +601,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get saving => 'Saving…';
 
   @override
+  String get search => 'Search';
+
+  @override
   String get searchEmpty => 'No matching info found';
 
   @override

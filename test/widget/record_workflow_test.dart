@@ -70,7 +70,7 @@ void main() {
   testWidgets('home shows empty state on first launch', (tester) async {
     await pumpApp(tester, db);
 
-    expect(find.text('My Info'), findsOneWidget); // app bar / header title (en locale)
+    expect(find.text('All'), findsOneWidget); // top category tab (en locale)
     expect(find.text('No info saved yet'), findsOneWidget);
     expect(find.byTooltip('New Record'), findsOneWidget);
   });
@@ -119,6 +119,10 @@ void main() {
     expect(find.text('Alpha note'), findsOneWidget);
     expect(find.text('Beta note'), findsOneWidget);
 
+    // Tap magnifying glass to expand search bar
+    await tester.tap(find.byTooltip('Search'));
+    await tester.pumpAndSettle();
+
     // Filter
     await tester.enterText(findByHint('Search info'), 'Alpha');
     await tester.pumpAndSettle();
@@ -141,14 +145,14 @@ void main() {
     await tester.pageBack();
     await tester.pumpAndSettle();
 
-    // Not favorited yet: star_border shown; favorite via the more_horiz menu
-    expect(find.byIcon(Icons.star_border), findsOneWidget);
+    // Not favorited yet: no star_rounded icon shown
+    expect(find.byIcon(Icons.star_rounded), findsNothing);
 
     await tester.tap(find.byIcon(Icons.more_horiz));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Favorite'));
     await tester.pumpAndSettle();
-    expect(find.byIcon(Icons.star), findsOneWidget);
+    expect(find.byIcon(Icons.star_rounded), findsOneWidget);
   });
 
   testWidgets('delete -> trash -> restore', (tester) async {

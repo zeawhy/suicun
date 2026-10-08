@@ -31,7 +31,13 @@ class HomePage extends ConsumerStatefulWidget {
 
 class _HomePageState extends ConsumerState<HomePage> {
   final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocus = FocusNode();
+  final ScrollController _scrollController = ScrollController();
   Timer? _debounce;
+  bool _searchExpanded = false;
+  String? _savedCategoryId;
+  bool _savedFavoritesOnly = false;
+  double _savedOffset = 0.0;
   bool _isMultiSelect = false;
   final Set<String> _selectedIds = {};
 
@@ -39,7 +45,45 @@ class _HomePageState extends ConsumerState<HomePage> {
   void dispose() {
     _debounce?.cancel();
     _searchController.dispose();
+    _searchFocus.dispose();
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  void _openSearch({required bool requestFocus}) {
+    if (!mounted || _searchExpanded) return;
+    final currentFilter = ref.read(recordsFilterProvider);
+    _savedCategoryId = currentFilter.categoryId;
+    _savedFavoritesOnly = currentFilter.favoritesOnly;
+    _savedOffset =
+        _scrollController.hasClients ? _scrollController.offset : 0.0;
+    setState(() {
+      _searchExpanded = true;
+    });
+    if (requestFocus) {
+      _searchFocus.requestFocus();
+    }
+  }
+
+  void _cancelSearch() {
+    _debounce?.cancel();
+    _searchController.clear();
+    final notifier = ref.read(recordsFilterProvider.notifier);
+    notifier.setQuery('');
+    notifier.setCategory(_savedCategoryId);
+    notifier.setFavoritesOnly(_savedFavoritesOnly);
+    _searchFocus.unfocus();
+    setState(() {
+      _searchExpanded = false;
+    });
+    if (_scrollController.hasClients) {
+      _scrollController.jumpTo(
+        _savedOffset.clamp(
+          0.0,
+          _scrollController.position.maxScrollExtent,
+        ),
+      );
+    }
   }
 
   void _onSearchChanged(String value) {
@@ -257,9 +301,9 @@ class _HomePageState extends ConsumerState<HomePage> {
       body: SafeArea(
         child: Column(
           children: [
-            // a) Top Row
+            // a) Top Row: Multi-select actions OR Category tabs + Search button
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+              padding: const EdgeInsets.fromLTRB(16, 8, 8, 4),
               child: _isMultiSelect
                   ? Row(
                       children: [
@@ -298,102 +342,103 @@ class _HomePageState extends ConsumerState<HomePage> {
                     )
                   : Row(
                       children: [
-                        Text(
-                          l10n.myRecords,
-                          style: TextStyle(
-                            fontSize: 23,
-                            fontWeight: FontWeight.w600,
-                            color: colorScheme.onSurface,
+                        Expanded(
+                          child: categoriesAsync.maybeWhen(
+                            data: (categories) => _CategoryFilterBar(
+                              filter: filter,
+                              categories: categories,
+                              onAll: () {
+                                final notifier =
+                                    ref.read(recordsFilterProvider.notifier);
+                                notifier.setCategory(null);
+                                notifier.setFavoritesOnly(false);
+                              },
+                              onFavorites: () {
+                                final notifier =
+                                    ref.read(recordsFilterProvider.notifier);
+                                notifier.setFavoritesOnly(true);
+                                notifier.setCategory(null);
+                              },
+                              onCategory: (id) {
+                                final notifier =
+                                    ref.read(recordsFilterProvider.notifier);
+                                notifier.setCategory(id);
+                                notifier.setFavoritesOnly(false);
+                              },
+                            ),
+                            orElse: () => const SizedBox(height: 38),
                           ),
                         ),
-                        const Spacer(),
                         IconButton(
-                          icon: const Icon(Icons.settings_outlined, size: 24),
+                          icon: const Icon(Icons.search_rounded, size: 22),
                           constraints: const BoxConstraints(
                               minWidth: 48, minHeight: 48),
-                          tooltip: l10n.settings,
-                          onPressed: () => context.push('/settings'),
+                          tooltip: l10n.search,
+                          onPressed: () => _openSearch(requestFocus: true),
                         ),
                       ],
                     ),
             ),
 
-            // b) Search bar
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-              child: TextField(
-                controller: _searchController,
-                onChanged: _onSearchChanged,
-                decoration: InputDecoration(
-                  hintText: l10n.searchHint,
-                  prefixIcon: Icon(
-                    Icons.search_rounded,
-                    color: colorScheme.onSurfaceVariant,
-                    size: 22,
-                  ),
-                  suffixIcon: _searchController.text.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear, size: 20),
-                          constraints: const BoxConstraints(
-                              minWidth: 48, minHeight: 48),
-                          onPressed: _clearSearch,
-                        )
-                      : null,
-                  filled: true,
-                  fillColor: colorScheme.surfaceContainerLowest,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(
-                      color: colorScheme.outlineVariant,
-                      width: 1,
+            // b) Expanded search row (when search is expanded and not multi-selecting)
+            if (_searchExpanded && !_isMultiSelect)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _searchController,
+                        focusNode: _searchFocus,
+                        onChanged: _onSearchChanged,
+                        decoration: InputDecoration(
+                          hintText: l10n.searchHint,
+                          suffixIcon: _searchController.text.isNotEmpty
+                              ? IconButton(
+                                  icon: const Icon(Icons.clear, size: 20),
+                                  constraints: const BoxConstraints(
+                                      minWidth: 48, minHeight: 48),
+                                  onPressed: _clearSearch,
+                                )
+                              : null,
+                          filled: true,
+                          fillColor: colorScheme.surfaceContainerLowest,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide(
+                              color: colorScheme.outlineVariant,
+                              width: 1,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide(
+                              color: colorScheme.outlineVariant,
+                              width: 1,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide(
+                              color: colorScheme.primary,
+                              width: 1.5,
+                            ),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(
-                      color: colorScheme.outlineVariant,
-                      width: 1,
+                    const SizedBox(width: 8),
+                    TextButton(
+                      onPressed: _cancelSearch,
+                      child: Text(l10n.cancel),
                     ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(
-                      color: colorScheme.primary,
-                      width: 1.5,
-                    ),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 14,
-                  ),
+                  ],
                 ),
               ),
-            ),
-
-            // c) Category filter bar
-            categoriesAsync.maybeWhen(
-              data: (categories) => _CategoryFilterBar(
-                filter: filter,
-                categories: categories,
-                onAll: () {
-                  final notifier = ref.read(recordsFilterProvider.notifier);
-                  notifier.setCategory(null);
-                  notifier.setFavoritesOnly(false);
-                },
-                onFavorites: () {
-                  final notifier = ref.read(recordsFilterProvider.notifier);
-                  notifier.setFavoritesOnly(true);
-                  notifier.setCategory(null);
-                },
-                onCategory: (id) {
-                  final notifier = ref.read(recordsFilterProvider.notifier);
-                  notifier.setCategory(id);
-                  notifier.setFavoritesOnly(false);
-                },
-                onManage: () => context.push('/settings/categories'),
-              ),
-              orElse: () => const SizedBox(height: 38),
-            ),
 
             // d & e) Record count + sort switcher & record list
             Expanded(
@@ -458,47 +503,60 @@ class _HomePageState extends ConsumerState<HomePage> {
                         ),
                       ),
                       Expanded(
-                        child: SlidableAutoCloseBehavior(
-                          child: ListView.builder(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
+                        child: NotificationListener<OverscrollNotification>(
+                          onNotification: (notification) {
+                            if (notification.overscroll < 0 &&
+                                _scrollController.hasClients &&
+                                _scrollController.offset <= 0 &&
+                                !_searchExpanded) {
+                              if (mounted) {
+                                _openSearch(requestFocus: false);
+                              }
+                            }
+                            return false;
+                          },
+                          child: SlidableAutoCloseBehavior(
+                            child: ListView.builder(
+                              controller: _scrollController,
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                              itemCount: records.length,
+                              itemBuilder: (context, index) {
+                                final r = records[index];
+                                return RecordCard(
+                                  record: r,
+                                  sortMode: sortMode,
+                                  isSelected: _selectedIds.contains(r.id),
+                                  isMultiSelectMode: _isMultiSelect,
+                                  untitledLabel: l10n.untitledRecord,
+                                  uncategorizedLabel: l10n.uncategorized,
+                                  onTap: () {
+                                    if (_isMultiSelect) {
+                                      _toggleMultiSelect(r.id);
+                                    } else {
+                                      context.push('/edit/${r.id}');
+                                    }
+                                  },
+                                  onLongPress: () {
+                                    if (!_isMultiSelect) {
+                                      setState(() {
+                                        _isMultiSelect = true;
+                                        _selectedIds.add(r.id);
+                                      });
+                                    }
+                                  },
+                                  onFavoriteToggle: () => _toggleFavorite(r),
+                                  onPinToggle: () => _toggleFavorite(r),
+                                  onEdit: () => context.push('/edit/${r.id}'),
+                                  onChangeCategory: () =>
+                                      _showChangeCategoryDialog(r),
+                                  onDelete: () => _deleteRecord(r.id),
+                                );
+                              },
                             ),
-                            itemCount: records.length,
-                            itemBuilder: (context, index) {
-                              final r = records[index];
-                              return RecordCard(
-                                record: r,
-                                sortMode: sortMode,
-                                isSelected: _selectedIds.contains(r.id),
-                                isMultiSelectMode: _isMultiSelect,
-                                untitledLabel: l10n.untitledRecord,
-                                uncategorizedLabel: l10n.uncategorized,
-                                favoriteTooltip: l10n.favorite,
-                                unfavoriteTooltip: l10n.unfavorite,
-                                onTap: () {
-                                  if (_isMultiSelect) {
-                                    _toggleMultiSelect(r.id);
-                                  } else {
-                                    context.push('/edit/${r.id}');
-                                  }
-                                },
-                                onLongPress: () {
-                                  if (!_isMultiSelect) {
-                                    setState(() {
-                                      _isMultiSelect = true;
-                                      _selectedIds.add(r.id);
-                                    });
-                                  }
-                                },
-                                onFavoriteToggle: () => _toggleFavorite(r),
-                                onPinToggle: () => _toggleFavorite(r),
-                                onEdit: () => context.push('/edit/${r.id}'),
-                                onChangeCategory: () =>
-                                    _showChangeCategoryDialog(r),
-                                onDelete: () => _deleteRecord(r.id),
-                              );
-                            },
                           ),
                         ),
                       ),
@@ -507,70 +565,102 @@ class _HomePageState extends ConsumerState<HomePage> {
                 },
               ),
             ),
-
-            // f) Sticky bottom status area (hidden during multi-select)
-            if (!_isMultiSelect)
-              Container(
-                decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainerLowest,
-                  border: Border(
-                    top: BorderSide(
-                      color: colorScheme.outlineVariant,
-                      width: 1,
-                    ),
-                  ),
-                ),
-                child: SafeArea(
-                  top: false,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                    child: Row(
-                      children: [
-                        const Expanded(child: _SyncStatus()),
-                        const SizedBox(width: 12),
-                        Tooltip(
-                          message: l10n.newRecord,
-                          child: FilledButton.icon(
-                            icon: const Icon(Icons.add, size: 22),
-                            label: Text(l10n.newInfo),
-                            style: FilledButton.styleFrom(
-                              minimumSize: const Size(0, 52),
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 24),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                            ),
-                            onPressed: () async {
-                              final templateId =
-                                  await showTemplateSheet(context);
-                              if (templateId == null || !context.mounted) {
-                                return;
-                              }
-                              if (templateId == 'blank') {
-                                context.push('/edit');
-                              } else {
-                                context.push('/edit?template=$templateId');
-                              }
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
           ],
         ),
       ),
+      bottomNavigationBar: !_isMultiSelect
+          ? Container(
+              decoration: BoxDecoration(
+                color: colorScheme.surfaceContainerLowest,
+                border: Border(
+                  top: BorderSide(
+                    color: colorScheme.outlineVariant,
+                    width: 1,
+                  ),
+                ),
+              ),
+              child: SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  child: Row(
+                    children: [
+                      Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(8),
+                          onTap: () => context.push('/settings'),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 8,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.settings_outlined,
+                                  size: 20,
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  l10n.settings,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: colorScheme.onSurfaceVariant,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Expanded(child: _SyncStatus()),
+                      const SizedBox(width: 8),
+                      Tooltip(
+                        message: l10n.newRecord,
+                        child: FilledButton.icon(
+                          icon: const Icon(Icons.add, size: 22),
+                          label: Text(l10n.newInfo),
+                          style: FilledButton.styleFrom(
+                            minimumSize: const Size(0, 52),
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 20),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                          onPressed: () async {
+                            final templateId =
+                                await showTemplateSheet(context);
+                            if (templateId == null || !context.mounted) {
+                              return;
+                            }
+                            if (templateId == 'blank') {
+                              context.push('/edit');
+                            } else {
+                              context.push('/edit?template=$templateId');
+                            }
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            )
+          : null,
     );
   }
 }
 
-/// Category filter chips row with fixed "Manage" button on the right.
+/// Lightweight text category tabs: All, Favorites, followed by user categories.
 class _CategoryFilterBar extends StatelessWidget {
   const _CategoryFilterBar({
     required this.filter,
@@ -578,7 +668,6 @@ class _CategoryFilterBar extends StatelessWidget {
     required this.onAll,
     required this.onFavorites,
     required this.onCategory,
-    required this.onManage,
   });
 
   final RecordsFilter filter;
@@ -586,7 +675,6 @@ class _CategoryFilterBar extends StatelessWidget {
   final VoidCallback onAll;
   final VoidCallback onFavorites;
   final void Function(String id) onCategory;
-  final VoidCallback onManage;
 
   @override
   Widget build(BuildContext context) {
@@ -594,126 +682,58 @@ class _CategoryFilterBar extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final allSelected = filter.categoryId == null && !filter.favoritesOnly;
 
-    Widget customChip({
-      required Widget content,
+    Widget tabItem({
+      required String label,
       required bool selected,
       required VoidCallback onTap,
     }) {
-      return Padding(
-        padding: const EdgeInsets.only(right: 8),
-        child: Material(
-          color: selected
-              ? colorScheme.primary
-              : colorScheme.surfaceContainerHigh,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-            side: selected
-                ? BorderSide.none
-                : BorderSide(color: colorScheme.outlineVariant, width: 1),
+      return InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(4),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: selected ? colorScheme.primary : Colors.transparent,
+                width: 2,
+              ),
+            ),
           ),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(20),
-            onTap: onTap,
-            child: Container(
-              height: 38,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              alignment: Alignment.center,
-              child: content,
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+              color: selected
+                  ? colorScheme.primary
+                  : colorScheme.onSurfaceVariant,
             ),
           ),
         ),
       );
     }
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 8, 4),
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          Expanded(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  customChip(
-                    content: Text(
-                      l10n.all,
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight:
-                            allSelected ? FontWeight.w600 : FontWeight.normal,
-                        color: allSelected
-                            ? colorScheme.onPrimary
-                            : colorScheme.onSurface,
-                      ),
-                    ),
-                    selected: allSelected,
-                    onTap: onAll,
-                  ),
-                  customChip(
-                    content: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.star_rounded,
-                          size: 15,
-                          color: filter.favoritesOnly
-                              ? Colors.white
-                              : colorScheme.primary,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          l10n.favorites,
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: filter.favoritesOnly
-                                ? FontWeight.w600
-                                : FontWeight.normal,
-                            color: filter.favoritesOnly
-                                ? colorScheme.onPrimary
-                                : colorScheme.onSurface,
-                          ),
-                        ),
-                      ],
-                    ),
-                    selected: filter.favoritesOnly,
-                    onTap: onFavorites,
-                  ),
-                  for (final c in categories)
-                    customChip(
-                      content: Text(
-                        c.name,
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: filter.categoryId == c.id
-                              ? FontWeight.w600
-                              : FontWeight.normal,
-                          color: filter.categoryId == c.id
-                              ? colorScheme.onPrimary
-                              : colorScheme.onSurface,
-                        ),
-                      ),
-                      selected: filter.categoryId == c.id,
-                      onTap: () => onCategory(c.id),
-                    ),
-                ],
-              ),
-            ),
+          tabItem(
+            label: l10n.all,
+            selected: allSelected,
+            onTap: onAll,
           ),
-          TextButton(
-            onPressed: onManage,
-            style: TextButton.styleFrom(
-              minimumSize: const Size(48, 38),
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-            ),
-            child: Text(
-              l10n.manage,
-              style: TextStyle(
-                color: colorScheme.primary,
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
-              ),
-            ),
+          tabItem(
+            label: l10n.favorites,
+            selected: filter.favoritesOnly,
+            onTap: onFavorites,
           ),
+          for (final c in categories)
+            tabItem(
+              label: c.name,
+              selected: !filter.favoritesOnly && filter.categoryId == c.id,
+              onTap: () => onCategory(c.id),
+            ),
         ],
       ),
     );

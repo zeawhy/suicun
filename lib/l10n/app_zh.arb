@@ -352,6 +352,7 @@
   "saveFailed": "保存失败，点击重试",
   "saved": "已保存",
   "saving": "保存中…",
+  "search": "搜索",
   "searchEmpty": "没有找到相关信息",
   "searchEmptyHint": "试试其他关键词，或清除搜索条件",
   "searchHint": "搜索信息",

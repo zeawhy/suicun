@@ -352,6 +352,7 @@
   "saveFailed": "Save failed, tap to retry",
   "saved": "Saved",
   "saving": "Saving…",
+  "search": "Search",
   "searchEmpty": "No matching info found",
   "searchEmptyHint": "Try different keywords or clear search",
   "searchHint": "Search info",

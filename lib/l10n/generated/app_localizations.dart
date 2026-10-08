@@ -1178,6 +1178,12 @@ abstract class AppLocalizations {
   /// **'保存中…'**
   String get saving;
 
+  /// No description provided for @search.
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索'**
+  String get search;
+
   /// No description provided for @searchEmpty.
   ///
   /// In zh, this message translates to:
