@@ -18,6 +18,7 @@ import 'package:suicun/features/records/presentation/home_sort_provider.dart';
 import 'package:suicun/features/records/presentation/records_notifier.dart';
 import 'package:suicun/features/categories/presentation/category_display_name.dart';
 import 'package:suicun/features/records/presentation/template_sheet.dart';
+import 'package:suicun/features/settings/presentation/settings_page.dart';
 import 'package:suicun/features/sync/sync_contract.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
 import 'package:suicun/shared/theme/app_theme.dart';
@@ -301,6 +302,35 @@ class _HomePageState extends ConsumerState<HomePage> {
     };
 
     return Scaffold(
+      drawer: Drawer(
+        width: 320,
+        child: SafeArea(
+          child: SettingsView(
+            header: Padding(
+              padding: const EdgeInsets.fromLTRB(4, 8, 4, 12),
+              child: Row(
+                children: [
+                  Text(
+                    l10n.settings,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    tooltip: l10n.cancel,
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              ),
+            ),
+            onNavigate: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ),
+      ),
       body: SafeArea(
         child: Column(
           children: [
@@ -591,34 +621,37 @@ class _HomePageState extends ConsumerState<HomePage> {
                   ),
                   child: Row(
                     children: [
-                      Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(8),
-                          onTap: () => context.push('/settings'),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 8,
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.settings_outlined,
-                                  size: 20,
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  l10n.settings,
-                                  style: TextStyle(
-                                    fontSize: 14,
+                      Builder(
+                        builder: (scaffoldContext) => Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(8),
+                            onTap: () =>
+                                Scaffold.of(scaffoldContext).openDrawer(),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 8,
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.settings_outlined,
+                                    size: 20,
                                     color: colorScheme.onSurfaceVariant,
-                                    fontWeight: FontWeight.w500,
                                   ),
-                                ),
-                              ],
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    l10n.settings,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: colorScheme.onSurfaceVariant,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),

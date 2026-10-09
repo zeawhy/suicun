@@ -121,20 +121,43 @@ void main() {
   });
 
   testWidgets(
-      'd. bottom-left settings button exists (icon + Settings text) and navigates to settings',
+      'd. bottom-left settings button opens drawer, closes, and navigates to sub-items',
       (tester) async {
     await pumpApp(tester, db);
 
     expect(find.byIcon(Icons.settings_outlined), findsOneWidget);
     expect(find.text('Settings'), findsOneWidget);
 
-    // Tap settings button
+    // Settings content is not visible before drawer is opened
+    expect(find.text('Theme'), findsNothing);
+
+    // Tap settings button to open drawer
     await tester.tap(find.text('Settings'));
     await tester.pumpAndSettle();
 
-    // Navigated to settings page
+    // Drawer is now open with settings options
+    expect(find.byType(Drawer), findsOneWidget);
     expect(find.text('Theme'), findsOneWidget);
     expect(find.text('Categories'), findsOneWidget);
+
+    // Tap close button in drawer header
+    await tester.tap(find.byIcon(Icons.close));
+    await tester.pumpAndSettle();
+
+    // Drawer is closed
+    expect(find.byType(Drawer), findsNothing);
+
+    // Reopen drawer
+    await tester.tap(find.text('Settings'));
+    await tester.pumpAndSettle();
+    expect(find.byType(Drawer), findsOneWidget);
+
+    // Tap Categories inside drawer - drawer closes and navigates to Categories page
+    await tester.tap(find.text('Categories'));
+    await tester.pumpAndSettle();
+
+    // Categories page is displayed
+    expect(find.text('Categories'), findsWidgets);
   });
 
   testWidgets(
