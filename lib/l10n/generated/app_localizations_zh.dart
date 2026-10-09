@@ -1018,6 +1018,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get recordTitleContact => '联系人记录';
 
   @override
+  String get recordTitleNote => '备忘记录';
+
+  @override
   String get fieldName => '姓名';
 
   @override

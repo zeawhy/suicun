@@ -19,6 +19,7 @@ import 'package:suicun/features/records/presentation/markdown_line.dart';
 import 'package:suicun/features/records/presentation/note_template.dart';
 import 'package:suicun/features/records/presentation/records_notifier.dart';
 import 'package:suicun/features/records/presentation/secret_line.dart';
+import 'package:suicun/features/records/presentation/template_views/blank_template_view.dart';
 import 'package:suicun/features/records/presentation/template_views/contact_template_view.dart';
 import 'package:suicun/features/records/presentation/template_views/idea_template_view.dart';
 import 'package:suicun/features/records/presentation/template_views/password_template_view.dart';
@@ -483,6 +484,12 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
         !_isNew &&
         !_bodyEditing &&
         parseContactTemplate(_bodyController.text) != null;
+    final isBlankTemplateRecord = !_isNew &&
+        !_bodyEditing &&
+        !isPasswordTemplateRecord &&
+        !isIdeaTemplateRecord &&
+        !isTodoTemplateRecord &&
+        !isContactTemplateRecord;
 
     Widget appBarTitle;
     if (showPageTitle) {
@@ -575,6 +582,32 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
         children: [
           Text(
             l10n.recordTitleContact,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: colorScheme.onSurface,
+            ),
+          ),
+          const SizedBox(height: 2),
+          _SaveStatusTitle(
+            saveState: state.saveState,
+            fontSize: 12,
+            iconSize: 14,
+            onRetry: () => ref
+                .read(editRecordProvider(widget.recordId).notifier)
+                .onInputChanged(
+                  _titleController.text,
+                  _bodyController.text,
+                ),
+          ),
+        ],
+      );
+    } else if (isBlankTemplateRecord) {
+      appBarTitle = Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.recordTitleNote,
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
               color: colorScheme.onSurface,
@@ -711,7 +744,27 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
                                 tagRow: _buildTagRow(l10n, theme, colorScheme, record),
                               ),
                             )
-                          : Column(
+                          : isBlankTemplateRecord
+                              ? SingleChildScrollView(
+                                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                                  child: BlankTemplateView(
+                                    record: record,
+                                    bodySpans: _buildBodySpans(_bodyController.text, l10n, theme, colorScheme),
+                                    isEmptyBody: _bodyController.text.isEmpty,
+                                    onEdit: () => setState(() {
+                                      _bodyEditing = true;
+                                      _bodyFocusNode.requestFocus();
+                                    }),
+                                    onTapBody: () => setState(() {
+                                      _bodyEditing = true;
+                                      _bodyFocusNode.requestFocus();
+                                    }),
+                                    categoryRow: _buildCategoryRow(l10n, theme, colorScheme, record),
+                                    suggestionRow: _buildSuggestionRow(l10n, theme, colorScheme),
+                                    tagRow: _buildTagRow(l10n, theme, colorScheme, record),
+                                  ),
+                                )
+                              : Column(
                   children: [
                     Expanded(
                       child: SingleChildScrollView(

@@ -2012,6 +2012,12 @@ abstract class AppLocalizations {
   /// **'联系人记录'**
   String get recordTitleContact;
 
+  /// No description provided for @recordTitleNote.
+  ///
+  /// In zh, this message translates to:
+  /// **'备忘记录'**
+  String get recordTitleNote;
+
   /// No description provided for @fieldName.
   ///
   /// In zh, this message translates to:
