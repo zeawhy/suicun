@@ -887,7 +887,7 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
             ),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.only(top: 9),
+                padding: const EdgeInsets.only(top: 4),
                 child: Text.rich(
                   TextSpan(
                     children: textSpans,
