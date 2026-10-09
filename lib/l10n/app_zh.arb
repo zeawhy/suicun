@@ -473,5 +473,15 @@
   "defaultCategoryStudy": "学习",
   "defaultCategoryLife": "生活",
   "defaultCategoryIdeas": "灵感",
-  "defaultCategoryTodo": "待办"
+  "defaultCategoryTodo": "待办",
+  "recordTitlePassword": "密码记录",
+  "copied": "已复制",
+  "notFilled": "未填写",
+  "today": "今天",
+  "yesterday": "昨天",
+  "copy": "复制",
+  "fieldNotes": "备注",
+  "fieldPassword": "密码",
+  "fieldUsername": "用户名 / 邮箱",
+  "fieldWebsite": "网站 / 应用"
 }

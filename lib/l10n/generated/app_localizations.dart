@@ -1909,6 +1909,66 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'待办'**
   String get defaultCategoryTodo;
+
+  /// No description provided for @recordTitlePassword.
+  ///
+  /// In zh, this message translates to:
+  /// **'密码记录'**
+  String get recordTitlePassword;
+
+  /// No description provided for @copied.
+  ///
+  /// In zh, this message translates to:
+  /// **'已复制'**
+  String get copied;
+
+  /// No description provided for @notFilled.
+  ///
+  /// In zh, this message translates to:
+  /// **'未填写'**
+  String get notFilled;
+
+  /// No description provided for @today.
+  ///
+  /// In zh, this message translates to:
+  /// **'今天'**
+  String get today;
+
+  /// No description provided for @yesterday.
+  ///
+  /// In zh, this message translates to:
+  /// **'昨天'**
+  String get yesterday;
+
+  /// No description provided for @copy.
+  ///
+  /// In zh, this message translates to:
+  /// **'复制'**
+  String get copy;
+
+  /// No description provided for @fieldNotes.
+  ///
+  /// In zh, this message translates to:
+  /// **'备注'**
+  String get fieldNotes;
+
+  /// No description provided for @fieldPassword.
+  ///
+  /// In zh, this message translates to:
+  /// **'密码'**
+  String get fieldPassword;
+
+  /// No description provided for @fieldUsername.
+  ///
+  /// In zh, this message translates to:
+  /// **'用户名 / 邮箱'**
+  String get fieldUsername;
+
+  /// No description provided for @fieldWebsite.
+  ///
+  /// In zh, this message translates to:
+  /// **'网站 / 应用'**
+  String get fieldWebsite;
 }
 
 class _AppLocalizationsDelegate

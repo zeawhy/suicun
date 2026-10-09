@@ -987,4 +987,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get defaultCategoryTodo => 'To Do';
+
+  @override
+  String get recordTitlePassword => 'Password record';
+
+  @override
+  String get copied => 'Copied';
+
+  @override
+  String get notFilled => 'Not set';
+
+  @override
+  String get today => 'Today';
+
+  @override
+  String get yesterday => 'Yesterday';
+
+  @override
+  String get copy => 'Copy';
+
+  @override
+  String get fieldNotes => 'Notes';
+
+  @override
+  String get fieldPassword => 'Password';
+
+  @override
+  String get fieldUsername => 'Username / Email';
+
+  @override
+  String get fieldWebsite => 'Website / App';
 }

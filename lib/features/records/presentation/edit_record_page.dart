@@ -19,6 +19,8 @@ import 'package:suicun/features/records/presentation/markdown_line.dart';
 import 'package:suicun/features/records/presentation/note_template.dart';
 import 'package:suicun/features/records/presentation/records_notifier.dart';
 import 'package:suicun/features/records/presentation/secret_line.dart';
+import 'package:suicun/features/records/presentation/template_views/password_template_view.dart';
+import 'package:suicun/features/records/presentation/template_views/template_detector.dart';
 import 'package:suicun/features/tags/domain/tag_model.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
 import 'package:suicun/services/auto_category_service.dart';
@@ -459,9 +461,54 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
     final record = state.record;
     final isEmptyInput =
         _titleController.text.isEmpty && _bodyController.text.isEmpty;
-    // New page that has never been saved shows the page title;
-    // otherwise the app bar shows the live save status.
     final showPageTitle = _isNew && record == null && isEmptyInput;
+    final isPasswordTemplateRecord = !_isNew &&
+        !_bodyEditing &&
+        parsePasswordTemplate(_bodyController.text) != null;
+
+    Widget appBarTitle;
+    if (showPageTitle) {
+      appBarTitle = Text(
+        l10n.newInfo,
+        style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+      );
+    } else if (isPasswordTemplateRecord) {
+      appBarTitle = Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.recordTitlePassword,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: colorScheme.onSurface,
+            ),
+          ),
+          const SizedBox(height: 2),
+          _SaveStatusTitle(
+            saveState: state.saveState,
+            fontSize: 12,
+            iconSize: 14,
+            onRetry: () => ref
+                .read(editRecordProvider(widget.recordId).notifier)
+                .onInputChanged(
+                  _titleController.text,
+                  _bodyController.text,
+                ),
+          ),
+        ],
+      );
+    } else {
+      appBarTitle = _SaveStatusTitle(
+        saveState: state.saveState,
+        onRetry: () => ref
+            .read(editRecordProvider(widget.recordId).notifier)
+            .onInputChanged(
+              _titleController.text,
+              _bodyController.text,
+            ),
+      );
+    }
 
     return PopScope(
       onPopInvokedWithResult: (_, __) async {
@@ -469,21 +516,7 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: showPageTitle
-              ? Text(
-                  l10n.newInfo,
-                  style: theme.textTheme.titleLarge
-                      ?.copyWith(fontWeight: FontWeight.bold),
-                )
-              : _SaveStatusTitle(
-                  saveState: state.saveState,
-                  onRetry: () => ref
-                      .read(editRecordProvider(widget.recordId).notifier)
-                      .onInputChanged(
-                        _titleController.text,
-                        _bodyController.text,
-                      ),
-                ),
+          title: appBarTitle,
           actions: [
             IconButton(
               icon: Icon(
@@ -521,97 +554,112 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
           ],
         ),
         body: SafeArea(
-          child: Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (_isNew && isEmptyInput)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 4, bottom: 8),
-                          child: Text(
-                            l10n.notYetInput,
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
+          child: isPasswordTemplateRecord
+              ? SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                  child: PasswordTemplateView(
+                    data: parsePasswordTemplate(_bodyController.text)!,
+                    record: record,
+                    onEdit: () => setState(() {
+                      _bodyEditing = true;
+                      _bodyFocusNode.requestFocus();
+                    }),
+                    categoryRow: _buildCategoryRow(l10n, theme, colorScheme, record),
+                    suggestionRow: _buildSuggestionRow(l10n, theme, colorScheme),
+                    tagRow: _buildTagRow(l10n, theme, colorScheme, record),
+                  ),
+                )
+              : Column(
+                  children: [
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (_isNew && isEmptyInput)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 4, bottom: 8),
+                                child: Text(
+                                  l10n.notYetInput,
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ),
+                            TextField(
+                              controller: _titleController,
+                              decoration: InputDecoration(
+                                hintText: l10n.titleHint,
+                                hintStyle: TextStyle(
+                                  color: colorScheme.onSurfaceVariant
+                                      .withValues(alpha: 0.6),
+                                ),
+                                border: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                                focusedBorder: InputBorder.none,
+                                filled: false,
+                                contentPadding: EdgeInsets.zero,
+                              ),
+                              style: theme.textTheme.headlineSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textInputAction: TextInputAction.next,
+                              onChanged: (_) => _onChanged(),
+                            ),
+                            const SizedBox(height: 8),
+                            _buildBodyArea(l10n, theme, colorScheme),
+                            const SizedBox(height: 24),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: colorScheme.surfaceContainerLowest,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: colorScheme.outlineVariant.withValues(alpha: 0.6),
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          _buildCategoryRow(l10n, theme, colorScheme, record),
+                          _buildSuggestionRow(l10n, theme, colorScheme),
+                          Divider(
+                            height: 1,
+                            indent: 16,
+                            endIndent: 16,
+                            color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+                          ),
+                          _buildTagRow(l10n, theme, colorScheme, record),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 10, 20, 14),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.cloud_done_outlined,
+                            size: 14,
+                            color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                          ),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              l10n.autoSaveHint,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
+                              ),
                             ),
                           ),
-                        ),
-                      TextField(
-                        controller: _titleController,
-                        decoration: InputDecoration(
-                          hintText: l10n.titleHint,
-                          hintStyle: TextStyle(
-                            color: colorScheme.onSurfaceVariant
-                                .withValues(alpha: 0.6),
-                          ),
-                          border: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                          filled: false,
-                          contentPadding: EdgeInsets.zero,
-                        ),
-                        style: theme.textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textInputAction: TextInputAction.next,
-                        onChanged: (_) => _onChanged(),
-                      ),
-                      const SizedBox(height: 8),
-                      _buildBodyArea(l10n, theme, colorScheme),
-                      const SizedBox(height: 24),
-                    ],
-                  ),
-                ),
-              ),
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainerLowest,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: colorScheme.outlineVariant.withValues(alpha: 0.6),
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    _buildCategoryRow(l10n, theme, colorScheme, record),
-                    _buildSuggestionRow(l10n, theme, colorScheme),
-                    Divider(
-                      height: 1,
-                      indent: 16,
-                      endIndent: 16,
-                      color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-                    ),
-                    _buildTagRow(l10n, theme, colorScheme, record),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 10, 20, 14),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.cloud_done_outlined,
-                      size: 14,
-                      color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
-                    ),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        l10n.autoSaveHint,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
-                        ),
+                        ],
                       ),
                     ),
                   ],
                 ),
-              ),
-            ],
-          ),
         ),
       ),
     );
@@ -1163,10 +1211,17 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
 
 /// App bar title showing the live auto-save status.
 class _SaveStatusTitle extends StatelessWidget {
-  const _SaveStatusTitle({required this.saveState, this.onRetry});
+  const _SaveStatusTitle({
+    required this.saveState,
+    this.onRetry,
+    this.fontSize = 14,
+    this.iconSize = 18,
+  });
 
   final SaveState saveState;
   final VoidCallback? onRetry;
+  final double fontSize;
+  final double iconSize;
 
   @override
   Widget build(BuildContext context) {
@@ -1177,13 +1232,13 @@ class _SaveStatusTitle extends StatelessWidget {
         return Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.check_circle, color: colorScheme.primary, size: 18),
+            Icon(Icons.check_circle, color: colorScheme.primary, size: iconSize),
             const SizedBox(width: 4),
             Text(
               l10n.saved,
               style: TextStyle(
                 color: colorScheme.primary,
-                fontSize: 14,
+                fontSize: fontSize,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -1194,7 +1249,7 @@ class _SaveStatusTitle extends StatelessWidget {
           l10n.saving,
           style: TextStyle(
             color: colorScheme.onSurfaceVariant,
-            fontSize: 14,
+            fontSize: fontSize,
           ),
         );
       case SaveState.error:
@@ -1206,13 +1261,13 @@ class _SaveStatusTitle extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.error_outline, color: colorScheme.error, size: 16),
+                Icon(Icons.error_outline, color: colorScheme.error, size: iconSize),
                 const SizedBox(width: 4),
                 Text(
                   l10n.saveFailed,
                   style: TextStyle(
                     color: colorScheme.error,
-                    fontSize: 14,
+                    fontSize: fontSize,
                     fontWeight: FontWeight.w600,
                   ),
                 ),

@@ -963,4 +963,34 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get defaultCategoryTodo => '待办';
+
+  @override
+  String get recordTitlePassword => '密码记录';
+
+  @override
+  String get copied => '已复制';
+
+  @override
+  String get notFilled => '未填写';
+
+  @override
+  String get today => '今天';
+
+  @override
+  String get yesterday => '昨天';
+
+  @override
+  String get copy => '复制';
+
+  @override
+  String get fieldNotes => '备注';
+
+  @override
+  String get fieldPassword => '密码';
+
+  @override
+  String get fieldUsername => '用户名 / 邮箱';
+
+  @override
+  String get fieldWebsite => '网站 / 应用';
 }

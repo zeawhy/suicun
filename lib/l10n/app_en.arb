@@ -473,5 +473,15 @@
   "defaultCategoryStudy": "Study",
   "defaultCategoryLife": "Life",
   "defaultCategoryIdeas": "Ideas",
-  "defaultCategoryTodo": "To Do"
+  "defaultCategoryTodo": "To Do",
+  "recordTitlePassword": "Password record",
+  "copied": "Copied",
+  "notFilled": "Not set",
+  "today": "Today",
+  "yesterday": "Yesterday",
+  "copy": "Copy",
+  "fieldNotes": "Notes",
+  "fieldPassword": "Password",
+  "fieldUsername": "Username / Email",
+  "fieldWebsite": "Website / App"
 }
