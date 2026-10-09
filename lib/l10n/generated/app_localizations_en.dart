@@ -1037,4 +1037,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get fieldNextAction => 'Next action';
+
+  @override
+  String get recordTitleContact => 'Contact record';
+
+  @override
+  String get fieldName => 'Name';
+
+  @override
+  String get fieldPhone => 'Phone';
+
+  @override
+  String get fieldEmail => 'Email';
+
+  @override
+  String get fieldAddress => 'Address';
 }

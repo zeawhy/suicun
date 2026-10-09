@@ -289,3 +289,126 @@ TodoTemplateData? parseTodoTemplate(String body) {
   return TodoTemplateData(items: items);
 }
 
+/// Data extracted from a contact template body.
+class ContactTemplateData {
+  const ContactTemplateData({
+    this.name,
+    this.phone,
+    this.email,
+    this.address,
+    this.notes,
+  });
+
+  final String? name;
+  final String? phone;
+  final String? email;
+  final String? address;
+  final String? notes;
+}
+
+/// Normalized contact template field types.
+enum ContactFieldType {
+  name,
+  phone,
+  email,
+  address,
+  notes,
+}
+
+/// Map of allowed label names (trimmed, lowercased for Latin) to their field types.
+const Map<String, ContactFieldType> _kContactLabels = {
+  // Chinese labels
+  '姓名': ContactFieldType.name,
+  '电话': ContactFieldType.phone,
+  '邮箱': ContactFieldType.email,
+  '地址': ContactFieldType.address,
+  '备注': ContactFieldType.notes,
+
+  // English labels
+  'name': ContactFieldType.name,
+  'phone': ContactFieldType.phone,
+  'email': ContactFieldType.email,
+  'address': ContactFieldType.address,
+  'notes': ContactFieldType.notes,
+};
+
+/// Detects if [body] matches the contact template structure.
+///
+/// Rule:
+/// 1. Body must not be empty.
+/// 2. Every non-empty line must match `label: value` (where colon can be `:` or `：`).
+/// 3. Every label must belong to the contact template label set:
+///    {姓名, 电话, 邮箱, 地址, 备注, Name, Phone, Email, Address, Notes}.
+/// 4. At least one line must have an anchor label:
+///    姓名 / Name / 电话 / Phone / 邮箱 / Email.
+bool isContactTemplate(String body) {
+  return parseContactTemplate(body) != null;
+}
+
+/// Parses [body] into [ContactTemplateData] if it matches the contact template pattern.
+/// Returns `null` if [body] does not match the contact template rules.
+ContactTemplateData? parseContactTemplate(String body) {
+  if (body.trim().isEmpty) return null;
+
+  final lines = body.replaceAll('\r\n', '\n').split('\n');
+  var hasNonEmptyLine = false;
+  var hasAnchor = false;
+
+  String? name;
+  String? phone;
+  String? email;
+  String? address;
+  String? notes;
+
+  for (final rawLine in lines) {
+    final line = rawLine.trim();
+    if (line.isEmpty) {
+      continue;
+    }
+    hasNonEmptyLine = true;
+
+    final match = _colonRegExp.firstMatch(line);
+    if (match == null) {
+      return null;
+    }
+
+    final rawLabel = line.substring(0, match.start).trim();
+    final value = line.substring(match.end).trim();
+
+    // Check label in allowed set
+    final lookupKey = rawLabel.toLowerCase();
+    final fieldType = _kContactLabels[rawLabel] ?? _kContactLabels[lookupKey];
+    if (fieldType == null) {
+      return null;
+    }
+
+    switch (fieldType) {
+      case ContactFieldType.name:
+        name = value;
+        hasAnchor = true;
+      case ContactFieldType.phone:
+        phone = value;
+        hasAnchor = true;
+      case ContactFieldType.email:
+        email = value;
+        hasAnchor = true;
+      case ContactFieldType.address:
+        address = value;
+      case ContactFieldType.notes:
+        notes = value;
+    }
+  }
+
+  if (!hasNonEmptyLine || !hasAnchor) {
+    return null;
+  }
+
+  return ContactTemplateData(
+    name: name,
+    phone: phone,
+    email: email,
+    address: address,
+    notes: notes,
+  );
+}
+

@@ -1013,4 +1013,19 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get fieldNextAction => '下一步行动';
+
+  @override
+  String get recordTitleContact => '联系人记录';
+
+  @override
+  String get fieldName => '姓名';
+
+  @override
+  String get fieldPhone => '电话';
+
+  @override
+  String get fieldEmail => '邮箱';
+
+  @override
+  String get fieldAddress => '地址';
 }

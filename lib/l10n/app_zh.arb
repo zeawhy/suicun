@@ -499,5 +499,10 @@
   "fieldWebsite": "网站 / 应用",
   "fieldIdea": "灵感",
   "fieldSource": "来源",
-  "fieldNextAction": "下一步行动"
+  "fieldNextAction": "下一步行动",
+  "recordTitleContact": "联系人记录",
+  "fieldName": "姓名",
+  "fieldPhone": "电话",
+  "fieldEmail": "邮箱",
+  "fieldAddress": "地址"
 }

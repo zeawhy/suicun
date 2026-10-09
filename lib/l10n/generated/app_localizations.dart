@@ -2005,6 +2005,36 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'下一步行动'**
   String get fieldNextAction;
+
+  /// No description provided for @recordTitleContact.
+  ///
+  /// In zh, this message translates to:
+  /// **'联系人记录'**
+  String get recordTitleContact;
+
+  /// No description provided for @fieldName.
+  ///
+  /// In zh, this message translates to:
+  /// **'姓名'**
+  String get fieldName;
+
+  /// No description provided for @fieldPhone.
+  ///
+  /// In zh, this message translates to:
+  /// **'电话'**
+  String get fieldPhone;
+
+  /// No description provided for @fieldEmail.
+  ///
+  /// In zh, this message translates to:
+  /// **'邮箱'**
+  String get fieldEmail;
+
+  /// No description provided for @fieldAddress.
+  ///
+  /// In zh, this message translates to:
+  /// **'地址'**
+  String get fieldAddress;
 }
 
 class _AppLocalizationsDelegate
