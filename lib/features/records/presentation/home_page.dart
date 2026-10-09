@@ -131,10 +131,12 @@ class _HomePageState extends ConsumerState<HomePage> {
     ref.invalidate(trashListProvider);
     if (!mounted) return;
     final l10n = AppLocalizations.of(context);
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
       SnackBar(
         duration: const Duration(seconds: 4),
+        persist: false,
         content: Text(l10n.recordDeleted),
         action: SnackBarAction(
           label: l10n.undoDelete,

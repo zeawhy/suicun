@@ -411,11 +411,13 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
     ref.invalidate(recordsListProvider);
     ref.invalidate(trashListProvider);
     if (!mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
     context.pop();
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
       SnackBar(
         duration: const Duration(seconds: 4),
+        persist: false,
         content: Text(l10n.recordDeleted),
         action: SnackBarAction(
           label: l10n.undoDelete,
