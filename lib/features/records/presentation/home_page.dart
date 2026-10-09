@@ -16,6 +16,7 @@ import 'package:suicun/features/categories/presentation/categories_notifier.dart
 import 'package:suicun/features/records/domain/record_model.dart';
 import 'package:suicun/features/records/presentation/home_sort_provider.dart';
 import 'package:suicun/features/records/presentation/records_notifier.dart';
+import 'package:suicun/features/categories/presentation/category_display_name.dart';
 import 'package:suicun/features/records/presentation/template_sheet.dart';
 import 'package:suicun/features/sync/sync_contract.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
@@ -208,7 +209,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                         ),
                       ),
                       const SizedBox(width: 10),
-                      Text(c.name),
+                      Text(categoryDisplayName(ctx, c.name)),
                     ],
                   ),
                 ),
@@ -732,7 +733,7 @@ class _CategoryFilterBar extends StatelessWidget {
           ),
           for (final c in categories)
             tabItem(
-              label: c.name,
+              label: categoryDisplayName(context, c.name),
               selected: !filter.favoritesOnly && filter.categoryId == c.id,
               onTap: () => onCategory(c.id),
             ),

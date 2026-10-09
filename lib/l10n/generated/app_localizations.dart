@@ -1879,6 +1879,36 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'无序列表'**
   String get formatBullet;
+
+  /// No description provided for @defaultCategoryWork.
+  ///
+  /// In zh, this message translates to:
+  /// **'工作'**
+  String get defaultCategoryWork;
+
+  /// No description provided for @defaultCategoryStudy.
+  ///
+  /// In zh, this message translates to:
+  /// **'学习'**
+  String get defaultCategoryStudy;
+
+  /// No description provided for @defaultCategoryLife.
+  ///
+  /// In zh, this message translates to:
+  /// **'生活'**
+  String get defaultCategoryLife;
+
+  /// No description provided for @defaultCategoryIdeas.
+  ///
+  /// In zh, this message translates to:
+  /// **'灵感'**
+  String get defaultCategoryIdeas;
+
+  /// No description provided for @defaultCategoryTodo.
+  ///
+  /// In zh, this message translates to:
+  /// **'待办'**
+  String get defaultCategoryTodo;
 }
 
 class _AppLocalizationsDelegate

@@ -468,5 +468,10 @@
   "formatCheckbox": "勾选框",
   "formatHeading": "标题",
   "formatBold": "加粗",
-  "formatBullet": "无序列表"
+  "formatBullet": "无序列表",
+  "defaultCategoryWork": "工作",
+  "defaultCategoryStudy": "学习",
+  "defaultCategoryLife": "生活",
+  "defaultCategoryIdeas": "灵感",
+  "defaultCategoryTodo": "待办"
 }

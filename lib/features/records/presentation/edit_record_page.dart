@@ -11,6 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:suicun/core/database/providers.dart';
+import 'package:suicun/features/categories/presentation/category_display_name.dart';
 import 'package:suicun/features/records/domain/record_model.dart';
 import 'package:suicun/features/records/presentation/checklist_line.dart';
 import 'package:suicun/features/records/presentation/edit_record_notifier.dart';
@@ -247,7 +248,7 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
                 children: [
                   _ColorDot(color: AppTheme.getCategoryColor(c.name, c.color)),
                   const SizedBox(width: 12),
-                  Expanded(child: Text(c.name)),
+                  Expanded(child: Text(categoryDisplayName(ctx, c.name))),
                   if (record?.categoryId == c.id)
                     const Icon(Icons.check, size: 18),
                 ],
@@ -1051,7 +1052,7 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Text(category.name,
+                Text(categoryDisplayName(context, category.name),
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: colorScheme.onSurface,
                       fontWeight: FontWeight.w500,

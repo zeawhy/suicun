@@ -468,5 +468,10 @@
   "formatCheckbox": "Checkbox",
   "formatHeading": "Heading",
   "formatBold": "Bold",
-  "formatBullet": "Bulleted list"
+  "formatBullet": "Bulleted list",
+  "defaultCategoryWork": "Work",
+  "defaultCategoryStudy": "Study",
+  "defaultCategoryLife": "Life",
+  "defaultCategoryIdeas": "Ideas",
+  "defaultCategoryTodo": "To Do"
 }

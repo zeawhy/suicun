@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:suicun/features/categories/domain/category_model.dart';
 import 'package:suicun/features/categories/presentation/categories_notifier.dart';
+import 'package:suicun/features/categories/presentation/category_display_name.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
 import 'package:suicun/services/auto_category_service.dart';
 import 'package:suicun/shared/theme/app_theme.dart';
@@ -238,7 +239,7 @@ class CategoriesPage extends ConsumerWidget {
                               ),
                             ),
                             title: Text(
-                              cat.name,
+                              categoryDisplayName(context, cat.name),
                               style: theme.textTheme.bodyLarge?.copyWith(
                                 fontWeight: FontWeight.w600,
                               ),
@@ -447,7 +448,7 @@ class _KeywordsSheetState extends State<_KeywordsSheet> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '${widget.category.name} · ${l10n.keywords}',
+              '${categoryDisplayName(context, widget.category.name)} · ${l10n.keywords}',
               style: theme.textTheme.titleMedium
                   ?.copyWith(fontWeight: FontWeight.bold),
             ),

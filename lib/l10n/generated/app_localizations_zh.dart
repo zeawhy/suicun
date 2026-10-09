@@ -948,4 +948,19 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get formatBullet => '无序列表';
+
+  @override
+  String get defaultCategoryWork => '工作';
+
+  @override
+  String get defaultCategoryStudy => '学习';
+
+  @override
+  String get defaultCategoryLife => '生活';
+
+  @override
+  String get defaultCategoryIdeas => '灵感';
+
+  @override
+  String get defaultCategoryTodo => '待办';
 }

@@ -972,4 +972,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get formatBullet => 'Bulleted list';
+
+  @override
+  String get defaultCategoryWork => 'Work';
+
+  @override
+  String get defaultCategoryStudy => 'Study';
+
+  @override
+  String get defaultCategoryLife => 'Life';
+
+  @override
+  String get defaultCategoryIdeas => 'Ideas';
+
+  @override
+  String get defaultCategoryTodo => 'To Do';
 }
