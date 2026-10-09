@@ -1922,6 +1922,18 @@ abstract class AppLocalizations {
   /// **'灵感记录'**
   String get recordTitleIdea;
 
+  /// No description provided for @recordTitleTodo.
+  ///
+  /// In zh, this message translates to:
+  /// **'待办记录'**
+  String get recordTitleTodo;
+
+  /// No description provided for @todoProgress.
+  ///
+  /// In zh, this message translates to:
+  /// **'已完成 {done} / {total}'**
+  String todoProgress(int done, int total);
+
   /// No description provided for @copied.
   ///
   /// In zh, this message translates to:

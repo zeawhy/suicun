@@ -971,6 +971,14 @@ class AppLocalizationsZh extends AppLocalizations {
   String get recordTitleIdea => '灵感记录';
 
   @override
+  String get recordTitleTodo => '待办记录';
+
+  @override
+  String todoProgress(int done, int total) {
+    return '已完成 $done / $total';
+  }
+
+  @override
   String get copied => '已复制';
 
   @override

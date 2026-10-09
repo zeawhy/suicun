@@ -995,6 +995,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recordTitleIdea => 'Idea record';
 
   @override
+  String get recordTitleTodo => 'To-do record';
+
+  @override
+  String todoProgress(int done, int total) {
+    return '$done of $total done';
+  }
+
+  @override
   String get copied => 'Copied';
 
   @override

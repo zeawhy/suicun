@@ -151,6 +151,16 @@
       }
     }
   },
+  "@todoProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "@updatedAt": {
     "placeholders": {
       "time": {
@@ -476,6 +486,8 @@
   "defaultCategoryTodo": "To Do",
   "recordTitlePassword": "Password record",
   "recordTitleIdea": "Idea record",
+  "recordTitleTodo": "To-do record",
+  "todoProgress": "{done} of {total} done",
   "copied": "Copied",
   "notFilled": "Not set",
   "today": "Today",

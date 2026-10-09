@@ -1,6 +1,8 @@
 // lib/features/records/presentation/template_views/template_detector.dart
 // Template detector to identify structured note templates from body text.
 
+import 'package:suicun/features/records/presentation/checklist_line.dart';
+
 /// Data extracted from a password template body.
 class PasswordTemplateData {
   const PasswordTemplateData({
@@ -217,3 +219,73 @@ IdeaTemplateData? parseIdeaTemplate(String body) {
     nextAction: nextAction,
   );
 }
+
+/// A single item in a todo template.
+class TodoTemplateItem {
+  const TodoTemplateItem({
+    required this.checked,
+    required this.content,
+    required this.lineIndex,
+  });
+
+  final bool checked;
+  final String content;
+  final int lineIndex;
+}
+
+/// Data extracted from a todo template body.
+class TodoTemplateData {
+  const TodoTemplateData({
+    required this.items,
+  });
+
+  final List<TodoTemplateItem> items;
+}
+
+/// Detects if [body] matches the todo template structure.
+///
+/// Rule:
+/// 1. Body must not be empty.
+/// 2. Every non-empty line must satisfy `parseChecklistLine().isChecklist` when trimmed
+///    (i.e. starts with `☐` or `☑`).
+/// 3. There must be at least one checklist item.
+bool isTodoTemplate(String body) {
+  return parseTodoTemplate(body) != null;
+}
+
+/// Parses [body] into [TodoTemplateData] if it matches the todo template pattern.
+/// Returns `null` if [body] does not match the todo template rules.
+TodoTemplateData? parseTodoTemplate(String body) {
+  if (body.trim().isEmpty) return null;
+
+  final lines = body.replaceAll('\r\n', '\n').split('\n');
+  var hasNonEmptyLine = false;
+  final items = <TodoTemplateItem>[];
+
+  for (var i = 0; i < lines.length; i++) {
+    final rawLine = lines[i];
+    final line = rawLine.trim();
+    if (line.isEmpty) {
+      continue;
+    }
+    hasNonEmptyLine = true;
+
+    final parsed = parseChecklistLine(line);
+    if (!parsed.isChecklist) {
+      return null;
+    }
+
+    items.add(TodoTemplateItem(
+      checked: parsed.checked,
+      content: parsed.content ?? '',
+      lineIndex: i,
+    ));
+  }
+
+  if (!hasNonEmptyLine || items.isEmpty) {
+    return null;
+  }
+
+  return TodoTemplateData(items: items);
+}
+

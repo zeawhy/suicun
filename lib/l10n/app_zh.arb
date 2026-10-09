@@ -151,6 +151,16 @@
       }
     }
   },
+  "@todoProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "@updatedAt": {
     "placeholders": {
       "time": {
@@ -476,6 +486,8 @@
   "defaultCategoryTodo": "待办",
   "recordTitlePassword": "密码记录",
   "recordTitleIdea": "灵感记录",
+  "recordTitleTodo": "待办记录",
+  "todoProgress": "已完成 {done} / {total}",
   "copied": "已复制",
   "notFilled": "未填写",
   "today": "今天",
