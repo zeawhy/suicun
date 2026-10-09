@@ -1916,6 +1916,12 @@ abstract class AppLocalizations {
   /// **'密码记录'**
   String get recordTitlePassword;
 
+  /// No description provided for @recordTitleIdea.
+  ///
+  /// In zh, this message translates to:
+  /// **'灵感记录'**
+  String get recordTitleIdea;
+
   /// No description provided for @copied.
   ///
   /// In zh, this message translates to:
@@ -1969,6 +1975,24 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'网站 / 应用'**
   String get fieldWebsite;
+
+  /// No description provided for @fieldIdea.
+  ///
+  /// In zh, this message translates to:
+  /// **'灵感'**
+  String get fieldIdea;
+
+  /// No description provided for @fieldSource.
+  ///
+  /// In zh, this message translates to:
+  /// **'来源'**
+  String get fieldSource;
+
+  /// No description provided for @fieldNextAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'下一步行动'**
+  String get fieldNextAction;
 }
 
 class _AppLocalizationsDelegate

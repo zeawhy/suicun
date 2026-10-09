@@ -475,6 +475,7 @@
   "defaultCategoryIdeas": "Ideas",
   "defaultCategoryTodo": "To Do",
   "recordTitlePassword": "Password record",
+  "recordTitleIdea": "Idea record",
   "copied": "Copied",
   "notFilled": "Not set",
   "today": "Today",
@@ -483,5 +484,8 @@
   "fieldNotes": "Notes",
   "fieldPassword": "Password",
   "fieldUsername": "Username / Email",
-  "fieldWebsite": "Website / App"
+  "fieldWebsite": "Website / App",
+  "fieldIdea": "Idea",
+  "fieldSource": "Source",
+  "fieldNextAction": "Next action"
 }

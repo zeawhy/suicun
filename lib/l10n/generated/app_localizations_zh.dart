@@ -968,6 +968,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get recordTitlePassword => '密码记录';
 
   @override
+  String get recordTitleIdea => '灵感记录';
+
+  @override
   String get copied => '已复制';
 
   @override
@@ -993,4 +996,13 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get fieldWebsite => '网站 / 应用';
+
+  @override
+  String get fieldIdea => '灵感';
+
+  @override
+  String get fieldSource => '来源';
+
+  @override
+  String get fieldNextAction => '下一步行动';
 }

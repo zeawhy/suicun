@@ -992,6 +992,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recordTitlePassword => 'Password record';
 
   @override
+  String get recordTitleIdea => 'Idea record';
+
+  @override
   String get copied => 'Copied';
 
   @override
@@ -1017,4 +1020,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get fieldWebsite => 'Website / App';
+
+  @override
+  String get fieldIdea => 'Idea';
+
+  @override
+  String get fieldSource => 'Source';
+
+  @override
+  String get fieldNextAction => 'Next action';
 }

@@ -115,3 +115,105 @@ PasswordTemplateData? parsePasswordTemplate(String body) {
     notes: notes,
   );
 }
+
+/// Data extracted from an idea template body.
+class IdeaTemplateData {
+  const IdeaTemplateData({
+    this.idea,
+    this.source,
+    this.nextAction,
+  });
+
+  final String? idea;
+  final String? source;
+  final String? nextAction;
+}
+
+/// Normalized idea template field types.
+enum IdeaFieldType {
+  idea,
+  source,
+  nextAction,
+}
+
+/// Map of allowed label names (trimmed, lowercased for Latin) to their field types.
+const Map<String, IdeaFieldType> _kIdeaLabels = {
+  // Chinese labels
+  '灵感': IdeaFieldType.idea,
+  '来源': IdeaFieldType.source,
+  '下一步行动': IdeaFieldType.nextAction,
+
+  // English labels
+  'idea': IdeaFieldType.idea,
+  'source': IdeaFieldType.source,
+  'next action': IdeaFieldType.nextAction,
+};
+
+/// Detects if [body] matches the idea template structure.
+///
+/// Rule:
+/// 1. Body must not be empty.
+/// 2. Every non-empty line must match `label: value` (where colon can be `:` or `：`).
+/// 3. Every label must belong to the idea template label set:
+///    {灵感, 来源, 下一步行动, Idea, Source, Next action}.
+/// 4. At least one line must have a label for `灵感` / `Idea`.
+bool isIdeaTemplate(String body) {
+  return parseIdeaTemplate(body) != null;
+}
+
+/// Parses [body] into [IdeaTemplateData] if it matches the idea template pattern.
+/// Returns `null` if [body] does not match the idea template rules.
+IdeaTemplateData? parseIdeaTemplate(String body) {
+  if (body.trim().isEmpty) return null;
+
+  final lines = body.replaceAll('\r\n', '\n').split('\n');
+  var hasNonEmptyLine = false;
+  var hasIdea = false;
+
+  String? idea;
+  String? source;
+  String? nextAction;
+
+  for (final rawLine in lines) {
+    final line = rawLine.trim();
+    if (line.isEmpty) {
+      continue;
+    }
+    hasNonEmptyLine = true;
+
+    final match = _colonRegExp.firstMatch(line);
+    if (match == null) {
+      return null;
+    }
+
+    final rawLabel = line.substring(0, match.start).trim();
+    final value = line.substring(match.end).trim();
+
+    // Check label in allowed set
+    final lookupKey = rawLabel.toLowerCase();
+    final fieldType = _kIdeaLabels[rawLabel] ?? _kIdeaLabels[lookupKey];
+    if (fieldType == null) {
+      return null;
+    }
+
+    switch (fieldType) {
+      case IdeaFieldType.idea:
+        idea = value;
+        hasIdea = true;
+      case IdeaFieldType.source:
+        source = value;
+      case IdeaFieldType.nextAction:
+        nextAction = value;
+    }
+  }
+
+  if (!hasNonEmptyLine || !hasIdea) {
+    return null;
+  }
+
+  return IdeaTemplateData(
+    idea: idea,
+    source: source,
+    nextAction: nextAction,
+  );
+}

@@ -3,9 +3,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
 import 'package:suicun/features/records/domain/record_model.dart';
 import 'package:suicun/features/records/presentation/template_views/template_detector.dart';
+import 'package:suicun/features/records/presentation/template_views/template_header_card.dart';
+import 'package:suicun/features/records/presentation/template_views/updated_at_text.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
 
 class PasswordTemplateView extends StatefulWidget {
@@ -59,42 +60,6 @@ class _PasswordTemplateViewState extends State<PasswordTemplateView> {
     }
   }
 
-  String _formatUpdatedAt(DateTime dateTime, BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final locale = Localizations.localeOf(context).languageCode;
-    final isZh = locale.toLowerCase().startsWith('zh');
-
-    final local = dateTime.toLocal();
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final day = DateTime(local.year, local.month, local.day);
-    final diffDays = today.difference(day).inDays;
-
-    final hm = DateFormat.Hm(locale).format(local);
-
-    String timeStr;
-    if (diffDays <= 0) {
-      timeStr = '${l10n.today} $hm';
-    } else if (diffDays == 1) {
-      timeStr = '${l10n.yesterday} $hm';
-    } else if (local.year == now.year) {
-      if (isZh) {
-        timeStr = '${local.month}月${local.day}日 $hm';
-      } else {
-        final mmmd = DateFormat.MMMd(locale).format(local);
-        timeStr = '$mmmd, $hm';
-      }
-    } else {
-      if (isZh) {
-        timeStr = '${local.year}年${local.month}月${local.day}日';
-      } else {
-        timeStr = DateFormat('yyyy-MM-dd HH:mm').format(local);
-      }
-    }
-
-    return l10n.updatedAt(timeStr);
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -114,7 +79,11 @@ class _PasswordTemplateViewState extends State<PasswordTemplateView> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         // 1. Header card
-        _buildHeaderCard(context, title, theme, colorScheme, l10n),
+        TemplateHeaderCard(
+          title: title,
+          icon: Icons.vpn_key_rounded,
+          onEdit: widget.onEdit,
+        ),
         const SizedBox(height: 16),
 
         // 2. Field card (Surface container, rounded 16)
@@ -153,79 +122,9 @@ class _PasswordTemplateViewState extends State<PasswordTemplateView> {
         ),
 
         // 5. Updated at relative time
-        if (widget.record != null) ...[
-          Padding(
-            padding: const EdgeInsets.only(top: 16, bottom: 8),
-            child: Center(
-              child: Text(
-                _formatUpdatedAt(widget.record!.updatedAt, context),
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
-                ),
-              ),
-            ),
-          ),
-        ],
+        if (widget.record != null)
+          UpdatedAtText(dateTime: widget.record!.updatedAt),
       ],
-    );
-  }
-
-  Widget _buildHeaderCard(
-    BuildContext context,
-    String title,
-    ThemeData theme,
-    ColorScheme colorScheme,
-    AppLocalizations l10n,
-  ) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.6),
-        ),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Rounded square key icon
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: colorScheme.primaryContainer,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              Icons.vpn_key_rounded,
-              color: colorScheme.primary,
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: 14),
-          // Title
-          Expanded(
-            child: Text(
-              title,
-              style: theme.textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: colorScheme.onSurface,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          const SizedBox(width: 8),
-          // Edit button
-          IconButton(
-            icon: const Icon(Icons.edit_outlined),
-            tooltip: l10n.editInfo,
-            color: colorScheme.onSurfaceVariant,
-            onPressed: widget.onEdit,
-          ),
-        ],
-      ),
     );
   }
 
