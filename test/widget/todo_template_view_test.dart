@@ -93,14 +93,22 @@ void main() {
       (tester) async {
     await pumpApp(tester);
 
-    // 1. Create a todo record via To-do template
+    // 1. Create a todo record via To-do template (card form)
     await tester.tap(find.byTooltip('New Record'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('To-do list'));
     await tester.pumpAndSettle();
 
+    // TodoTemplateView should be rendered directly in creation mode
+    expect(find.byType(TodoTemplateView), findsOneWidget);
+    expect(find.byKey(const Key('template_title_field')), findsOneWidget);
+    expect(find.byKey(const Key('todo_item_field_0')), findsOneWidget);
+    expect(find.byKey(const Key('todo_item_field_1')), findsOneWidget);
+    expect(find.byKey(const Key('todo_item_field_2')), findsOneWidget);
+
     // Fill title
-    await tester.enterText(findByHint('Title (optional)'), 'Trip Checklist');
+    await tester.enterText(
+        find.byKey(const Key('template_title_field')), 'Trip Checklist');
 
     // Wait for auto-save debounce (500ms)
     await tester.pump(const Duration(milliseconds: 700));
