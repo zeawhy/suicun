@@ -318,7 +318,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                   ),
                   const Spacer(),
                   IconButton(
-                    icon: const Icon(Icons.close),
+                    icon: const Icon(Icons.arrow_back),
                     tooltip: l10n.cancel,
                     onPressed: () => Navigator.of(context).pop(),
                   ),
