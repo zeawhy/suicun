@@ -10,17 +10,22 @@ class TemplateHeaderCard extends StatelessWidget {
     required this.title,
     required this.icon,
     required this.onEdit,
+    this.titleController,
+    this.onTitleChanged,
   });
 
   final String title;
   final IconData icon;
   final VoidCallback onEdit;
+  final TextEditingController? titleController;
+  final ValueChanged<String>? onTitleChanged;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final isEditing = titleController != null;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -51,24 +56,49 @@ class TemplateHeaderCard extends StatelessWidget {
           const SizedBox(width: 14),
           // Title
           Expanded(
-            child: Text(
-              title,
-              style: theme.textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: colorScheme.onSurface,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+            child: isEditing
+                ? TextField(
+                    key: const Key('template_title_field'),
+                    controller: titleController,
+                    decoration: InputDecoration(
+                      hintText: l10n.titleHint,
+                      hintStyle: TextStyle(
+                        color: colorScheme.onSurfaceVariant
+                            .withValues(alpha: 0.6),
+                      ),
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      filled: false,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onSurface,
+                    ),
+                    textInputAction: TextInputAction.next,
+                    onChanged: onTitleChanged,
+                  )
+                : Text(
+                    title,
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onSurface,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+          ),
+          if (!isEditing) ...[
+            const SizedBox(width: 8),
+            // Edit button
+            IconButton(
+              icon: const Icon(Icons.edit_outlined),
+              tooltip: l10n.editInfo,
+              color: colorScheme.onSurfaceVariant,
+              onPressed: onEdit,
             ),
-          ),
-          const SizedBox(width: 8),
-          // Edit button
-          IconButton(
-            icon: const Icon(Icons.edit_outlined),
-            tooltip: l10n.editInfo,
-            color: colorScheme.onSurfaceVariant,
-            onPressed: onEdit,
-          ),
+          ],
         ],
       ),
     );

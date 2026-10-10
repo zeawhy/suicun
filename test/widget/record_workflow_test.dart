@@ -10,6 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:suicun/core/database/app_database.dart';
 import 'package:suicun/core/database/providers.dart';
+import 'package:suicun/features/records/presentation/template_views/password_template_view.dart';
 import 'package:suicun/features/sync/sync_contract.dart';
 import 'package:suicun/main.dart';
 import 'package:suicun/shared/theme/theme_providers.dart';
@@ -270,10 +271,8 @@ void main() {
     await tester.tap(find.text('Save a password'));
     await tester.pumpAndSettle();
 
-    // The editor opens with prefilled password template body
-    expect(
-      find.textContaining('Website/App:\nUsername:\nPassword:\nNotes:'),
-      findsOneWidget,
-    );
+    // The editor opens directly with the password template card UI in creation mode
+    expect(find.byType(PasswordTemplateView), findsOneWidget);
+    expect(find.byKey(const Key('password_website_field')), findsOneWidget);
   });
 }

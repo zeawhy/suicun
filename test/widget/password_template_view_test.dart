@@ -57,21 +57,31 @@ void main() {
       (tester) async {
     await pumpApp(tester);
 
-    // 1. Create a password record
+    // 1. Create a password record via card form
     await tester.tap(find.byTooltip('New Record'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Save a password'));
     await tester.pumpAndSettle();
 
-    // Fill title
-    await tester.enterText(findByHint('Title (optional)'), 'My GitHub');
-    // Fill body with password template format
-    final passwordBody =
-        'Website/App: https://github.com\nUsername: testuser\nPassword: secret_password_123\nNotes: personal account';
+    // PasswordTemplateView should be rendered directly in creation mode
+    expect(find.byType(PasswordTemplateView), findsOneWidget);
+    expect(find.byKey(const Key('template_title_field')), findsOneWidget);
+    expect(find.byKey(const Key('password_website_field')), findsOneWidget);
+    expect(find.byKey(const Key('password_username_field')), findsOneWidget);
+    expect(find.byKey(const Key('password_password_field')), findsOneWidget);
+    expect(find.byKey(const Key('password_notes_field')), findsOneWidget);
+
+    // Fill title and fields directly inside the card form
     await tester.enterText(
-      findByHint("Write down info you'll want to find later…"),
-      passwordBody,
-    );
+        find.byKey(const Key('template_title_field')), 'My GitHub');
+    await tester.enterText(
+        find.byKey(const Key('password_website_field')), 'https://github.com');
+    await tester.enterText(
+        find.byKey(const Key('password_username_field')), 'testuser');
+    await tester.enterText(
+        find.byKey(const Key('password_password_field')), 'secret_password_123');
+    await tester.enterText(
+        find.byKey(const Key('password_notes_field')), 'personal account');
 
     // Wait for auto-save debounce (500ms)
     await tester.pump(const Duration(milliseconds: 700));
