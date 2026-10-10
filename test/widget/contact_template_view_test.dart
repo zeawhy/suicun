@@ -128,20 +128,34 @@ void main() {
         (tester) async {
       await pumpApp(tester);
 
-      // 1. Create a contact record
+      // 1. Create a contact record via card form
       await tester.tap(find.byTooltip('New Record'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Contact'));
       await tester.pumpAndSettle();
 
-      // Enter title and body
-      await tester.enterText(findByHint('Title (optional)'), 'Alice Card');
-      final contactBody =
-          'Name: Alice Smith\nPhone: 13800138000\nEmail: alice@example.com\nAddress: 42 Silicon Way\nNotes: Met at conference';
+      // ContactTemplateView should be rendered directly in creation mode
+      expect(find.byType(ContactTemplateView), findsOneWidget);
+      expect(find.byKey(const Key('template_title_field')), findsOneWidget);
+      expect(find.byKey(const Key('contact_name_field')), findsOneWidget);
+      expect(find.byKey(const Key('contact_phone_field')), findsOneWidget);
+      expect(find.byKey(const Key('contact_email_field')), findsOneWidget);
+      expect(find.byKey(const Key('contact_address_field')), findsOneWidget);
+      expect(find.byKey(const Key('contact_notes_field')), findsOneWidget);
+
+      // Enter title and fields directly into the card form
       await tester.enterText(
-        findByHint("Write down info you'll want to find later…"),
-        contactBody,
-      );
+          find.byKey(const Key('template_title_field')), 'Alice Card');
+      await tester.enterText(
+          find.byKey(const Key('contact_name_field')), 'Alice Smith');
+      await tester.enterText(
+          find.byKey(const Key('contact_phone_field')), '13800138000');
+      await tester.enterText(
+          find.byKey(const Key('contact_email_field')), 'alice@example.com');
+      await tester.enterText(
+          find.byKey(const Key('contact_address_field')), '42 Silicon Way');
+      await tester.enterText(
+          find.byKey(const Key('contact_notes_field')), 'Met at conference');
 
       // Auto-save debounce
       await tester.pump(const Duration(milliseconds: 700));

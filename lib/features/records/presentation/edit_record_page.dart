@@ -479,9 +479,8 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
     final isContactTemplateRecord = !isPasswordTemplateRecord &&
         !isIdeaTemplateRecord &&
         !isTodoTemplateRecord &&
-        !_isNew &&
-        !_bodyEditing &&
-        parseContactTemplate(_bodyController.text) != null;
+        parseContactTemplate(_bodyController.text) != null &&
+        (_isNew || !_bodyEditing);
     final isBlankTemplateRecord = !_isNew &&
         !_bodyEditing &&
         !isPasswordTemplateRecord &&
@@ -758,8 +757,17 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
                           ? SingleChildScrollView(
                               padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
                               child: ContactTemplateView(
-                                data: parseContactTemplate(_bodyController.text)!,
+                                data: parseContactTemplate(_bodyController.text) ??
+                                    const ContactTemplateData(),
                                 record: record,
+                                rawBody: _bodyController.text,
+                                isEditing: _isNew,
+                                titleController: _isNew ? _titleController : null,
+                                onTitleChanged: _isNew ? (_) => _onChanged() : null,
+                                onBodyChanged: (newBody) {
+                                  _bodyController.text = newBody;
+                                  _onChanged();
+                                },
                                 onEdit: () => setState(() {
                                   _bodyEditing = true;
                                   _bodyFocusNode.requestFocus();

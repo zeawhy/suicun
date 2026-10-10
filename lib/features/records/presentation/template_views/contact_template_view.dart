@@ -10,7 +10,7 @@ import 'package:suicun/features/records/presentation/template_views/template_hea
 import 'package:suicun/features/records/presentation/template_views/updated_at_text.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
 
-class ContactTemplateView extends StatelessWidget {
+class ContactTemplateView extends StatefulWidget {
   const ContactTemplateView({
     super.key,
     required this.data,
@@ -19,6 +19,11 @@ class ContactTemplateView extends StatelessWidget {
     required this.categoryRow,
     required this.tagRow,
     this.suggestionRow,
+    this.isEditing = false,
+    this.titleController,
+    this.onTitleChanged,
+    this.onBodyChanged,
+    this.rawBody,
   });
 
   final ContactTemplateData data;
@@ -27,6 +32,92 @@ class ContactTemplateView extends StatelessWidget {
   final Widget categoryRow;
   final Widget tagRow;
   final Widget? suggestionRow;
+  final bool isEditing;
+  final TextEditingController? titleController;
+  final ValueChanged<String>? onTitleChanged;
+  final ValueChanged<String>? onBodyChanged;
+  final String? rawBody;
+
+  @override
+  State<ContactTemplateView> createState() => _ContactTemplateViewState();
+}
+
+class _ContactTemplateViewState extends State<ContactTemplateView> {
+  late final TextEditingController _nameController;
+  late final TextEditingController _phoneController;
+  late final TextEditingController _emailController;
+  late final TextEditingController _addressController;
+  late final TextEditingController _notesController;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.data.name ?? '');
+    _phoneController = TextEditingController(text: widget.data.phone ?? '');
+    _emailController = TextEditingController(text: widget.data.email ?? '');
+    _addressController = TextEditingController(text: widget.data.address ?? '');
+    _notesController = TextEditingController(text: widget.data.notes ?? '');
+  }
+
+  @override
+  void didUpdateWidget(ContactTemplateView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isEditing) {
+      if (widget.data.name != null &&
+          widget.data.name != _nameController.text) {
+        _nameController.text = widget.data.name!;
+      }
+      if (widget.data.phone != null &&
+          widget.data.phone != _phoneController.text) {
+        _phoneController.text = widget.data.phone!;
+      }
+      if (widget.data.email != null &&
+          widget.data.email != _emailController.text) {
+        _emailController.text = widget.data.email!;
+      }
+      if (widget.data.address != null &&
+          widget.data.address != _addressController.text) {
+        _addressController.text = widget.data.address!;
+      }
+      if (widget.data.notes != null &&
+          widget.data.notes != _notesController.text) {
+        _notesController.text = widget.data.notes!;
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _phoneController.dispose();
+    _emailController.dispose();
+    _addressController.dispose();
+    _notesController.dispose();
+    super.dispose();
+  }
+
+  void _syncBody() {
+    final raw = widget.rawBody ?? '';
+    final isEnglish = raw.contains('Name') ||
+        raw.contains('name') ||
+        raw.contains('Phone:') ||
+        raw.contains('Email:');
+    final String body;
+    if (isEnglish) {
+      body = 'Name: ${_nameController.text}\n'
+          'Phone: ${_phoneController.text}\n'
+          'Email: ${_emailController.text}\n'
+          'Address: ${_addressController.text}\n'
+          'Notes: ${_notesController.text}';
+    } else {
+      body = '姓名：${_nameController.text}\n'
+          '电话：${_phoneController.text}\n'
+          '邮箱：${_emailController.text}\n'
+          '地址：${_addressController.text}\n'
+          '备注：${_notesController.text}';
+    }
+    widget.onBodyChanged?.call(body);
+  }
 
   void _copyText(
     BuildContext context,
@@ -109,15 +200,15 @@ class ContactTemplateView extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    final name = data.name;
-    final phone = data.phone;
-    final email = data.email;
-    final address = data.address;
-    final notes = data.notes;
+    final name = widget.data.name;
+    final phone = widget.data.phone;
+    final email = widget.data.email;
+    final address = widget.data.address;
+    final notes = widget.data.notes;
 
     final hasName = name != null && name.trim().isNotEmpty;
-    final fallbackTitle = record?.title.isNotEmpty == true
-        ? record!.title
+    final fallbackTitle = widget.record?.title.isNotEmpty == true
+        ? widget.record!.title
         : l10n.untitledRecord;
     final headerTitle = hasName ? name.trim() : fallbackTitle;
 
@@ -128,14 +219,16 @@ class ContactTemplateView extends StatelessWidget {
         TemplateHeaderCard(
           title: headerTitle,
           icon: Icons.person_outline,
-          onEdit: onEdit,
+          onEdit: widget.onEdit,
+          titleController: widget.titleController,
+          onTitleChanged: widget.onTitleChanged,
         ),
         const SizedBox(height: 16),
 
         // 2. Contact fields card
         _buildContactFieldsCard(
           context,
-          showNameField: !hasName,
+          showNameField: widget.isEditing || !hasName,
           name: name,
           phone: phone,
           email: email,
@@ -145,10 +238,10 @@ class ContactTemplateView extends StatelessWidget {
           l10n: l10n,
         ),
 
-        // 3. Notes card (independent, hidden if empty)
-        if (notes != null && notes.trim().isNotEmpty) ...[
+        // 3. Notes card (independent, hidden if empty when reading)
+        if (widget.isEditing || (notes != null && notes.trim().isNotEmpty)) ...[
           const SizedBox(height: 16),
-          _buildNotesCard(context, notes.trim(), theme, colorScheme, l10n),
+          _buildNotesCard(context, notes?.trim() ?? '', theme, colorScheme, l10n),
         ],
 
         const SizedBox(height: 16),
@@ -164,22 +257,45 @@ class ContactTemplateView extends StatelessWidget {
           ),
           child: Column(
             children: [
-              categoryRow,
-              if (suggestionRow != null) suggestionRow!,
+              widget.categoryRow,
+              if (widget.suggestionRow != null) widget.suggestionRow!,
               Divider(
                 height: 1,
                 indent: 16,
                 endIndent: 16,
                 color: colorScheme.outlineVariant.withValues(alpha: 0.5),
               ),
-              tagRow,
+              widget.tagRow,
             ],
           ),
         ),
 
-        // 5. Updated at relative time
-        if (record != null)
-          UpdatedAtText(dateTime: record!.updatedAt),
+        // 5. Updated at relative time or auto-save hint
+        if (widget.isEditing)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(4, 10, 4, 14),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.cloud_done_outlined,
+                  size: 14,
+                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    l10n.autoSaveHint,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color:
+                          colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          )
+        else if (widget.record != null)
+          UpdatedAtText(dateTime: widget.record!.updatedAt),
       ],
     );
   }
@@ -204,7 +320,7 @@ class ContactTemplateView extends StatelessWidget {
 
     final fields = <Widget>[];
 
-    // Optional Name field (if name is empty)
+    // Name field
     if (showNameField) {
       fields.add(
         Padding(
@@ -219,12 +335,36 @@ class ContactTemplateView extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 4),
-              Text(
-                l10n.notFilled,
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+              if (widget.isEditing)
+                TextField(
+                  key: const Key('contact_name_field'),
+                  controller: _nameController,
+                  decoration: InputDecoration(
+                    hintText: l10n.notFilled,
+                    hintStyle: TextStyle(
+                      color: colorScheme.onSurfaceVariant
+                          .withValues(alpha: 0.5),
+                    ),
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    filled: false,
+                    isDense: true,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: colorScheme.onSurface,
+                  ),
+                  textInputAction: TextInputAction.next,
+                  onChanged: (_) => _syncBody(),
+                )
+              else
+                Text(
+                  l10n.notFilled,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                  ),
                 ),
-              ),
             ],
           ),
         ),
@@ -250,7 +390,31 @@ class ContactTemplateView extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  if (hasPhone)
+                  if (widget.isEditing)
+                    TextField(
+                      key: const Key('contact_phone_field'),
+                      controller: _phoneController,
+                      keyboardType: TextInputType.phone,
+                      decoration: InputDecoration(
+                        hintText: l10n.notFilled,
+                        hintStyle: TextStyle(
+                          color: colorScheme.onSurfaceVariant
+                              .withValues(alpha: 0.5),
+                        ),
+                        border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        filled: false,
+                        isDense: true,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        color: colorScheme.onSurface,
+                      ),
+                      textInputAction: TextInputAction.next,
+                      onChanged: (_) => _syncBody(),
+                    )
+                  else if (hasPhone)
                     SelectableText(
                       trimmedPhone,
                       style: theme.textTheme.bodyLarge?.copyWith(
@@ -267,7 +431,7 @@ class ContactTemplateView extends StatelessWidget {
                 ],
               ),
             ),
-            if (hasPhone)
+            if (!widget.isEditing && hasPhone)
               IconButton(
                 icon: const Icon(Icons.phone_outlined, size: 20),
                 tooltip: l10n.fieldPhone,
@@ -298,7 +462,31 @@ class ContactTemplateView extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  if (hasEmail)
+                  if (widget.isEditing)
+                    TextField(
+                      key: const Key('contact_email_field'),
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: InputDecoration(
+                        hintText: l10n.notFilled,
+                        hintStyle: TextStyle(
+                          color: colorScheme.onSurfaceVariant
+                              .withValues(alpha: 0.5),
+                        ),
+                        border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        filled: false,
+                        isDense: true,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        color: colorScheme.onSurface,
+                      ),
+                      textInputAction: TextInputAction.next,
+                      onChanged: (_) => _syncBody(),
+                    )
+                  else if (hasEmail)
                     SelectableText(
                       trimmedEmail,
                       style: theme.textTheme.bodyLarge?.copyWith(
@@ -315,7 +503,7 @@ class ContactTemplateView extends StatelessWidget {
                 ],
               ),
             ),
-            if (hasEmail)
+            if (!widget.isEditing && hasEmail)
               IconButton(
                 icon: const Icon(Icons.email_outlined, size: 20),
                 tooltip: l10n.fieldEmail,
@@ -347,7 +535,30 @@ class ContactTemplateView extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  if (hasAddress)
+                  if (widget.isEditing)
+                    TextField(
+                      key: const Key('contact_address_field'),
+                      controller: _addressController,
+                      decoration: InputDecoration(
+                        hintText: l10n.notFilled,
+                        hintStyle: TextStyle(
+                          color: colorScheme.onSurfaceVariant
+                              .withValues(alpha: 0.5),
+                        ),
+                        border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        filled: false,
+                        isDense: true,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        color: colorScheme.onSurface,
+                      ),
+                      textInputAction: TextInputAction.next,
+                      onChanged: (_) => _syncBody(),
+                    )
+                  else if (hasAddress)
                     SelectableText(
                       trimmedAddress,
                       style: theme.textTheme.bodyLarge?.copyWith(
@@ -364,7 +575,7 @@ class ContactTemplateView extends StatelessWidget {
                 ],
               ),
             ),
-            if (hasAddress)
+            if (!widget.isEditing && hasAddress)
               IconButton(
                 icon: const Icon(Icons.copy_rounded, size: 20),
                 tooltip: l10n.copy,
@@ -422,13 +633,39 @@ class ContactTemplateView extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 6),
-          SelectableText(
-            notes,
-            style: theme.textTheme.bodyLarge?.copyWith(
-              color: colorScheme.onSurface,
-              height: 1.5,
+          if (widget.isEditing)
+            TextField(
+              key: const Key('contact_notes_field'),
+              controller: _notesController,
+              minLines: 2,
+              maxLines: null,
+              decoration: InputDecoration(
+                hintText: l10n.notFilled,
+                hintStyle: TextStyle(
+                  color: colorScheme.onSurfaceVariant
+                      .withValues(alpha: 0.5),
+                ),
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                filled: false,
+                isDense: true,
+                contentPadding: EdgeInsets.zero,
+              ),
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: colorScheme.onSurface,
+                height: 1.5,
+              ),
+              onChanged: (_) => _syncBody(),
+            )
+          else
+            SelectableText(
+              notes,
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: colorScheme.onSurface,
+                height: 1.5,
+              ),
             ),
-          ),
         ],
       ),
     );
