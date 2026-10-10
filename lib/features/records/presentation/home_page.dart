@@ -783,9 +783,26 @@ class _HomePageState extends ConsumerState<HomePage> {
                           maxWidth: constraints.maxWidth,
                           child: SizedBox(
                             width: constraints.maxWidth,
-                            child: IgnorePointer(
-                              ignoring: _settingsOpen,
-                              child: mainContent,
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                IgnorePointer(
+                                  ignoring: _settingsOpen,
+                                  child: mainContent,
+                                ),
+                                Positioned.fill(
+                                  child: IgnorePointer(
+                                    child: AnimatedOpacity(
+                                      opacity: _settingsOpen ? 1.0 : 0.0,
+                                      duration: _sidebarAnimationDuration,
+                                      curve: _sidebarAnimationCurve,
+                                      child: const ColoredBox(
+                                        color: Colors.black54,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
