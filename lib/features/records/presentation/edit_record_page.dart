@@ -470,9 +470,8 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
         parsePasswordTemplate(_bodyController.text) != null &&
             (_isNew || !_bodyEditing);
     final isIdeaTemplateRecord = !isPasswordTemplateRecord &&
-        !_isNew &&
-        !_bodyEditing &&
-        parseIdeaTemplate(_bodyController.text) != null;
+        parseIdeaTemplate(_bodyController.text) != null &&
+        (_isNew || !_bodyEditing);
     final isTodoTemplateRecord = !isPasswordTemplateRecord &&
         !isIdeaTemplateRecord &&
         !_isNew &&
@@ -711,8 +710,17 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
                   ? SingleChildScrollView(
                       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
                       child: IdeaTemplateView(
-                        data: parseIdeaTemplate(_bodyController.text)!,
+                        data: parseIdeaTemplate(_bodyController.text) ??
+                            const IdeaTemplateData(),
                         record: record,
+                        rawBody: _bodyController.text,
+                        isEditing: _isNew,
+                        titleController: _isNew ? _titleController : null,
+                        onTitleChanged: _isNew ? (_) => _onChanged() : null,
+                        onBodyChanged: (newBody) {
+                          _bodyController.text = newBody;
+                          _onChanged();
+                        },
                         onEdit: () => setState(() {
                           _bodyEditing = true;
                           _bodyFocusNode.requestFocus();

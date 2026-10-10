@@ -9,7 +9,7 @@ import 'package:suicun/features/records/presentation/template_views/template_hea
 import 'package:suicun/features/records/presentation/template_views/updated_at_text.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
 
-class IdeaTemplateView extends StatelessWidget {
+class IdeaTemplateView extends StatefulWidget {
   const IdeaTemplateView({
     super.key,
     required this.data,
@@ -18,6 +18,11 @@ class IdeaTemplateView extends StatelessWidget {
     required this.categoryRow,
     required this.tagRow,
     this.suggestionRow,
+    this.isEditing = false,
+    this.titleController,
+    this.onTitleChanged,
+    this.onBodyChanged,
+    this.rawBody,
   });
 
   final IdeaTemplateData data;
@@ -26,8 +31,77 @@ class IdeaTemplateView extends StatelessWidget {
   final Widget categoryRow;
   final Widget tagRow;
   final Widget? suggestionRow;
+  final bool isEditing;
+  final TextEditingController? titleController;
+  final ValueChanged<String>? onTitleChanged;
+  final ValueChanged<String>? onBodyChanged;
+  final String? rawBody;
 
   static final _urlRegExp = RegExp(r'^https?://[^\s]+$', caseSensitive: false);
+
+  @override
+  State<IdeaTemplateView> createState() => _IdeaTemplateViewState();
+}
+
+class _IdeaTemplateViewState extends State<IdeaTemplateView> {
+  late final TextEditingController _ideaController;
+  late final TextEditingController _sourceController;
+  late final TextEditingController _nextActionController;
+
+  @override
+  void initState() {
+    super.initState();
+    _ideaController = TextEditingController(text: widget.data.idea ?? '');
+    _sourceController = TextEditingController(text: widget.data.source ?? '');
+    _nextActionController =
+        TextEditingController(text: widget.data.nextAction ?? '');
+  }
+
+  @override
+  void didUpdateWidget(IdeaTemplateView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isEditing) {
+      if (widget.data.idea != null &&
+          widget.data.idea != _ideaController.text) {
+        _ideaController.text = widget.data.idea!;
+      }
+      if (widget.data.source != null &&
+          widget.data.source != _sourceController.text) {
+        _sourceController.text = widget.data.source!;
+      }
+      if (widget.data.nextAction != null &&
+          widget.data.nextAction != _nextActionController.text) {
+        _nextActionController.text = widget.data.nextAction!;
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _ideaController.dispose();
+    _sourceController.dispose();
+    _nextActionController.dispose();
+    super.dispose();
+  }
+
+  void _syncBody() {
+    final raw = widget.rawBody ?? '';
+    final isEnglish = raw.contains('Idea') ||
+        raw.contains('idea') ||
+        raw.contains('Source:') ||
+        raw.contains('Next action:');
+    final String body;
+    if (isEnglish) {
+      body = 'Idea: ${_ideaController.text}\n'
+          'Source: ${_sourceController.text}\n'
+          'Next action: ${_nextActionController.text}';
+    } else {
+      body = '灵感：${_ideaController.text}\n'
+          '来源：${_sourceController.text}\n'
+          '下一步行动：${_nextActionController.text}';
+    }
+    widget.onBodyChanged?.call(body);
+  }
 
   void _copyText(
     BuildContext context,
@@ -52,12 +126,12 @@ class IdeaTemplateView extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    final idea = data.idea;
-    final source = data.source;
-    final nextAction = data.nextAction;
+    final idea = widget.data.idea;
+    final source = widget.data.source;
+    final nextAction = widget.data.nextAction;
 
-    final title = record?.title.isNotEmpty == true
-        ? record!.title
+    final title = widget.record?.title.isNotEmpty == true
+        ? widget.record!.title
         : l10n.untitledRecord;
 
     return Column(
@@ -67,7 +141,9 @@ class IdeaTemplateView extends StatelessWidget {
         TemplateHeaderCard(
           title: title,
           icon: Icons.lightbulb_outline,
-          onEdit: onEdit,
+          onEdit: widget.onEdit,
+          titleController: widget.titleController,
+          onTitleChanged: widget.onTitleChanged,
         ),
         const SizedBox(height: 16),
 
@@ -94,22 +170,45 @@ class IdeaTemplateView extends StatelessWidget {
           ),
           child: Column(
             children: [
-              categoryRow,
-              if (suggestionRow != null) suggestionRow!,
+              widget.categoryRow,
+              if (widget.suggestionRow != null) widget.suggestionRow!,
               Divider(
                 height: 1,
                 indent: 16,
                 endIndent: 16,
                 color: colorScheme.outlineVariant.withValues(alpha: 0.5),
               ),
-              tagRow,
+              widget.tagRow,
             ],
           ),
         ),
 
-        // 6. Updated at relative time
-        if (record != null)
-          UpdatedAtText(dateTime: record!.updatedAt),
+        // 6. Updated at relative time or auto-save hint
+        if (widget.isEditing)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(4, 10, 4, 14),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.cloud_done_outlined,
+                  size: 14,
+                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    l10n.autoSaveHint,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color:
+                          colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          )
+        else if (widget.record != null)
+          UpdatedAtText(dateTime: widget.record!.updatedAt),
       ],
     );
   }
@@ -155,7 +254,33 @@ class IdeaTemplateView extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    if (hasContent)
+                    if (widget.isEditing)
+                      TextField(
+                        key: const Key('idea_idea_field'),
+                        controller: _ideaController,
+                        minLines: 2,
+                        maxLines: null,
+                        decoration: InputDecoration(
+                          hintText: l10n.notFilled,
+                          hintStyle: TextStyle(
+                            color: colorScheme.onSurfaceVariant
+                                .withValues(alpha: 0.5),
+                          ),
+                          border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          filled: false,
+                          isDense: true,
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: colorScheme.onSurface,
+                          height: 1.5,
+                        ),
+                        onChanged: (_) => _syncBody(),
+                      )
+                    else if (hasContent)
                       SelectableText(
                         idea,
                         style: theme.textTheme.titleMedium?.copyWith(
@@ -190,7 +315,7 @@ class IdeaTemplateView extends StatelessWidget {
     AppLocalizations l10n,
   ) {
     final hasSource = source != null && source.isNotEmpty;
-    final isUrl = hasSource && _urlRegExp.hasMatch(source.trim());
+    final isUrl = hasSource && IdeaTemplateView._urlRegExp.hasMatch(source.trim());
 
     return Container(
       decoration: BoxDecoration(
@@ -215,7 +340,30 @@ class IdeaTemplateView extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 4),
-                if (!hasSource)
+                if (widget.isEditing)
+                  TextField(
+                    key: const Key('idea_source_field'),
+                    controller: _sourceController,
+                    decoration: InputDecoration(
+                      hintText: l10n.notFilled,
+                      hintStyle: TextStyle(
+                        color: colorScheme.onSurfaceVariant
+                            .withValues(alpha: 0.5),
+                      ),
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      filled: false,
+                      isDense: true,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      color: colorScheme.onSurface,
+                    ),
+                    textInputAction: TextInputAction.next,
+                    onChanged: (_) => _syncBody(),
+                  )
+                else if (!hasSource)
                   Text(
                     l10n.notFilled,
                     style: theme.textTheme.bodyLarge?.copyWith(
@@ -244,7 +392,7 @@ class IdeaTemplateView extends StatelessWidget {
               ],
             ),
           ),
-          if (hasSource) ...[
+          if (!widget.isEditing && hasSource) ...[
             const SizedBox(width: 8),
             IconButton(
               icon: const Icon(Icons.copy_rounded, size: 20),
@@ -308,7 +456,29 @@ class IdeaTemplateView extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 4),
-                if (hasAction)
+                if (widget.isEditing)
+                  TextField(
+                    key: const Key('idea_next_action_field'),
+                    controller: _nextActionController,
+                    decoration: InputDecoration(
+                      hintText: l10n.notFilled,
+                      hintStyle: TextStyle(
+                        color: colorScheme.onSurfaceVariant
+                            .withValues(alpha: 0.5),
+                      ),
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      filled: false,
+                      isDense: true,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      color: colorScheme.onSurface,
+                    ),
+                    onChanged: (_) => _syncBody(),
+                  )
+                else if (hasAction)
                   SelectableText(
                     nextAction,
                     style: theme.textTheme.bodyLarge?.copyWith(

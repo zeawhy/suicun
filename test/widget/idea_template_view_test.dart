@@ -59,21 +59,29 @@ void main() {
       (tester) async {
     await pumpApp(tester);
 
-    // 1. Create an idea record
+    // 1. Create an idea record via card form
     await tester.tap(find.byTooltip('New Record'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Quick idea'));
     await tester.pumpAndSettle();
 
-    // Fill title
-    await tester.enterText(findByHint('Title (optional)'), 'App Redesign');
-    // Fill body with idea template format
-    final ideaBody =
-        'Idea: Build a modern reader UI\nSource: Team brainstorming\nNext action: Create mockup in Figma';
+    // IdeaTemplateView should be rendered directly in creation mode
+    expect(find.byType(IdeaTemplateView), findsOneWidget);
+    expect(find.byKey(const Key('template_title_field')), findsOneWidget);
+    expect(find.byKey(const Key('idea_idea_field')), findsOneWidget);
+    expect(find.byKey(const Key('idea_source_field')), findsOneWidget);
+    expect(find.byKey(const Key('idea_next_action_field')), findsOneWidget);
+
+    // Fill title and fields directly inside the card form
     await tester.enterText(
-      findByHint("Write down info you'll want to find later…"),
-      ideaBody,
-    );
+        find.byKey(const Key('template_title_field')), 'App Redesign');
+    await tester.enterText(
+        find.byKey(const Key('idea_idea_field')), 'Build a modern reader UI');
+    await tester.enterText(
+        find.byKey(const Key('idea_source_field')), 'Team brainstorming');
+    await tester.enterText(
+        find.byKey(const Key('idea_next_action_field')),
+        'Create mockup in Figma');
 
     // Wait for auto-save debounce (500ms)
     await tester.pump(const Duration(milliseconds: 700));
