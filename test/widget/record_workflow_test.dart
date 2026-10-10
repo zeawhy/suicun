@@ -192,9 +192,7 @@ void main() {
     expect(find.text('Doomed'), findsNothing); // left the trash list
 
     // Back to home: record is back
-    await tester.pageBack(); // trash -> settings
-    await tester.pumpAndSettle();
-    await tester.pageBack(); // settings -> home
+    await tester.pageBack(); // trash -> home
     await tester.pumpAndSettle();
     expect(find.text('Doomed'), findsOneWidget);
   });
@@ -256,7 +254,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // App still builds fine in dark mode
-    expect(find.text('Settings'), findsOneWidget);
+    expect(find.text('Settings'), findsWidgets);
   });
 
   testWidgets('template selector pre-fills password template', (tester) async {

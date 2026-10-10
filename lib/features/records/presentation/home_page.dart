@@ -42,6 +42,35 @@ class _HomePageState extends ConsumerState<HomePage> {
   double _savedOffset = 0.0;
   bool _isMultiSelect = false;
   final Set<String> _selectedIds = {};
+  bool _settingsOpen = false;
+  bool _settingsMounted = false;
+
+  static const double _sidebarWidth = 320.0;
+  static const Duration _sidebarAnimationDuration =
+      Duration(milliseconds: 280);
+  static const Curve _sidebarAnimationCurve = Curves.fastOutSlowIn;
+
+  void _openSettings() {
+    setState(() {
+      _settingsMounted = true;
+      _settingsOpen = true;
+    });
+  }
+
+  void _closeSettings() {
+    if (!_settingsOpen) return;
+    setState(() {
+      _settingsOpen = false;
+    });
+  }
+
+  void _toggleSettings() {
+    if (_settingsOpen) {
+      _closeSettings();
+    } else {
+      _openSettings();
+    }
+  }
 
   @override
   void dispose() {
@@ -301,36 +330,7 @@ class _HomePageState extends ConsumerState<HomePage> {
       RecordSortMode.byTitle => l10n.sortTitleAZ,
     };
 
-    return Scaffold(
-      drawer: Drawer(
-        width: 320,
-        child: SafeArea(
-          child: SettingsView(
-            header: Padding(
-              padding: const EdgeInsets.fromLTRB(4, 8, 4, 12),
-              child: Row(
-                children: [
-                  Text(
-                    l10n.settings,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back),
-                    tooltip: l10n.cancel,
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                ],
-              ),
-            ),
-            onNavigate: () {
-              Navigator.of(context).pop();
-            },
-          ),
-        ),
-      ),
+    final mainContent = Scaffold(
       body: SafeArea(
         child: Column(
           children: [
@@ -621,37 +621,34 @@ class _HomePageState extends ConsumerState<HomePage> {
                   ),
                   child: Row(
                     children: [
-                      Builder(
-                        builder: (scaffoldContext) => Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(8),
-                            onTap: () =>
-                                Scaffold.of(scaffoldContext).openDrawer(),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 8,
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.settings_outlined,
-                                    size: 20,
+                      Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(8),
+                          onTap: _toggleSettings,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 8,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.settings_outlined,
+                                  size: 20,
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  l10n.settings,
+                                  style: TextStyle(
+                                    fontSize: 14,
                                     color: colorScheme.onSurfaceVariant,
+                                    fontWeight: FontWeight.w500,
                                   ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    l10n.settings,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: colorScheme.onSurfaceVariant,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -692,6 +689,115 @@ class _HomePageState extends ConsumerState<HomePage> {
               ),
             )
           : null,
+    );
+
+    return PopScope(
+      canPop: !_settingsOpen,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        if (_settingsOpen) {
+          _closeSettings();
+        }
+      },
+      child: Material(
+        color: colorScheme.surface,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                AnimatedContainer(
+                  duration: _sidebarAnimationDuration,
+                  curve: _sidebarAnimationCurve,
+                  width: _settingsOpen ? _sidebarWidth : 0.0,
+                  onEnd: () {
+                    if (!_settingsOpen && mounted) {
+                      setState(() {
+                        _settingsMounted = false;
+                      });
+                    }
+                  },
+                  clipBehavior: Clip.hardEdge,
+                  decoration: BoxDecoration(
+                    color: colorScheme.surface,
+                    border: _settingsOpen
+                        ? Border(
+                            right: BorderSide(
+                              color: colorScheme.outlineVariant,
+                              width: 1,
+                            ),
+                          )
+                        : null,
+                  ),
+                  child: OverflowBox(
+                    minWidth: _sidebarWidth,
+                    maxWidth: _sidebarWidth,
+                    alignment: Alignment.topLeft,
+                    child: SizedBox(
+                      width: _sidebarWidth,
+                      child: _settingsMounted
+                          ? Material(
+                              color: colorScheme.surface,
+                              child: SafeArea(
+                                child: SettingsView(
+                                  header: Padding(
+                                    padding:
+                                        const EdgeInsets.fromLTRB(4, 8, 4, 12),
+                                    child: Row(
+                                      children: [
+                                        Text(
+                                          l10n.settings,
+                                          style: theme.textTheme.titleLarge
+                                              ?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const Spacer(),
+                                        IconButton(
+                                          icon: const Icon(Icons.arrow_back),
+                                          tooltip: l10n.cancel,
+                                          onPressed: _closeSettings,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  onNavigate: _closeSettings,
+                                ),
+                              ),
+                            )
+                          : const SizedBox.shrink(),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: AnimatedContainer(
+                    duration: _sidebarAnimationDuration,
+                    curve: _sidebarAnimationCurve,
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: _settingsOpen ? _closeSettings : null,
+                      child: ClipRect(
+                        child: OverflowBox(
+                          alignment: Alignment.topLeft,
+                          minWidth: 0,
+                          maxWidth: constraints.maxWidth,
+                          child: SizedBox(
+                            width: constraints.maxWidth,
+                            child: IgnorePointer(
+                              ignoring: _settingsOpen,
+                              child: mainContent,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
     );
   }
 }

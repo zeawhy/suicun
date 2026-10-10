@@ -14,6 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:suicun/core/database/app_database.dart';
 import 'package:suicun/core/database/providers.dart';
 import 'package:suicun/features/records/data/record_repository.dart';
+import 'package:suicun/features/settings/presentation/settings_page.dart';
 import 'package:suicun/features/sync/sync_contract.dart';
 import 'package:suicun/main.dart';
 
@@ -121,38 +122,56 @@ void main() {
   });
 
   testWidgets(
-      'd. bottom-left settings button opens drawer, closes, and navigates to sub-items',
+      'd. bottom-left settings button opens push sidebar, closes, and navigates to sub-items',
       (tester) async {
     await pumpApp(tester, db);
 
     expect(find.byIcon(Icons.settings_outlined), findsOneWidget);
     expect(find.text('Settings'), findsOneWidget);
 
-    // Settings content is not visible before drawer is opened
+    // Settings content is not visible before sidebar is opened
     expect(find.text('Theme'), findsNothing);
 
-    // Tap settings button to open drawer
+    // Tap settings button to open sidebar
     await tester.tap(find.text('Settings'));
     await tester.pumpAndSettle();
 
-    // Drawer is now open with settings options
-    expect(find.byType(Drawer), findsOneWidget);
+    // Push sidebar is now open with settings options
+    expect(find.byType(SettingsView), findsOneWidget);
     expect(find.text('Theme'), findsOneWidget);
     expect(find.text('Categories'), findsOneWidget);
 
-    // Tap close button in drawer header
-    await tester.tap(find.byIcon(Icons.close));
+    // Tap close button (arrow_back) in sidebar header
+    await tester.tap(find.byIcon(Icons.arrow_back));
     await tester.pumpAndSettle();
 
-    // Drawer is closed
-    expect(find.byType(Drawer), findsNothing);
+    // Sidebar is closed
+    expect(find.byType(SettingsView), findsNothing);
 
-    // Reopen drawer
+    // Reopen sidebar
     await tester.tap(find.text('Settings'));
     await tester.pumpAndSettle();
-    expect(find.byType(Drawer), findsOneWidget);
+    expect(find.byType(SettingsView), findsOneWidget);
 
-    // Tap Categories inside drawer - drawer closes and navigates to Categories page
+    // Tap outside (on the right main content area) to close sidebar
+    await tester.tapAt(const Offset(600, 300));
+    await tester.pumpAndSettle();
+    expect(find.byType(SettingsView), findsNothing);
+
+    // Reopen sidebar and test Android back button closes sidebar
+    await tester.tap(find.text('Settings'));
+    await tester.pumpAndSettle();
+    expect(find.byType(SettingsView), findsOneWidget);
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.byType(SettingsView), findsNothing);
+
+    // Reopen sidebar and navigate to Categories
+    await tester.tap(find.text('Settings'));
+    await tester.pumpAndSettle();
+    expect(find.byType(SettingsView), findsOneWidget);
+
+    // Tap Categories inside sidebar - sidebar closes and navigates to Categories page
     await tester.tap(find.text('Categories'));
     await tester.pumpAndSettle();
 
