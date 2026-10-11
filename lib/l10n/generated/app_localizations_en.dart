@@ -946,6 +946,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get templateContactDesc => 'Name, phone, email and address';
 
   @override
+  String get templateIdDocument => 'ID Document';
+
+  @override
+  String get templateIdDocumentDesc =>
+      'ID cards, driver licenses with photos and auto-masked numbers';
+
+  @override
   String get passwordCopied => 'Password copied';
 
   @override
@@ -1055,4 +1062,97 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get fieldAddress => 'Address';
+
+  @override
+  String get recordTitleIdDocument => 'ID Document';
+
+  @override
+  String get fieldDocType => 'Document type';
+
+  @override
+  String get fieldDocName => 'Name';
+
+  @override
+  String get fieldDocNumber => 'Document number';
+
+  @override
+  String get fieldValidUntil => 'Valid until';
+
+  @override
+  String get fieldPhotoFront => 'ID photo front';
+
+  @override
+  String get fieldPhotoBack => 'ID photo back';
+
+  @override
+  String get docTypeIdCard => 'ID Card';
+
+  @override
+  String get docTypeDriverLicense => 'Driver License';
+
+  @override
+  String get docTypeVehicleLicense => 'Vehicle License';
+
+  @override
+  String get docTypePassport => 'Passport';
+
+  @override
+  String get docTypeHmtPermit => 'Exit-Entry Permit (HK/Macau)';
+
+  @override
+  String get docTypeSocialCard => 'Social Security Card';
+
+  @override
+  String get docTypePropertyCert => 'Property Certificate';
+
+  @override
+  String get docTypeOther => 'Other';
+
+  @override
+  String get docTypeCustomHint => 'Enter document type';
+
+  @override
+  String get takePhoto => 'Take photo';
+
+  @override
+  String get chooseFromGallery => 'Choose from gallery';
+
+  @override
+  String get viewPhoto => 'View photo';
+
+  @override
+  String get privacyPolicy => 'Privacy Policy';
+
+  @override
+  String get clearAllData => 'Clear all data';
+
+  @override
+  String get clearAllDataWarningTitle => 'Clear all data?';
+
+  @override
+  String get clearAllDataWarningContent =>
+      'This will delete all records, categories, tags, and ID photos. This action cannot be undone.';
+
+  @override
+  String get continueAction => 'Continue';
+
+  @override
+  String get clearAllDataConfirmTitle => 'Final confirmation';
+
+  @override
+  String get clearAllDataConfirmContent =>
+      'This action cannot be undone. All local records and ID photos will be permanently deleted.';
+
+  @override
+  String get confirmClearAllData => 'I confirm to delete all data';
+
+  @override
+  String get clearAllDataSuccess => 'All data cleared successfully';
+
+  @override
+  String get cameraRationaleTitle => 'Camera Permission';
+
+  @override
+  String get cameraRationaleMessage =>
+      'Taking photos is used to capture ID photos, which are saved only to this app\'s private storage';
 }

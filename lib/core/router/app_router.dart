@@ -10,6 +10,7 @@ import 'package:suicun/features/trash/presentation/trash_page.dart';
 import 'package:suicun/features/settings/presentation/backup_page.dart';
 import 'package:suicun/features/categories/presentation/categories_page.dart';
 import 'package:suicun/features/tags/presentation/tags_page.dart';
+import 'package:suicun/features/settings/presentation/privacy_policy_page.dart';
 
 part 'app_router.g.dart';
 
@@ -65,6 +66,10 @@ GoRouter appRouter(Ref ref) {
               GoRoute(
                 path: 'security',
                 builder: (context, state) => const SecurityPage(),
+              ),
+              GoRoute(
+                path: 'privacy',
+                builder: (context, state) => const PrivacyPolicyPage(),
               ),
             ],
           ),

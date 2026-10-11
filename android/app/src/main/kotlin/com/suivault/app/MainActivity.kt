@@ -1,4 +1,4 @@
-package com.suicun.suicun
+package com.suivault.app
 
 import io.flutter.embedding.android.FlutterFragmentActivity
 

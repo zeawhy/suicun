@@ -1826,6 +1826,18 @@ abstract class AppLocalizations {
   /// **'姓名、电话、邮箱与地址'**
   String get templateContactDesc;
 
+  /// No description provided for @templateIdDocument.
+  ///
+  /// In zh, this message translates to:
+  /// **'证件'**
+  String get templateIdDocument;
+
+  /// No description provided for @templateIdDocumentDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'身份证、驾驶证等证件照与号码，号码自动掩码'**
+  String get templateIdDocumentDesc;
+
   /// No description provided for @passwordCopied.
   ///
   /// In zh, this message translates to:
@@ -2041,6 +2053,186 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'地址'**
   String get fieldAddress;
+
+  /// No description provided for @recordTitleIdDocument.
+  ///
+  /// In zh, this message translates to:
+  /// **'证件记录'**
+  String get recordTitleIdDocument;
+
+  /// No description provided for @fieldDocType.
+  ///
+  /// In zh, this message translates to:
+  /// **'证件类型'**
+  String get fieldDocType;
+
+  /// No description provided for @fieldDocName.
+  ///
+  /// In zh, this message translates to:
+  /// **'姓名'**
+  String get fieldDocName;
+
+  /// No description provided for @fieldDocNumber.
+  ///
+  /// In zh, this message translates to:
+  /// **'证件号码'**
+  String get fieldDocNumber;
+
+  /// No description provided for @fieldValidUntil.
+  ///
+  /// In zh, this message translates to:
+  /// **'有效期至'**
+  String get fieldValidUntil;
+
+  /// No description provided for @fieldPhotoFront.
+  ///
+  /// In zh, this message translates to:
+  /// **'证件照片正面'**
+  String get fieldPhotoFront;
+
+  /// No description provided for @fieldPhotoBack.
+  ///
+  /// In zh, this message translates to:
+  /// **'证件照片反面'**
+  String get fieldPhotoBack;
+
+  /// No description provided for @docTypeIdCard.
+  ///
+  /// In zh, this message translates to:
+  /// **'身份证'**
+  String get docTypeIdCard;
+
+  /// No description provided for @docTypeDriverLicense.
+  ///
+  /// In zh, this message translates to:
+  /// **'驾驶证'**
+  String get docTypeDriverLicense;
+
+  /// No description provided for @docTypeVehicleLicense.
+  ///
+  /// In zh, this message translates to:
+  /// **'行驶证'**
+  String get docTypeVehicleLicense;
+
+  /// No description provided for @docTypePassport.
+  ///
+  /// In zh, this message translates to:
+  /// **'护照'**
+  String get docTypePassport;
+
+  /// No description provided for @docTypeHmtPermit.
+  ///
+  /// In zh, this message translates to:
+  /// **'港澳通行证'**
+  String get docTypeHmtPermit;
+
+  /// No description provided for @docTypeSocialCard.
+  ///
+  /// In zh, this message translates to:
+  /// **'社保卡'**
+  String get docTypeSocialCard;
+
+  /// No description provided for @docTypePropertyCert.
+  ///
+  /// In zh, this message translates to:
+  /// **'房产证'**
+  String get docTypePropertyCert;
+
+  /// No description provided for @docTypeOther.
+  ///
+  /// In zh, this message translates to:
+  /// **'其他'**
+  String get docTypeOther;
+
+  /// No description provided for @docTypeCustomHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入证件类型'**
+  String get docTypeCustomHint;
+
+  /// No description provided for @takePhoto.
+  ///
+  /// In zh, this message translates to:
+  /// **'拍照'**
+  String get takePhoto;
+
+  /// No description provided for @chooseFromGallery.
+  ///
+  /// In zh, this message translates to:
+  /// **'从相册选择'**
+  String get chooseFromGallery;
+
+  /// No description provided for @viewPhoto.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看大图'**
+  String get viewPhoto;
+
+  /// No description provided for @privacyPolicy.
+  ///
+  /// In zh, this message translates to:
+  /// **'隐私政策'**
+  String get privacyPolicy;
+
+  /// No description provided for @clearAllData.
+  ///
+  /// In zh, this message translates to:
+  /// **'清除全部数据'**
+  String get clearAllData;
+
+  /// No description provided for @clearAllDataWarningTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'清除全部数据？'**
+  String get clearAllDataWarningTitle;
+
+  /// No description provided for @clearAllDataWarningContent.
+  ///
+  /// In zh, this message translates to:
+  /// **'将删除所有记录、分类、标签及证件照片，不可恢复。'**
+  String get clearAllDataWarningContent;
+
+  /// No description provided for @continueAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'继续'**
+  String get continueAction;
+
+  /// No description provided for @clearAllDataConfirmTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'最终确认'**
+  String get clearAllDataConfirmTitle;
+
+  /// No description provided for @clearAllDataConfirmContent.
+  ///
+  /// In zh, this message translates to:
+  /// **'此操作无法撤销，所有本地记录及证件照片将被彻底删除。'**
+  String get clearAllDataConfirmContent;
+
+  /// No description provided for @confirmClearAllData.
+  ///
+  /// In zh, this message translates to:
+  /// **'我确认要删除全部数据'**
+  String get confirmClearAllData;
+
+  /// No description provided for @clearAllDataSuccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'已清除全部数据'**
+  String get clearAllDataSuccess;
+
+  /// No description provided for @cameraRationaleTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'相机权限说明'**
+  String get cameraRationaleTitle;
+
+  /// No description provided for @cameraRationaleMessage.
+  ///
+  /// In zh, this message translates to:
+  /// **'拍照用于拍摄证件照片，仅保存到本应用私有目录'**
+  String get cameraRationaleMessage;
 }
 
 class _AppLocalizationsDelegate

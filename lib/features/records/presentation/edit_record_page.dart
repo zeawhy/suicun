@@ -21,6 +21,7 @@ import 'package:suicun/features/records/presentation/records_notifier.dart';
 import 'package:suicun/features/records/presentation/secret_line.dart';
 import 'package:suicun/features/records/presentation/template_views/blank_template_view.dart';
 import 'package:suicun/features/records/presentation/template_views/contact_template_view.dart';
+import 'package:suicun/features/records/presentation/template_views/id_document_template_view.dart';
 import 'package:suicun/features/records/presentation/template_views/idea_template_view.dart';
 import 'package:suicun/features/records/presentation/template_views/password_template_view.dart';
 import 'package:suicun/features/records/presentation/template_views/template_detector.dart';
@@ -481,12 +482,19 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
         !isTodoTemplateRecord &&
         parseContactTemplate(_bodyController.text) != null &&
         (_isNew || !_bodyEditing);
+    final isIdDocumentTemplateRecord = !isPasswordTemplateRecord &&
+        !isIdeaTemplateRecord &&
+        !isTodoTemplateRecord &&
+        !isContactTemplateRecord &&
+        parseIdDocumentTemplate(_bodyController.text) != null &&
+        (_isNew || !_bodyEditing);
     final isBlankTemplateRecord = !_isNew &&
         !_bodyEditing &&
         !isPasswordTemplateRecord &&
         !isIdeaTemplateRecord &&
         !isTodoTemplateRecord &&
-        !isContactTemplateRecord;
+        !isContactTemplateRecord &&
+        !isIdDocumentTemplateRecord;
 
     Widget appBarTitle;
     if (showPageTitle) {
@@ -579,6 +587,32 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
         children: [
           Text(
             l10n.recordTitleContact,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: colorScheme.onSurface,
+            ),
+          ),
+          const SizedBox(height: 2),
+          _SaveStatusTitle(
+            saveState: state.saveState,
+            fontSize: 12,
+            iconSize: 14,
+            onRetry: () => ref
+                .read(editRecordProvider(widget.recordId).notifier)
+                .onInputChanged(
+                  _titleController.text,
+                  _bodyController.text,
+                ),
+          ),
+        ],
+      );
+    } else if (isIdDocumentTemplateRecord) {
+      appBarTitle = Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.recordTitleIdDocument,
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
               color: colorScheme.onSurface,
@@ -759,6 +793,30 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
                               child: ContactTemplateView(
                                 data: parseContactTemplate(_bodyController.text) ??
                                     const ContactTemplateData(),
+                                record: record,
+                                rawBody: _bodyController.text,
+                                isEditing: _isNew,
+                                titleController: _isNew ? _titleController : null,
+                                onTitleChanged: _isNew ? (_) => _onChanged() : null,
+                                onBodyChanged: (newBody) {
+                                  _bodyController.text = newBody;
+                                  _onChanged();
+                                },
+                                onEdit: () => setState(() {
+                                  _bodyEditing = true;
+                                  _bodyFocusNode.requestFocus();
+                                }),
+                                categoryRow: _buildCategoryRow(l10n, theme, colorScheme, record),
+                                suggestionRow: _buildSuggestionRow(l10n, theme, colorScheme),
+                                tagRow: _buildTagRow(l10n, theme, colorScheme, record),
+                              ),
+                            )
+                      : isIdDocumentTemplateRecord
+                          ? SingleChildScrollView(
+                              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                              child: IdDocumentTemplateView(
+                                data: parseIdDocumentTemplate(_bodyController.text) ??
+                                    const IdDocumentTemplateData(),
                                 record: record,
                                 rawBody: _bodyController.text,
                                 isEditing: _isNew,
