@@ -30,10 +30,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appLock => 'App lock';
 
   @override
-  String get appLocked => 'Suicun is locked';
+  String get appLocked => 'SuiVault is locked';
 
   @override
-  String get appName => 'Suicun';
+  String get appName => 'SuiVault';
 
   @override
   String get appTagline => 'Save it now, find it later';
@@ -772,7 +772,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get unfavorite => 'Unfavorite';
 
   @override
-  String get unlockApp => 'Unlock Suicun';
+  String get unlockApp => 'Unlock SuiVault';
 
   @override
   String get unlockAndJoin => 'Unlock & Join';

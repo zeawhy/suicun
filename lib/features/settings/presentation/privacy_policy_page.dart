@@ -15,7 +15,7 @@ const String _privacyPolicyZh = '''随存是一款本地优先的隐私笔记应
 
 数据删除：您可随时在「设置 → 清除全部数据」中彻底删除本地所有数据。''';
 
-const String _privacyPolicyEn = '''Suicun is a local-first privacy note-taking application.
+const String _privacyPolicyEn = '''SuiVault is a local-first privacy note-taking application.
 
 Data Storage: All your records and photos are stored strictly locally on your device and are never uploaded to any server. We have no user account system and do not collect or store any of your personal information.
 
