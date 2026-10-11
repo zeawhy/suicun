@@ -923,6 +923,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get templateContactDesc => '姓名、电话、邮箱与地址';
 
   @override
+  String get templateIdDocument => '证件';
+
+  @override
+  String get templateIdDocumentDesc => '身份证、驾驶证等证件照与号码，号码自动掩码';
+
+  @override
   String get passwordCopied => '密码已复制';
 
   @override
@@ -1031,4 +1037,94 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get fieldAddress => '地址';
+
+  @override
+  String get recordTitleIdDocument => '证件记录';
+
+  @override
+  String get fieldDocType => '证件类型';
+
+  @override
+  String get fieldDocName => '姓名';
+
+  @override
+  String get fieldDocNumber => '证件号码';
+
+  @override
+  String get fieldValidUntil => '有效期至';
+
+  @override
+  String get fieldPhotoFront => '证件照片正面';
+
+  @override
+  String get fieldPhotoBack => '证件照片反面';
+
+  @override
+  String get docTypeIdCard => '身份证';
+
+  @override
+  String get docTypeDriverLicense => '驾驶证';
+
+  @override
+  String get docTypeVehicleLicense => '行驶证';
+
+  @override
+  String get docTypePassport => '护照';
+
+  @override
+  String get docTypeHmtPermit => '港澳通行证';
+
+  @override
+  String get docTypeSocialCard => '社保卡';
+
+  @override
+  String get docTypePropertyCert => '房产证';
+
+  @override
+  String get docTypeOther => '其他';
+
+  @override
+  String get docTypeCustomHint => '请输入证件类型';
+
+  @override
+  String get takePhoto => '拍照';
+
+  @override
+  String get chooseFromGallery => '从相册选择';
+
+  @override
+  String get viewPhoto => '查看大图';
+
+  @override
+  String get privacyPolicy => '隐私政策';
+
+  @override
+  String get clearAllData => '清除全部数据';
+
+  @override
+  String get clearAllDataWarningTitle => '清除全部数据？';
+
+  @override
+  String get clearAllDataWarningContent => '将删除所有记录、分类、标签及证件照片，不可恢复。';
+
+  @override
+  String get continueAction => '继续';
+
+  @override
+  String get clearAllDataConfirmTitle => '最终确认';
+
+  @override
+  String get clearAllDataConfirmContent => '此操作无法撤销，所有本地记录及证件照片将被彻底删除。';
+
+  @override
+  String get confirmClearAllData => '我确认要删除全部数据';
+
+  @override
+  String get clearAllDataSuccess => '已清除全部数据';
+
+  @override
+  String get cameraRationaleTitle => '相机权限说明';
+
+  @override
+  String get cameraRationaleMessage => '拍照用于拍摄证件照片，仅保存到本应用私有目录';
 }

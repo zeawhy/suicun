@@ -412,3 +412,145 @@ ContactTemplateData? parseContactTemplate(String body) {
   );
 }
 
+/// Data extracted from an id document template body.
+class IdDocumentTemplateData {
+  const IdDocumentTemplateData({
+    this.docType,
+    this.name,
+    this.docNumber,
+    this.validUntil,
+    this.photoFront,
+    this.photoBack,
+    this.notes,
+  });
+
+  final String? docType;
+  final String? name;
+  final String? docNumber;
+  final String? validUntil;
+  final String? photoFront;
+  final String? photoBack;
+  final String? notes;
+}
+
+/// Normalized id document template field types.
+enum IdDocumentFieldType {
+  docType,
+  name,
+  docNumber,
+  validUntil,
+  photoFront,
+  photoBack,
+  notes,
+}
+
+/// Map of allowed label names (trimmed, lowercased for Latin) to their field types.
+const Map<String, IdDocumentFieldType> _kIdDocumentLabels = {
+  // Chinese labels
+  '证件类型': IdDocumentFieldType.docType,
+  '姓名': IdDocumentFieldType.name,
+  '证件号码': IdDocumentFieldType.docNumber,
+  '有效期至': IdDocumentFieldType.validUntil,
+  '证件照片正面': IdDocumentFieldType.photoFront,
+  '证件照片反面': IdDocumentFieldType.photoBack,
+  '备注': IdDocumentFieldType.notes,
+
+  // English labels
+  'document type': IdDocumentFieldType.docType,
+  'name': IdDocumentFieldType.name,
+  'document number': IdDocumentFieldType.docNumber,
+  'valid until': IdDocumentFieldType.validUntil,
+  'id photo front': IdDocumentFieldType.photoFront,
+  'id photo back': IdDocumentFieldType.photoBack,
+  'notes': IdDocumentFieldType.notes,
+};
+
+/// Detects if [body] matches the id document template structure.
+///
+/// Rule:
+/// 1. Body must not be empty.
+/// 2. Every non-empty line must match `label: value` (where colon can be `:` or `：`).
+/// 3. Every label must belong to the id document template label set:
+///    {证件类型, 姓名, 证件号码, 有效期至, 证件照片正面, 证件照片反面, 备注,
+///     Document type, Name, Document number, Valid until, ID photo front, ID photo back, Notes}.
+/// 4. At least one line must have an anchor label:
+///    证件类型 / Document type / 证件号码 / Document number.
+bool isIdDocumentTemplate(String body) {
+  return parseIdDocumentTemplate(body) != null;
+}
+
+/// Parses [body] into [IdDocumentTemplateData] if it matches the id document template pattern.
+/// Returns `null` if [body] does not match the id document template rules.
+IdDocumentTemplateData? parseIdDocumentTemplate(String body) {
+  if (body.trim().isEmpty) return null;
+
+  final lines = body.replaceAll('\r\n', '\n').split('\n');
+  var hasNonEmptyLine = false;
+  var hasAnchor = false;
+
+  String? docType;
+  String? name;
+  String? docNumber;
+  String? validUntil;
+  String? photoFront;
+  String? photoBack;
+  String? notes;
+
+  for (final rawLine in lines) {
+    final line = rawLine.trim();
+    if (line.isEmpty) {
+      continue;
+    }
+    hasNonEmptyLine = true;
+
+    final match = _colonRegExp.firstMatch(line);
+    if (match == null) {
+      return null;
+    }
+
+    final rawLabel = line.substring(0, match.start).trim();
+    final value = line.substring(match.end).trim();
+
+    // Check label in allowed set
+    final lookupKey = rawLabel.toLowerCase();
+    final fieldType =
+        _kIdDocumentLabels[rawLabel] ?? _kIdDocumentLabels[lookupKey];
+    if (fieldType == null) {
+      return null;
+    }
+
+    switch (fieldType) {
+      case IdDocumentFieldType.docType:
+        docType = value;
+        hasAnchor = true;
+      case IdDocumentFieldType.name:
+        name = value;
+      case IdDocumentFieldType.docNumber:
+        docNumber = value;
+        hasAnchor = true;
+      case IdDocumentFieldType.validUntil:
+        validUntil = value;
+      case IdDocumentFieldType.photoFront:
+        photoFront = value;
+      case IdDocumentFieldType.photoBack:
+        photoBack = value;
+      case IdDocumentFieldType.notes:
+        notes = value;
+    }
+  }
+
+  if (!hasNonEmptyLine || !hasAnchor) {
+    return null;
+  }
+
+  return IdDocumentTemplateData(
+    docType: docType,
+    name: name,
+    docNumber: docNumber,
+    validUntil: validUntil,
+    photoFront: photoFront,
+    photoBack: photoBack,
+    notes: notes,
+  );
+}
+

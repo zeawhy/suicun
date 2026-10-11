@@ -10,13 +10,13 @@ void main() {
   final l10nEn = AppLocalizationsEn();
 
   group('NoteTemplate', () {
-    test('contains 5 templates with unique ids', () {
-      expect(NoteTemplate.all.length, 5);
+    test('contains 6 templates with unique ids', () {
+      expect(NoteTemplate.all.length, 6);
       final ids = NoteTemplate.all.map((t) => t.id).toSet();
-      expect(ids.length, 5);
+      expect(ids.length, 6);
       expect(
         ids,
-        containsAll(['blank', 'password', 'idea', 'todo', 'contact']),
+        containsAll(['blank', 'password', 'idea', 'todo', 'contact', 'id_document']),
       );
     });
 
@@ -31,7 +31,7 @@ void main() {
 
     test('preset templates (non-blank) have non-empty bodies in zh and en', () {
       final nonBlank = NoteTemplate.all.where((t) => t.id != 'blank');
-      expect(nonBlank.length, 4);
+      expect(nonBlank.length, 5);
 
       for (final template in nonBlank) {
         expect(template.bodyZh.trim(), isNotEmpty);
@@ -54,10 +54,20 @@ void main() {
       expect(passwordTemplate.bodyEn, contains('Password:'));
     });
 
+    test('id_document template body contains docType and docNumber in zh and en', () {
+      final idDocTemplate = NoteTemplate.byId('id_document');
+      expect(idDocTemplate, isNotNull);
+      expect(idDocTemplate!.bodyZh, contains('证件类型：'));
+      expect(idDocTemplate.bodyZh, contains('证件号码：'));
+      expect(idDocTemplate.bodyEn, contains('Document type:'));
+      expect(idDocTemplate.bodyEn, contains('Document number:'));
+    });
+
     test('byId retrieves template or null for unknown id', () {
       expect(NoteTemplate.byId('idea')?.id, 'idea');
       expect(NoteTemplate.byId('todo')?.id, 'todo');
       expect(NoteTemplate.byId('contact')?.id, 'contact');
+      expect(NoteTemplate.byId('id_document')?.id, 'id_document');
       expect(NoteTemplate.byId('unknown'), isNull);
       expect(NoteTemplate.byId(null), isNull);
     });

@@ -39,6 +39,8 @@ class NoteTemplate {
         return l10n.templateTodo;
       case 'contact':
         return l10n.templateContact;
+      case 'id_document':
+        return l10n.templateIdDocument;
       default:
         return id;
     }
@@ -57,6 +59,8 @@ class NoteTemplate {
         return l10n.templateTodoDesc;
       case 'contact':
         return l10n.templateContactDesc;
+      case 'id_document':
+        return l10n.templateIdDocumentDesc;
       default:
         return '';
     }
@@ -93,6 +97,12 @@ class NoteTemplate {
       icon: Icons.person_outline,
       bodyZh: '姓名：\n电话：\n邮箱：\n地址：\n备注：',
       bodyEn: 'Name:\nPhone:\nEmail:\nAddress:\nNotes:',
+    ),
+    NoteTemplate(
+      id: 'id_document',
+      icon: Icons.badge_outlined,
+      bodyZh: '证件类型：\n姓名：\n证件号码：\n有效期至：\n证件照片正面：\n证件照片反面：\n备注：',
+      bodyEn: 'Document type:\nName:\nDocument number:\nValid until:\nID photo front:\nID photo back:\nNotes:',
     ),
   ];
 

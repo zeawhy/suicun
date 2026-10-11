@@ -4,6 +4,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:suicun/core/database/providers.dart';
+import 'package:suicun/features/records/presentation/template_views/id_photo_storage.dart';
 import 'package:suicun/features/sync/sync_contract.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
 import 'package:suicun/shared/theme/theme_providers.dart';
@@ -45,6 +48,71 @@ class SettingsView extends ConsumerWidget {
   void _push(BuildContext context, String location) {
     onNavigate?.call();
     context.push(location);
+  }
+
+  Future<void> _handleClearAllData(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+  ) async {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final proceed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.clearAllDataWarningTitle),
+        content: Text(l10n.clearAllDataWarningContent),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(l10n.continueAction),
+          ),
+        ],
+      ),
+    );
+    if (proceed != true || !context.mounted) return;
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.clearAllDataConfirmTitle),
+        content: Text(l10n.clearAllDataConfirmContent),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: colorScheme.error,
+              foregroundColor: colorScheme.onError,
+            ),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(l10n.confirmClearAllData),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true || !context.mounted) return;
+
+    final db = ref.read(appDatabaseProvider);
+    await db.transaction(() async {
+      for (final table in db.allTables) {
+        await db.delete(table).go();
+      }
+    });
+    await deleteAllIdPhotos();
+
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.clearAllDataSuccess)),
+      );
+    }
   }
 
   @override
@@ -119,6 +187,27 @@ class SettingsView extends ConsumerWidget {
                 title: l10n.trash,
                 onTap: () => _push(context, '/trash'),
               ),
+              const Divider(height: 1, indent: 56, endIndent: 16),
+              ListTile(
+                leading: Icon(
+                  Icons.delete_forever_outlined,
+                  color: Theme.of(context).colorScheme.error,
+                ),
+                title: Text(
+                  l10n.clearAllData,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                ),
+                trailing: Icon(
+                  Icons.chevron_right,
+                  color: Theme.of(context)
+                      .colorScheme
+                      .error
+                      .withValues(alpha: 0.7),
+                ),
+                onTap: () => _handleClearAllData(context, ref, l10n),
+              ),
             ],
           ),
         ),
@@ -155,10 +244,29 @@ class SettingsView extends ConsumerWidget {
         _buildSectionHeader(context, l10n.about),
         Card(
           margin: EdgeInsets.zero,
-          child: ListTile(
-            leading: const Icon(Icons.info_outline),
-            title: Text(l10n.version),
-            subtitle: const Text('0.1.0+1'),
+          child: Column(
+            children: [
+              _navTile(
+                context,
+                icon: Icons.privacy_tip_outlined,
+                title: l10n.privacyPolicy,
+                onTap: () => _push(context, '/settings/privacy'),
+              ),
+              const Divider(height: 1, indent: 56, endIndent: 16),
+              ListTile(
+                leading: const Icon(Icons.info_outline),
+                title: Text(l10n.version),
+                subtitle: FutureBuilder<PackageInfo>(
+                  future: PackageInfo.fromPlatform(),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      return Text(snapshot.data!.version);
+                    }
+                    return const Text('...');
+                  },
+                ),
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 24),
