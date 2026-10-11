@@ -1155,4 +1155,23 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get cameraRationaleMessage =>
       'Taking photos is used to capture ID photos, which are saved only to this app\'s private storage';
+
+  @override
+  String get sharePhoto => 'Share photo';
+
+  @override
+  String get saveToGallery => 'Save to gallery';
+
+  @override
+  String get savedToGallery => 'Saved to gallery';
+
+  @override
+  String get savePhotoFailed => 'Save failed, please try again';
+
+  @override
+  String get galleryPermissionTitle => 'Gallery Permission';
+
+  @override
+  String get galleryPermissionMessage =>
+      'Saving ID photos to the system gallery requires gallery permission. Photos are saved to the local gallery only';
 }

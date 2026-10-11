@@ -537,5 +537,11 @@
   "confirmClearAllData": "我确认要删除全部数据",
   "clearAllDataSuccess": "已清除全部数据",
   "cameraRationaleTitle": "相机权限说明",
-  "cameraRationaleMessage": "拍照用于拍摄证件照片，仅保存到本应用私有目录"
+  "cameraRationaleMessage": "拍照用于拍摄证件照片，仅保存到本应用私有目录",
+  "sharePhoto": "分享照片",
+  "saveToGallery": "保存到相册",
+  "savedToGallery": "已保存到相册",
+  "savePhotoFailed": "保存失败，请重试",
+  "galleryPermissionTitle": "相册权限说明",
+  "galleryPermissionMessage": "保存证件照片到系统相册需要相册权限，照片仅保存到本地相册"
 }

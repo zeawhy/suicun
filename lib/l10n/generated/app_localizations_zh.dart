@@ -1127,4 +1127,22 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get cameraRationaleMessage => '拍照用于拍摄证件照片，仅保存到本应用私有目录';
+
+  @override
+  String get sharePhoto => '分享照片';
+
+  @override
+  String get saveToGallery => '保存到相册';
+
+  @override
+  String get savedToGallery => '已保存到相册';
+
+  @override
+  String get savePhotoFailed => '保存失败，请重试';
+
+  @override
+  String get galleryPermissionTitle => '相册权限说明';
+
+  @override
+  String get galleryPermissionMessage => '保存证件照片到系统相册需要相册权限，照片仅保存到本地相册';
 }
