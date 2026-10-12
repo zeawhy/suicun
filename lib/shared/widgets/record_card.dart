@@ -38,6 +38,8 @@ class RecordCard extends StatelessWidget {
   /// to toggling [isFavorite] without DB schema changes.
   final VoidCallback onPinToggle;
   final VoidCallback onEdit;
+  /// 保留该回调以维持调用方 API 稳定；卡片右上角菜单已移除，
+  /// 修改分类改在编辑页内完成。
   final VoidCallback onChangeCategory;
   final VoidCallback onDelete;
   final String untitledLabel;
@@ -159,12 +161,24 @@ class RecordCard extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            if (record.isFavorite)
-                              Icon(
-                                Icons.star_rounded,
-                                size: 14,
-                                color: colorScheme.primary,
+                            const SizedBox(width: 4),
+                            IconButton(
+                              icon: Icon(
+                                record.isFavorite
+                                    ? Icons.star_rounded
+                                    : Icons.star_outline,
+                                size: 20,
                               ),
+                              color: record.isFavorite
+                                  ? colorScheme.primary
+                                  : colorScheme.onSurfaceVariant,
+                              tooltip: record.isFavorite
+                                  ? l10n.unfavorite
+                                  : l10n.favorite,
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                              onPressed: onFavoriteToggle,
+                            ),
                           ],
                         ),
                         if (bodyPreview.isNotEmpty) ...[
@@ -212,88 +226,21 @@ class RecordCard extends StatelessWidget {
                   ),
                 ),
               ),
-              PopupMenuButton<String>(
-                icon: const Icon(Icons.more_horiz),
-                tooltip: 'More',
-                padding: EdgeInsets.zero,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+              // 左滑提示：纯视觉指示符，不可点击
+              Padding(
+                padding: const EdgeInsets.only(left: 4),
+                child: Icon(
+                  Icons.keyboard_double_arrow_left,
+                  size: 20,
+                  color: colorScheme.onSurfaceVariant,
                 ),
-                onSelected: (value) {
-                  switch (value) {
-                    case 'edit':
-                      onEdit();
-                    case 'changeCategory':
-                      onChangeCategory();
-                    case 'favorite':
-                      onFavoriteToggle();
-                    case 'delete':
-                      onDelete();
-                  }
-                },
-                    itemBuilder: (ctx) => [
-                      PopupMenuItem(
-                        value: 'edit',
-                        child: Row(
-                          children: [
-                            const Icon(Icons.edit_outlined, size: 20),
-                            const SizedBox(width: 12),
-                            Text(l10n.editInfo),
-                          ],
-                        ),
-                      ),
-                      PopupMenuItem(
-                        value: 'changeCategory',
-                        child: Row(
-                          children: [
-                            const Icon(Icons.folder_outlined, size: 20),
-                            const SizedBox(width: 12),
-                            Text(l10n.changeCategory),
-                          ],
-                        ),
-                      ),
-                      PopupMenuItem(
-                        value: 'favorite',
-                        child: Row(
-                          children: [
-                            Icon(
-                              record.isFavorite
-                                  ? Icons.star_border
-                                  : Icons.star_outline,
-                              size: 20,
-                            ),
-                            const SizedBox(width: 12),
-                            Text(record.isFavorite
-                                ? l10n.unfavorite
-                                : l10n.favorite),
-                          ],
-                        ),
-                      ),
-                      PopupMenuItem(
-                        value: 'delete',
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.delete_outline,
-                              size: 20,
-                              color: colorScheme.error,
-                            ),
-                            const SizedBox(width: 12),
-                            Text(
-                              l10n.delete,
-                              style: TextStyle(color: colorScheme.error),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
               ),
-            ),
+            ],
           ),
-        );
-      }
+        ),
+      ),
+    );
+  }
 
 Future<void> _confirmDelete(
     BuildContext context, AppLocalizations l10n) async {
