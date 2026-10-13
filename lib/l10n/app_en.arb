@@ -537,5 +537,11 @@
   "confirmClearAllData": "I confirm to delete all data",
   "clearAllDataSuccess": "All data cleared successfully",
   "cameraRationaleTitle": "Camera Permission",
-  "cameraRationaleMessage": "Taking photos is used to capture ID photos, which are saved only to this app's private storage"
+  "cameraRationaleMessage": "Taking photos is used to capture ID photos, which are saved only to this app's private storage",
+  "sharePhoto": "Share photo",
+  "saveToGallery": "Save to gallery",
+  "savedToGallery": "Saved to gallery",
+  "savePhotoFailed": "Save failed, please try again",
+  "galleryPermissionTitle": "Gallery Permission",
+  "galleryPermissionMessage": "Saving ID photos to the system gallery requires gallery permission. Photos are saved to the local gallery only"
 }

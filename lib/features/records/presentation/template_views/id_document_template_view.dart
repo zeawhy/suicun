@@ -5,7 +5,10 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:gal/gal.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:suicun/features/records/domain/record_model.dart';
 import 'package:suicun/features/records/presentation/template_views/id_photo_storage.dart';
@@ -341,9 +344,127 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
               child: Image.file(file),
             ),
           ),
+          bottomNavigationBar: SafeArea(
+            child: Container(
+              color: Colors.black,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24,
+                vertical: 12,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildViewerActionButton(
+                    key: const Key('id_photo_share_button'),
+                    icon: Icons.share_outlined,
+                    label: l10n.sharePhoto,
+                    onPressed: () => _sharePhoto(ctx, file),
+                  ),
+                  _buildViewerActionButton(
+                    key: const Key('id_photo_save_button'),
+                    icon: Icons.save_alt_outlined,
+                    label: l10n.saveToGallery,
+                    onPressed: () => _savePhotoToGallery(ctx, file),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );
+  }
+
+  Widget _buildViewerActionButton({
+    required Key key,
+    required IconData icon,
+    required String label,
+    required VoidCallback onPressed,
+  }) {
+    return TextButton.icon(
+      key: key,
+      onPressed: onPressed,
+      icon: Icon(icon, color: Colors.white, size: 22),
+      label: Text(
+        label,
+        style: const TextStyle(color: Colors.white, fontSize: 14),
+      ),
+      style: TextButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        backgroundColor: Colors.white.withValues(alpha: 0.12),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+      ),
+    );
+  }
+
+  /// Shares the ID photo via the system share sheet (no decryption needed;
+  /// photos are stored unencrypted in the app's private directory).
+  Future<void> _sharePhoto(BuildContext context, File file) async {
+    final shareText = AppLocalizations.of(context).sharePhoto;
+    try {
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(file.path)],
+          text: shareText,
+        ),
+      );
+    } catch (_) {
+      // Ignore share cancellation/failure
+    }
+  }
+
+  /// Saves the ID photo to the system gallery (Android 10+ scoped storage
+  /// via MediaStore; requests READ_MEDIA_IMAGES on Android 13+).
+  Future<void> _savePhotoToGallery(BuildContext context, File file) async {
+    final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+
+    // Request gallery permission (READ_MEDIA_IMAGES on Android 13+).
+    var status = await Permission.photos.status;
+    if (!context.mounted) return;
+    if (!status.isGranted) {
+      final agreed = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(l10n.galleryPermissionTitle),
+          content: Text(l10n.galleryPermissionMessage),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: Text(l10n.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: Text(l10n.confirm),
+            ),
+          ],
+        ),
+      );
+      if (agreed != true || !context.mounted) return;
+      status = await Permission.photos.request();
+    }
+    if (!status.isGranted || !context.mounted) return;
+
+    try {
+      await Gal.putImage(file.path, album: 'SuiVault');
+      messenger.hideCurrentSnackBar();
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(l10n.savedToGallery),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } catch (_) {
+      messenger.hideCurrentSnackBar();
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(l10n.savePhotoFailed),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   String _getDocTypeDisplay(AppLocalizations l10n, IdDocTypeKey key) {

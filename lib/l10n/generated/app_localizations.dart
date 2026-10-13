@@ -2233,6 +2233,42 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'拍照用于拍摄证件照片，仅保存到本应用私有目录'**
   String get cameraRationaleMessage;
+
+  /// No description provided for @sharePhoto.
+  ///
+  /// In zh, this message translates to:
+  /// **'分享照片'**
+  String get sharePhoto;
+
+  /// No description provided for @saveToGallery.
+  ///
+  /// In zh, this message translates to:
+  /// **'保存到相册'**
+  String get saveToGallery;
+
+  /// No description provided for @savedToGallery.
+  ///
+  /// In zh, this message translates to:
+  /// **'已保存到相册'**
+  String get savedToGallery;
+
+  /// No description provided for @savePhotoFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'保存失败，请重试'**
+  String get savePhotoFailed;
+
+  /// No description provided for @galleryPermissionTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'相册权限说明'**
+  String get galleryPermissionTitle;
+
+  /// No description provided for @galleryPermissionMessage.
+  ///
+  /// In zh, this message translates to:
+  /// **'保存证件照片到系统相册需要相册权限，照片仅保存到本地相册'**
+  String get galleryPermissionMessage;
 }
 
 class _AppLocalizationsDelegate
