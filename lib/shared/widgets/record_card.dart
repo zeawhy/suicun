@@ -1,9 +1,11 @@
-// lib/shared/widgets/record_card.dart
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:suicun/features/records/domain/record_model.dart';
 import 'package:suicun/features/records/presentation/home_sort_provider.dart';
+import 'package:suicun/features/records/presentation/template_views/id_photo_storage.dart';
+import 'package:suicun/features/records/presentation/template_views/template_detector.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
 import 'package:suicun/shared/theme/app_theme.dart';
 import 'package:suicun/shared/utils/date_formatter.dart';
@@ -144,82 +146,90 @@ class RecordCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                     onTap: onTap,
                     onLongPress: onLongPress,
-                    child: Column(
+                    child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                displayTitle,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: titleColor,
+                        _buildThumbnail(),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      displayTitle,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: titleColor,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  IconButton(
+                                    icon: Icon(
+                                      record.isFavorite
+                                          ? Icons.star_rounded
+                                          : Icons.star_outline,
+                                      size: 20,
+                                    ),
+                                    color: record.isFavorite
+                                        ? colorScheme.primary
+                                        : colorScheme.onSurfaceVariant,
+                                    tooltip: record.isFavorite
+                                        ? l10n.unfavorite
+                                        : l10n.favorite,
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
+                                    onPressed: onFavoriteToggle,
+                                  ),
+                                ],
+                              ),
+                              if (bodyPreview.isNotEmpty) ...[
+                                const SizedBox(height: 4),
+                                Text(
+                                  bodyPreview,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: colorScheme.onSurfaceVariant,
+                                    height: 1.35,
+                                  ),
                                 ),
+                              ],
+                              const SizedBox(height: 6),
+                              Row(
+                                children: [
+                                  if (record.category != null) ...[
+                                    Container(
+                                      width: 8,
+                                      height: 8,
+                                      decoration: BoxDecoration(
+                                        color: categoryColor,
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                  ],
+                                  Expanded(
+                                    child: Text(
+                                      metaText,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: colorScheme.onSurfaceVariant,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                            const SizedBox(width: 4),
-                            IconButton(
-                              icon: Icon(
-                                record.isFavorite
-                                    ? Icons.star_rounded
-                                    : Icons.star_outline,
-                                size: 20,
-                              ),
-                              color: record.isFavorite
-                                  ? colorScheme.primary
-                                  : colorScheme.onSurfaceVariant,
-                              tooltip: record.isFavorite
-                                  ? l10n.unfavorite
-                                  : l10n.favorite,
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
-                              onPressed: onFavoriteToggle,
-                            ),
-                          ],
-                        ),
-                        if (bodyPreview.isNotEmpty) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            bodyPreview,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: colorScheme.onSurfaceVariant,
-                              height: 1.35,
-                            ),
-                          ),
-                        ],
-                        const SizedBox(height: 6),
-                        Row(
-                          children: [
-                            if (record.category != null) ...[
-                              Container(
-                                width: 8,
-                                height: 8,
-                                decoration: BoxDecoration(
-                                  color: categoryColor,
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                              const SizedBox(width: 6),
                             ],
-                            Expanded(
-                              child: Text(
-                                metaText,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
                       ],
                     ),
@@ -265,4 +275,35 @@ Future<void> _confirmDelete(
     onDelete();
   }
 }
+
+  Widget _buildThumbnail() {
+    final idData = parseIdDocumentTemplate(record.body);
+    final photoPath = idData?.photoFront?.isNotEmpty == true
+        ? idData!.photoFront
+        : (idData?.photoBack?.isNotEmpty == true ? idData!.photoBack : null);
+    if (photoPath == null) return const SizedBox.shrink();
+
+    return FutureBuilder<File?>(
+      future: resolveIdPhoto(photoPath),
+      builder: (context, snapshot) {
+        final file = snapshot.data;
+        if (file == null) {
+          return const SizedBox.shrink();
+        }
+        return Padding(
+          padding: const EdgeInsets.only(right: 12),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.file(
+              file,
+              width: 50,
+              height: 50,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+            ),
+          ),
+        );
+      },
+    );
+  }
 }

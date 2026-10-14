@@ -17,6 +17,8 @@ import 'package:suicun/features/records/domain/record_model.dart';
 import 'package:suicun/features/records/presentation/home_sort_provider.dart';
 import 'package:suicun/features/records/presentation/records_notifier.dart';
 import 'package:suicun/features/categories/presentation/category_display_name.dart';
+import 'package:suicun/features/records/data/quick_access_storage.dart';
+import 'package:suicun/features/records/presentation/quick_access_panel.dart';
 import 'package:suicun/features/records/presentation/template_sheet.dart';
 import 'package:suicun/features/settings/presentation/settings_page.dart';
 import 'package:suicun/features/sync/sync_contract.dart';
@@ -154,6 +156,124 @@ class _HomePageState extends ConsumerState<HomePage> {
       _isMultiSelect = false;
       _selectedIds.clear();
     });
+  }
+
+  void _openRecord(RecordDetail r) {
+    ref.read(recentOpenedIdsProvider.notifier).recordOpened(r.id);
+    context.push('/edit/${r.id}');
+  }
+
+  Future<void> _showRecordActionSheet(RecordDetail r) async {
+    final quickIds = ref.read(quickAccessIdsProvider).value ?? [];
+    final isQuick = quickIds.contains(r.id);
+    final l10n = AppLocalizations.of(context);
+
+    await showModalBottomSheet<void>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          r.title.isNotEmpty ? r.title : l10n.untitledRecord,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: Icon(
+                    isQuick ? Icons.star_rounded : Icons.star_outline_rounded,
+                    color: isQuick
+                        ? Theme.of(context).colorScheme.primary
+                        : null,
+                  ),
+                  title: Text(isQuick ? '取消常用' : '设为常用'),
+                  onTap: () async {
+                    Navigator.of(ctx).pop();
+                    try {
+                      final res = await ref
+                          .read(quickAccessIdsProvider.notifier)
+                          .toggle(r.id);
+                      if (!mounted) return;
+                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(res ? '已设为常用' : '已取消常用'),
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                    } catch (_) {
+                      if (!mounted) return;
+                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('常用最多只能添加 6 个'),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    }
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.edit_outlined),
+                  title: Text(l10n.editInfo),
+                  onTap: () {
+                    Navigator.of(ctx).pop();
+                    _openRecord(r);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.checklist_rounded),
+                  title: const Text('多选操作'),
+                  onTap: () {
+                    Navigator.of(ctx).pop();
+                    setState(() {
+                      _isMultiSelect = true;
+                      _selectedIds.add(r.id);
+                    });
+                  },
+                ),
+                ListTile(
+                  leading: Icon(
+                    Icons.delete_outline,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                  title: Text(
+                    l10n.delete,
+                    style:
+                        TextStyle(color: Theme.of(context).colorScheme.error),
+                  ),
+                  onTap: () {
+                    Navigator.of(ctx).pop();
+                    _deleteRecord(r.id);
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _deleteRecord(String id) async {
@@ -414,7 +534,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             ),
 
             // b) Expanded search row (when search is expanded and not multi-selecting)
-            if (_searchExpanded && !_isMultiSelect)
+            if (_searchExpanded && !_isMultiSelect) ...[
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
                 child: Row(
@@ -424,8 +544,15 @@ class _HomePageState extends ConsumerState<HomePage> {
                         controller: _searchController,
                         focusNode: _searchFocus,
                         onChanged: _onSearchChanged,
+                        onSubmitted: (value) {
+                          if (value.trim().isNotEmpty) {
+                            ref
+                                .read(recentSearchProvider.notifier)
+                                .addQuery(value);
+                          }
+                        },
                         decoration: InputDecoration(
-                          hintText: l10n.searchHint,
+                          hintText: '搜索，也可以输入拼音首字母',
                           suffixIcon: _searchController.text.isNotEmpty
                               ? IconButton(
                                   icon: const Icon(Icons.clear, size: 20),
@@ -472,6 +599,23 @@ class _HomePageState extends ConsumerState<HomePage> {
                   ],
                 ),
               ),
+              ref.watch(recentSearchProvider).maybeWhen(
+                    data: (searches) {
+                      if (searches.isEmpty) return const SizedBox.shrink();
+                      return RecentSearchChips(
+                        queries: searches,
+                        onSelectQuery: (q) {
+                          _searchController.text = q;
+                          ref.read(recordsFilterProvider.notifier).setQuery(q);
+                          ref.read(recentSearchProvider.notifier).addQuery(q);
+                        },
+                        onClear: () =>
+                            ref.read(recentSearchProvider.notifier).clear(),
+                      );
+                    },
+                    orElse: () => const SizedBox.shrink(),
+                  ),
+            ],
 
             // d & e) Record count + sort switcher & record list
             Expanded(
@@ -480,6 +624,11 @@ class _HomePageState extends ConsumerState<HomePage> {
                     const Center(child: CircularProgressIndicator()),
                 error: (e, _) => Center(child: Text(e.toString())),
                 data: (records) {
+                  final isSearchOrFilterActive =
+                      filter.query.trim().isNotEmpty ||
+                          filter.categoryId != null ||
+                          filter.favoritesOnly;
+
                   if (records.isEmpty) {
                     return _EmptyState(
                       filter: filter,
@@ -488,112 +637,145 @@ class _HomePageState extends ConsumerState<HomePage> {
                           .clearFilter(),
                     );
                   }
-                  return Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-                        child: Row(
-                          children: [
-                            Text(
-                              l10n.infoCount(records.length),
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: colorScheme.onSurfaceVariant,
+
+                  final quickIds =
+                      ref.watch(quickAccessIdsProvider).value ?? const [];
+                  final recentOpenedIds =
+                      ref.watch(recentOpenedIdsProvider).value ?? const [];
+
+                  final recordMap = {for (final r in records) r.id: r};
+                  final quickRecords = quickIds
+                      .map((id) => recordMap[id])
+                      .whereType<RecordDetail>()
+                      .toList();
+                  final recentRecords = recentOpenedIds
+                      .map((id) => recordMap[id])
+                      .whereType<RecordDetail>()
+                      .take(5)
+                      .toList();
+
+                  final showQuickAndRecent =
+                      !isSearchOrFilterActive && !_isMultiSelect;
+
+                  return NotificationListener<OverscrollNotification>(
+                    onNotification: (notification) {
+                      if (notification.overscroll < 0 &&
+                          _scrollController.hasClients &&
+                          _scrollController.offset <= 0 &&
+                          !_searchExpanded) {
+                        if (mounted) {
+                          _openSearch(requestFocus: false);
+                        }
+                      }
+                      return false;
+                    },
+                    child: SlidableAutoCloseBehavior(
+                      child: ListView(
+                        controller: _scrollController,
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: const EdgeInsets.fromLTRB(0, 4, 0, 16),
+                        children: [
+                          if (showQuickAndRecent) ...[
+                            QuickAccessGrid(
+                              records: quickRecords,
+                              onRecordAction: (r) => executeQuickAction(
+                                context: context,
+                                record: r,
+                                onOpenRecord: _openRecord,
                               ),
+                              onLongPress: (r) => _showRecordActionSheet(r),
                             ),
-                            const Spacer(),
-                            Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(8),
-                                onTap: _showSortSheet,
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 10,
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        sortTitleText,
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          color: colorScheme.onSurface,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                      const Icon(
-                                        Icons.arrow_drop_down,
-                                        size: 18,
-                                      ),
-                                    ],
-                                  ),
-                                ),
+                            RecentOpenedBar(
+                              records: recentRecords,
+                              onTap: (r) => executeQuickAction(
+                                context: context,
+                                record: r,
+                                onOpenRecord: _openRecord,
                               ),
                             ),
                           ],
-                        ),
-                      ),
-                      Expanded(
-                        child: NotificationListener<OverscrollNotification>(
-                          onNotification: (notification) {
-                            if (notification.overscroll < 0 &&
-                                _scrollController.hasClients &&
-                                _scrollController.offset <= 0 &&
-                                !_searchExpanded) {
-                              if (mounted) {
-                                _openSearch(requestFocus: false);
-                              }
-                            }
-                            return false;
-                          },
-                          child: SlidableAutoCloseBehavior(
-                            child: ListView.builder(
-                              controller: _scrollController,
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 8,
-                              ),
-                              itemCount: records.length,
-                              itemBuilder: (context, index) {
-                                final r = records[index];
-                                return RecordCard(
-                                  record: r,
-                                  sortMode: sortMode,
-                                  isSelected: _selectedIds.contains(r.id),
-                                  isMultiSelectMode: _isMultiSelect,
-                                  untitledLabel: l10n.untitledRecord,
-                                  uncategorizedLabel: l10n.uncategorized,
-                                  onTap: () {
-                                    if (_isMultiSelect) {
-                                      _toggleMultiSelect(r.id);
-                                    } else {
-                                      context.push('/edit/${r.id}');
-                                    }
-                                  },
-                                  onLongPress: () {
-                                    if (!_isMultiSelect) {
-                                      setState(() {
-                                        _isMultiSelect = true;
-                                        _selectedIds.add(r.id);
-                                      });
-                                    }
-                                  },
-                                  onFavoriteToggle: () => _toggleFavorite(r),
-                                  onPinToggle: () => _toggleFavorite(r),
-                                  onEdit: () => context.push('/edit/${r.id}'),
-                                  onChangeCategory: () =>
-                                      _showChangeCategoryDialog(r),
-                                  onDelete: () => _deleteRecord(r.id),
-                                );
-                              },
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                            child: Row(
+                              children: [
+                                Text(
+                                  l10n.infoCount(records.length),
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                                const Spacer(),
+                                Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(8),
+                                    onTap: _showSortSheet,
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 10,
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            sortTitleText,
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              color: colorScheme.onSurface,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          const Icon(
+                                            Icons.arrow_drop_down,
+                                            size: 18,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Column(
+                              children: [
+                                for (final r in records)
+                                  RecordCard(
+                                    record: r,
+                                    sortMode: sortMode,
+                                    isSelected: _selectedIds.contains(r.id),
+                                    isMultiSelectMode: _isMultiSelect,
+                                    untitledLabel: l10n.untitledRecord,
+                                    uncategorizedLabel: l10n.uncategorized,
+                                    onTap: () {
+                                      if (_isMultiSelect) {
+                                        _toggleMultiSelect(r.id);
+                                      } else {
+                                        _openRecord(r);
+                                      }
+                                    },
+                                    onLongPress: () {
+                                      if (!_isMultiSelect) {
+                                        _showRecordActionSheet(r);
+                                      }
+                                    },
+                                    onFavoriteToggle: () => _toggleFavorite(r),
+                                    onPinToggle: () => _toggleFavorite(r),
+                                    onEdit: () => _openRecord(r),
+                                    onChangeCategory: () =>
+                                        _showChangeCategoryDialog(r),
+                                    onDelete: () => _deleteRecord(r.id),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   );
                 },
               ),

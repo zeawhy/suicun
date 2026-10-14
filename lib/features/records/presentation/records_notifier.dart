@@ -5,8 +5,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'package:suicun/core/database/providers.dart';
 import 'package:suicun/features/records/domain/record_model.dart';
-
 import 'package:suicun/features/records/presentation/home_sort_provider.dart';
+import 'package:suicun/features/records/presentation/search/pinyin_search_helper.dart';
 
 part 'records_notifier.g.dart';
 
@@ -54,12 +54,19 @@ Future<List<RecordDetail>> recordsList(Ref ref) async {
   final sortMode =
       ref.watch(homeSortModeProvider).value ?? RecordSortMode.byUpdatedAt;
   final repo = ref.watch(recordRepositoryProvider);
-  final records = await repo.searchRecords(
-    query: filter.query,
+  final rawRecords = await repo.searchRecords(
+    query: '',
     categoryId: filter.categoryId,
     favoritesOnly: filter.favoritesOnly ? true : null,
     includeDeleted: false,
+    limit: 1000,
   );
+
+  final records = filter.query.trim().isEmpty
+      ? rawRecords
+      : rawRecords
+          .where((r) => matchesRecordPinyinOrText(r, filter.query))
+          .toList();
 
   String displayTitle(RecordDetail r) {
     if (r.title.isNotEmpty) return r.title;
