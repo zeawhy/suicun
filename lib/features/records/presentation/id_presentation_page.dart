@@ -4,7 +4,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_windowmanager/flutter_windowmanager.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 import 'package:suicun/features/records/domain/record_model.dart';
 import 'package:suicun/features/records/presentation/template_views/id_photo_storage.dart';
@@ -51,6 +50,11 @@ class IdPresentationPage extends StatefulWidget {
 }
 
 class _IdPresentationPageState extends State<IdPresentationPage> {
+  // Native FLAG_SECURE toggle via MainActivity MethodChannel
+  // (com.suivault.app/secure). Replaces the unmaintained
+  // flutter_windowmanager plugin, which breaks the release build on AGP 9+.
+  static const _secureChannel = MethodChannel('com.suivault.app/secure');
+
   final PageController _pageController = PageController();
   final List<TransformationController> _transformControllers = [];
 
@@ -89,7 +93,7 @@ class _IdPresentationPageState extends State<IdPresentationPage> {
     // or wrap views in secure text layer tricks. Here we apply FLAG_SECURE on Android.
     if (Platform.isAndroid) {
       try {
-        await FlutterWindowManager.addFlags(FlutterWindowManager.FLAG_SECURE);
+        await _secureChannel.invokeMethod('enableSecure');
       } catch (_) {}
     }
   }
@@ -107,7 +111,7 @@ class _IdPresentationPageState extends State<IdPresentationPage> {
     // Restore FLAG_SECURE
     if (Platform.isAndroid) {
       try {
-        await FlutterWindowManager.clearFlags(FlutterWindowManager.FLAG_SECURE);
+        await _secureChannel.invokeMethod('disableSecure');
       } catch (_) {}
     }
 
