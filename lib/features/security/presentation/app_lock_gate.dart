@@ -1,0 +1,347 @@
+// lib/features/security/presentation/app_lock_gate.dart
+// Stage B: gates the whole app behind the app lock (spec §9).
+//
+// Behavior:
+// - On startup, if the app lock is disabled, content shows immediately.
+// - If enabled, a lock screen is shown until the user authenticates
+//   (PIN and/or biometric, per settings).
+// - When the app goes to background, the pause time is recorded; on
+//   return, the app re-locks when the configured timeout has elapsed.
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'package:suicun/features/security/data/security_providers.dart';
+import 'package:suicun/l10n/generated/app_localizations.dart';
+import 'package:suicun/shared/theme/app_theme.dart';
+import 'package:suicun/shared/theme/theme_providers.dart';
+
+/// Wraps the app; shows [child] only when unlocked.
+class AppLockGate extends ConsumerStatefulWidget {
+  const AppLockGate({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  ConsumerState<AppLockGate> createState() => _AppLockGateState();
+}
+
+class _AppLockGateState extends ConsumerState<AppLockGate>
+    with WidgetsBindingObserver {
+  DateTime? _pausedAt;
+  bool _checking = true;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _initialCheck();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  Future<void> _initialCheck() async {
+    final service = ref.read(appLockServiceProvider);
+    final enabled = await service.isEnabled();
+    if (!mounted) return;
+    if (!enabled) {
+      ref.read(appLockControllerProvider.notifier).unlock();
+    }
+    setState(() => _checking = false);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      // Only count pauses that happen while the app content is visible.
+      // Pauses caused by the system biometric prompt occur while locked
+      // and must not feed the re-lock timeout.
+      if (!ref.read(appLockControllerProvider)) {
+        _pausedAt ??= DateTime.now();
+      }
+    } else if (state == AppLifecycleState.resumed) {
+      _relockIfTimedOut();
+    }
+  }
+
+  Future<void> _relockIfTimedOut() async {
+    // Consume synchronously, before any await, so ordering vs. unlock()
+    // can't re-lock a just-completed unlock (the "immediately" timeout
+    // compares 0 >= 0, which is always true).
+    final pausedAt = _pausedAt;
+    _pausedAt = null;
+    // No real background period (e.g. biometric-prompt-only pause).
+    if (pausedAt == null) return;
+    final service = ref.read(appLockServiceProvider);
+    if (!await service.isEnabled()) return;
+    if (ref.read(appLockControllerProvider)) return; // already locked
+    final timeout = await service.getTimeout();
+    if (DateTime.now().difference(pausedAt).inSeconds >= timeout.seconds) {
+      if (mounted) ref.read(appLockControllerProvider.notifier).lock();
+    }
+  }
+
+  /// Called when the user authenticates on the lock screen.
+  void _handleUnlocked() {
+    _pausedAt = null;
+    ref.read(appLockControllerProvider.notifier).unlock();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_checking) {
+      return const MaterialApp(
+        home: Scaffold(body: Center(child: CircularProgressIndicator())),
+      );
+    }
+    final locked = ref.watch(appLockControllerProvider);
+    if (!locked) return widget.child;
+    // The gate sits outside SuicunApp's MaterialApp.router, so the lock
+    // screen needs its own fully-configured MaterialApp: without the
+    // localization delegates AppLocalizations.of() returns null and the
+    // lock screen crashes to a blank screen on startup.
+    final themeMode = ref.watch(resolvedThemeModeProvider);
+    return MaterialApp(
+      themeMode: themeMode,
+      theme: AppTheme.lightTheme(),
+      darkTheme: AppTheme.darkTheme(),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: _LockScreen(
+        onUnlocked: _handleUnlocked,
+      ),
+    );
+  }
+}
+
+/// Lock screen: PIN pad and/or biometric button, per configuration.
+class _LockScreen extends ConsumerStatefulWidget {
+  const _LockScreen({required this.onUnlocked});
+
+  final VoidCallback onUnlocked;
+
+  @override
+  ConsumerState<_LockScreen> createState() => _LockScreenState();
+}
+
+class _LockScreenState extends ConsumerState<_LockScreen> {
+  String _pin = '';
+  String? _error;
+  bool _biometricAvailable = false;
+  bool _checkingBiometric = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _init();
+  }
+
+  Future<void> _init() async {
+    final service = ref.read(appLockServiceProvider);
+    final bioEnabled = await service.isBiometricEnabled();
+    final canAuth = bioEnabled && await service.deviceSupportsAuth();
+    if (!mounted) return;
+    setState(() {
+      _biometricAvailable = canAuth;
+      _checkingBiometric = false;
+    });
+    if (canAuth) {
+      // Offer biometric immediately; user can fall back to PIN.
+      _tryBiometric();
+    }
+  }
+
+  Future<void> _tryBiometric() async {
+    final service = ref.read(appLockServiceProvider);
+    final l10n = AppLocalizations.of(context);
+    final ok = await service.authenticateBiometric(
+      reason: l10n.unlockApp,
+    );
+    if (ok && mounted) widget.onUnlocked();
+  }
+
+  Future<void> _onDigit(String d) async {
+    if (_pin.length >= 12) return;
+    setState(() {
+      _pin += d;
+      _error = null;
+    });
+  }
+
+  Future<void> _onConfirm() async {
+    if (_pin.length < 4) {
+      setState(() => _error = AppLocalizations.of(context).pinTooShort);
+      return;
+    }
+    final service = ref.read(appLockServiceProvider);
+    final ok = await service.verifyPin(_pin);
+    if (!mounted) return;
+    if (ok) {
+      widget.onUnlocked();
+    } else {
+      final lockout = await service.lockoutRemaining();
+      setState(() {
+        _error = lockout > Duration.zero
+            ? AppLocalizations.of(context)
+                .lockoutTryLater(lockout.inSeconds + 1)
+            : AppLocalizations.of(context).wrongPin;
+        _pin = '';
+      });
+    }
+  }
+
+  void _onBackspace() {
+    if (_pin.isEmpty) return;
+    setState(() {
+      _pin = _pin.substring(0, _pin.length - 1);
+      _error = null;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return Scaffold(
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: Column(
+            children: [
+              const Spacer(flex: 2),
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withValues(alpha: 0.10),
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Icon(Icons.lock_rounded,
+                      size: 36, color: colorScheme.primary),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                l10n.appLocked,
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: -0.2,
+                ),
+              ),
+              const SizedBox(height: 16),
+              // PIN dots (filled = entered digits).
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 14,
+                children: [
+                  for (var i = 0; i < _pin.length.clamp(0, 12); i++)
+                    Container(
+                      width: 14,
+                      height: 14,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: colorScheme.primary,
+                      ),
+                    ),
+                  if (_pin.isEmpty)
+                    Text(
+                      l10n.enterPin,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                height: 28,
+                child: _error == null
+                    ? null
+                    : Text(_error!,
+                        style: TextStyle(
+                            color: colorScheme.error,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500)),
+              ),
+              if (!_checkingBiometric && _biometricAvailable)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: IconButton.filledTonal(
+                    onPressed: _tryBiometric,
+                    icon: const Icon(Icons.fingerprint, size: 32),
+                    tooltip: l10n.useBiometric,
+                    style: IconButton.styleFrom(
+                      minimumSize: const Size(64, 64),
+                    ),
+                  ),
+                ),
+              // Numeric pad.
+              for (final row in [
+                ['1', '2', '3'],
+                ['4', '5', '6'],
+                ['7', '8', '9'],
+                ['ok', '0', 'back'],
+              ])
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      for (final key in row)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          child: SizedBox(
+                            width: 76,
+                            height: 64,
+                            child: key == 'back'
+                                ? IconButton(
+                                    onPressed: _onBackspace,
+                                    icon:
+                                        const Icon(Icons.backspace_outlined, size: 22),
+                                  )
+                                : key == 'ok'
+                                    ? IconButton.filled(
+                                        onPressed: _onConfirm,
+                                        icon: const Icon(Icons.check, size: 24),
+                                        style: IconButton.styleFrom(
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(16),
+                                          ),
+                                        ),
+                                      )
+                                    : TextButton(
+                                        onPressed: () => _onDigit(key),
+                                        style: TextButton.styleFrom(
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(16),
+                                          ),
+                                        ),
+                                        child: Text(
+                                          key,
+                                          style: theme
+                                              .textTheme.headlineMedium?.copyWith(
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                        ),
+                                      ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              const Spacer(flex: 3),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

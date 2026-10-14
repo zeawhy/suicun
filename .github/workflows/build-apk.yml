@@ -1,4 +1,4 @@
-name: Build APK
+name: Build release (APK + AAB)
 
 on:
   workflow_dispatch:
@@ -22,9 +22,19 @@ jobs:
       - name: Build release APK
         run: flutter build apk --release
 
+      - name: Build release AAB (Google Play)
+        run: flutter build appbundle --release
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: suicun-release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 14
+
+      - name: Upload AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: suicun-release-aab
+          path: build/app/outputs/bundle/release/app-release.aab
           retention-days: 14

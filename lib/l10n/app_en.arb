@@ -1,0 +1,547 @@
+{
+  "@@locale": "en",
+  "@conflictCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@connectionFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@exportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@importFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@importPreview": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@importSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@infoCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@keywordCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@lastSuccess": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@lastSyncToday": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@lockoutTryLater": {
+    "placeholders": {
+      "seconds": {}
+    }
+  },
+  "@modified": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@pendingCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@syncedRecordCount": {
+    "placeholders": {
+      "synced": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@recordCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@recoverFailedObjects": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@recoverPartial": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@recoverProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@recoverRecordsRestored": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@selectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@timeToday": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@todoProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@updatedAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@wizardMergeCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@lockedKeysNotice": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "about": "About",
+  "addCategory": "Add Category",
+  "addKeyword": "Add keyword",
+  "addTag": "Add Tag",
+  "addTags": "Add tags",
+  "all": "All",
+  "appLock": "App lock",
+  "appLocked": "SuiVault is locked",
+  "appName": "SuiVault",
+  "appTagline": "Save it now, find it later",
+  "appearance": "Appearance",
+  "autoSaveHint": "Auto-saved, no need to tap save.",
+  "backToSync": "Back to sync settings",
+  "backup": "Backup",
+  "backupPassword": "Backup password",
+  "backupPasswordHint": "Needed to restore on a new device. Keep it safe.",
+  "batchCategorize": "Categorize",
+  "batchDelete": "Delete",
+  "batchFavorite": "Favorite",
+  "bodyHint": "Write down info you'll want to find later…",
+  "bodyLimit": "Body is large (>1 MiB), consider splitting",
+  "cancel": "Cancel",
+  "categories": "Categories",
+  "categoriesEmpty": "No categories yet",
+  "category": "Category",
+  "categoryColor": "Category Color",
+  "categoryName": "Category Name",
+  "changeCategory": "Change category",
+  "changePin": "Change PIN",
+  "clearFilter": "Clear Filters",
+  "configSaved": "Configuration saved",
+  "confirm": "Confirm",
+  "confirmPassword": "Confirm password",
+  "confirmVaultPassword": "Confirm encryption password",
+  "copyRecoveryKey": "Copy",
+  "conflictCount": "Conflicts: {count}",
+  "conflictHistoryNote": "The discarded version is kept in history and will not be deleted.",
+  "conflictTypeCategory": "Category",
+  "conflictTypeRecord": "Record",
+  "conflictTypeTag": "Tag",
+  "conflictsEmpty": "No unresolved conflicts",
+  "conflictsTitle": "Sync conflicts",
+  "connectAndSync": "Connect & sync",
+  "connectionFailed": "Connection failed: {error}",
+  "connectionSuccess": "Connection successful",
+  "createNewVault": "Create new vault",
+  "createdAtPrefix": "Created",
+  "data": "Data",
+  "delete": "Delete",
+  "deleteCategory": "Delete Category",
+  "deleteCategoryConfirm": "Records in this category will become uncategorized. Delete?",
+  "deleteTag": "Delete Tag",
+  "deleteTagConfirm": "Records with this tag will keep their content; the tag association will be removed. Delete?",
+  "directoryInvalid": "Sync directory must start with /",
+  "disableSync": "Disable sync",
+  "disableSyncConfirm": "Disabling sync stops network tasks; local data is kept. Confirm?",
+  "duplicateName": "Name already exists",
+  "e2eDesc": "Content is encrypted before upload to your storage.",
+  "e2eEnabled": "Enabled",
+  "e2eEncryption": "End-to-end encryption",
+  "e2eWipDialog": "End-to-end encryption will be enabled with the sync engine (Stage C).",
+  "editCategory": "Edit Category",
+  "editInfo": "Edit Info",
+  "editTag": "Edit Tag",
+  "enableAppLock": "Enable app lock",
+  "encryptedBackup": "Encrypted backup",
+  "encryptionOn": "Local database is encrypted",
+  "encryptionOnDesc": "Encrypted with a random key stored in system secure storage",
+  "enterPin": "Enter PIN to unlock",
+  "export": "Export",
+  "exportEncryptedBackup": "Export encrypted backup",
+  "exportFailed": "Export failed: {error}",
+  "exportJson": "Export JSON Backup",
+  "exportMarkdownZip": "Export Markdown ZIP",
+  "exportSuccess": "Export successful",
+  "exportTxt": "Export TXT",
+  "favorite": "Favorite",
+  "favoriteFailed": "Couldn't update favorite, please try again",
+  "favorites": "Favorites",
+  "filterEmpty": "No records for this filter",
+  "filterEmptyHint": "Try another category or clear the filter",
+  "hidePassword": "Hide password",
+  "iHaveSavedPassword": "I have saved the encryption password",
+  "importData": "Import",
+  "importEncryptedBackup": "Import encrypted backup",
+  "importFailed": "Import failed: {error}",
+  "importJson": "Restore from JSON",
+  "importMarkdown": "Import Markdown/TXT",
+  "importPreview": "About to import {count} records",
+  "importSuccess": "Imported {count} records",
+  "infoCount": "{count} items",
+  "joinExistingVault": "Join existing vault",
+  "keepBoth": "Keep both",
+  "keepLocal": "Keep this version",
+  "keepPasswordSafe": "Keep your encryption password safe: it cannot be recovered if lost. Your WebDAV login cannot restore note contents.",
+  "keepRemote": "Keep other version",
+  "keywordCount": "{count} keywords",
+  "keywordHint": "Type a keyword, Enter to add",
+  "keywords": "Keywords",
+  "manageKeywords": "Manage keywords",
+  "renameCategory": "Rename",
+  "keywordsEmpty": "No keywords yet — add some to enable smart suggestions",
+  "lastSuccess": "Last success: {time}",
+  "lastSuccessNever": "Never synced successfully",
+  "lastSync": "Last sync",
+  "lastSyncToday": "Today {time}",
+  "linkCopied": "Link copied",
+  "localVersion": "This device",
+  "lockTimeout": "Lock after background",
+  "lockoutTryLater": "Too many attempts, try again in {seconds}s",
+  "manage": "Manage",
+  "manualMerge": "Merge manually",
+  "maxTagsReached": "Maximum 10 tags",
+  "mergeBodyHint": "Merged body",
+  "mergeDialogTitle": "Merge manually",
+  "mergeTitleHint": "Merged title",
+  "modified": "Modified {time}",
+  "myRecords": "My Info",
+  "newInfo": "New Info",
+  "newRecord": "New Record",
+  "newVaultPassword": "New vault password",
+  "notYetInput": "Nothing entered yet",
+  "ok": "OK",
+  "password": "Password",
+  "passwordMismatch": "Passwords do not match",
+  "passwordRequired": "Password is required",
+  "passwordStrengthFair": "Fair",
+  "passwordStrengthStrong": "Strong",
+  "passwordStrengthWeak": "Weak (12+ characters with letters, numbers and symbols recommended)",
+  "passwordTooShort": "Password must be at least 8 characters",
+  "pendingCount": "Pending upload: {count}",
+  "pendingUpload": "Pending upload",
+  "syncedRecordCount": "Synced {synced} / {total} records",
+  "permanentDelete": "Delete Permanently",
+  "permanentDeleteConfirm": "This cannot be undone. Delete permanently?",
+  "pinLabel": "PIN",
+  "pinNotSet": "Not set",
+  "pinSaved": "PIN saved",
+  "pinSet": "Set",
+  "pinTooShort": "PIN must be at least 4 digits",
+  "probeInvalidConfig": "Configuration incomplete",
+  "probeNotFound": "Directory not found on server",
+  "probeNotHttps": "HTTPS URLs only",
+  "probeServerError": "Server error",
+  "probeTimeout": "Connection timed out",
+  "probeTls": "TLS handshake failed; check the URL or certificate",
+  "probeUnauthorized": "Wrong username or password",
+  "probeUnknown": "Unknown error",
+  "probeUnreachable": "Cannot reach the server",
+  "recordCount": "{count} records",
+  "recordDeleted": "Moved to trash",
+  "recordsEmpty": "No info saved yet",
+  "recordsEmptyHint": "Tap \"+ New Info\" below to start saving",
+  "recoverDesc": "On a new device, download previously uploaded data from WebDAV and rebuild the local library. Only successfully uploaded data can be restored; offline edits that were never uploaded cannot be recovered.",
+  "recoverFailedObjects": "Failed objects: {count}",
+  "recoverFromWebdav": "Restore from WebDAV",
+  "recoverPartial": "Partially complete: {count} objects failed. You can retry.",
+  "recoverPhaseConnecting": "Connecting…",
+  "recoverPhaseDone": "Recovery complete",
+  "recoverPhaseDownloading": "Downloading objects…",
+  "recoverPhaseError": "Recovery failed",
+  "recoverPhaseListing": "Listing remote objects…",
+  "recoverPhaseRebuilding": "Rebuilding local library…",
+  "recoverProgress": "{done} of {total}",
+  "recoverRecordsRestored": "Records restored: {count}",
+  "recoveryKeyCopied": "Recovery key copied",
+  "recoveryKeyTitle": "Recovery key",
+  "recoveryKeyWarning": "This is the only time the recovery key will be shown. Write it down or save it somewhere safe now — it cannot be shown again.",
+  "remoteVersion": "Other version",
+  "removeCredentials": "Remove credentials",
+  "removeCredentialsConfirm": "Removing credentials disables sync and deletes the saved WebDAV login; local data is kept. Confirm?",
+  "rename": "Rename",
+  "resolveSuccess": "Conflict resolved",
+  "resolving": "Working…",
+  "restore": "Restore",
+  "retry": "Retry",
+  "save": "Save",
+  "saveFailed": "Save failed, tap to retry",
+  "saved": "Saved",
+  "saving": "Saving…",
+  "search": "Search",
+  "searchEmpty": "No matching info found",
+  "searchEmptyHint": "Try different keywords or clear search",
+  "searchHint": "Search info",
+  "security": "Security",
+  "securityNotImplemented": "Security features will be available in a future version",
+  "securityPageTitle": "Security",
+  "selectAll": "Select All",
+  "selectCategory": "Select Category",
+  "selectTags": "Select Tags",
+  "selectedCount": "{count} selected",
+  "setPin": "Set PIN",
+  "settings": "Settings",
+  "showPassword": "Show password",
+  "smartRecommend": "Smart suggestion",
+  "sortRecentlyCreated": "Recently created",
+  "sortRecentlyEdited": "Recently edited",
+  "sortTitle": "Sort",
+  "sortTitleAZ": "Title A–Z",
+  "startRecovery": "Start recovery",
+  "startSync": "Start sync",
+  "startSyncSetup": "Start sync setup",
+  "sync": "Sync",
+  "syncCompleted": "Sync completed",
+  "syncDirectory": "Sync directory",
+  "syncEngineWip": "Sync engine in development (Stage C)",
+  "syncNever": "Never synced",
+  "syncNotConfigured": "Sync not configured",
+  "syncNotImplemented": "Sync will be available in a future version",
+  "syncNow": "Sync Now",
+  "syncStatusDisabled": "Sync disabled",
+  "syncStatusEnabled": "Sync enabled",
+  "syncStatusSyncing": "Syncing…",
+  "syncStatusUnavailable": "Sync status unavailable",
+  "syncStatusUnavailableDesc": "The sync engine is still being wired up. Please try again later.",
+  "synced": "Synced",
+  "tagName": "Tag Name",
+  "tags": "Tags",
+  "tagsEmpty": "No tags yet",
+  "testConnection": "Test Connection",
+  "theme": "Theme",
+  "themeDark": "Dark",
+  "themeLight": "Light",
+  "themeSystem": "System",
+  "timeout1Min": "1 minute",
+  "timeout5Min": "5 minutes",
+  "timeoutImmediately": "Immediately",
+  "timeToday": "Today {time}",
+  "timeYesterday": "Yesterday",
+  "titleHint": "Title (optional)",
+  "trash": "Trash",
+  "trashEmpty": "Trash is empty",
+  "uncategorized": "Uncategorized",
+  "undoDelete": "Undo",
+  "unfavorite": "Unfavorite",
+  "unlockApp": "Unlock SuiVault",
+  "unlockAndJoin": "Unlock & Join",
+  "untitledRecord": "Untitled",
+  "updatedAt": "Updated {time}",
+  "useBiometric": "Unlock with biometrics",
+  "usePassword": "Use encryption password",
+  "useRecoveryKey": "Use recovery key",
+  "username": "Username",
+  "usernameRequired": "Username is required",
+  "vaultPassword": "Encryption password",
+  "vaultRecoveryKey": "Recovery key",
+  "version": "Version",
+  "viewConflicts": "View conflicts",
+  "webdavConnectionSettings": "WebDAV connection settings",
+  "webdavSync": "WebDAV Sync",
+  "webdavUrl": "WebDAV URL",
+  "webdavUrlInvalid": "WebDAV URL is invalid",
+  "webdavUrlRequired": "WebDAV URL is required",
+  "wizardConnectionDesc": "Tests the connection to your WebDAV server and checks whether the directory already holds a vault.",
+  "wizardCreating": "Creating vault…",
+  "wizardDone": "Sync setup complete",
+  "wizardDoneDesc": "Your encrypted vault is ready. You can start syncing now.",
+  "wizardHasVaultDesc": "A vault already exists in this directory. Enter the encryption password or recovery key to join.",
+  "wizardJoining": "Joining vault…",
+  "wizardMergeCount": "Items pending sync: {count}",
+  "wizardMergeInfo": "Your local data will never be directly replaced by the remote copy. Sync merges both sides; any conflicts can be resolved manually later.",
+  "wizardNoVaultDesc": "No vault found in this directory. You can create a new encrypted vault.",
+  "wizardStepConnection": "Connection test",
+  "wizardStepMerge": "Merge preview",
+  "wizardStepSecurity": "Encryption setup",
+  "wizardStepVault": "Choose vault",
+  "wizardTestAndContinue": "Test & continue",
+  "wizardTitle": "Sync setup wizard",
+  "wrongPin": "Wrong PIN, try again",
+  "existingVaultJoined": "An existing sync vault was found and joined",
+  "lockedKeysNotice": "{count} keys are still locked; some content is temporarily unavailable",
+  "migrationTitle": "Old protocol vault found",
+  "migrationBody": "The legacy directory will be kept as a backup; migration is a one-time copy. After migrating, append-only sync with protocol v2 will be used.",
+  "migrationBackupAndMigrate": "Backup and Migrate",
+  "passwordChangeDeferred": "Password change is not available yet; normal sync is unaffected",
+  "unlockKeyPrompt": "Unlock Key",
+  "enterKeyPassword": "Enter password to unlock keys",
+  "templateSheetTitle": "Choose a template",
+  "templateBlank": "Blank note",
+  "templateBlankDesc": "Start from a blank note",
+  "templatePassword": "Save a password",
+  "templatePasswordDesc": "Website, username and password with auto-masked password",
+  "templateIdea": "Quick idea",
+  "templateIdeaDesc": "Idea, source and next action",
+  "templateTodo": "To-do list",
+  "templateTodoDesc": "Checklist with checkbox items",
+  "templateContact": "Contact",
+  "templateContactDesc": "Name, phone, email and address",
+  "templateIdDocument": "ID Document",
+  "templateIdDocumentDesc": "ID cards, driver licenses with photos and auto-masked numbers",
+  "passwordCopied": "Password copied",
+  "pinRecord": "Pin to top",
+  "unpinRecord": "Unpin",
+  "deleteRecordTitle": "Delete this record?",
+  "deleteRecordConfirm": "You can restore it from Trash after deletion.",
+  "formatCheckbox": "Checkbox",
+  "formatHeading": "Heading",
+  "formatBold": "Bold",
+  "formatBullet": "Bulleted list",
+  "defaultCategoryWork": "Work",
+  "defaultCategoryStudy": "Study",
+  "defaultCategoryLife": "Life",
+  "defaultCategoryIdeas": "Ideas",
+  "defaultCategoryTodo": "To Do",
+  "recordTitlePassword": "Password record",
+  "recordTitleIdea": "Idea record",
+  "recordTitleTodo": "To-do record",
+  "todoProgress": "{done} of {total} done",
+  "copied": "Copied",
+  "notFilled": "Not set",
+  "today": "Today",
+  "yesterday": "Yesterday",
+  "copy": "Copy",
+  "fieldNotes": "Notes",
+  "fieldPassword": "Password",
+  "fieldUsername": "Username / Email",
+  "fieldWebsite": "Website / App",
+  "fieldIdea": "Idea",
+  "fieldSource": "Source",
+  "fieldNextAction": "Next action",
+  "recordTitleContact": "Contact record",
+  "recordTitleNote": "Note record",
+  "fieldName": "Name",
+  "fieldPhone": "Phone",
+  "fieldEmail": "Email",
+  "fieldAddress": "Address",
+  "recordTitleIdDocument": "ID Document",
+  "fieldDocType": "Document type",
+  "fieldDocName": "Name",
+  "fieldDocNumber": "Document number",
+  "fieldValidUntil": "Valid until",
+  "fieldPhotoFront": "ID photo front",
+  "fieldPhotoBack": "ID photo back",
+  "docTypeIdCard": "ID Card",
+  "docTypeDriverLicense": "Driver License",
+  "docTypeVehicleLicense": "Vehicle License",
+  "docTypePassport": "Passport",
+  "docTypeHmtPermit": "Exit-Entry Permit (HK/Macau)",
+  "docTypeSocialCard": "Social Security Card",
+  "docTypePropertyCert": "Property Certificate",
+  "docTypeOther": "Other",
+  "docTypeCustomHint": "Enter document type",
+  "takePhoto": "Take photo",
+  "chooseFromGallery": "Choose from gallery",
+  "viewPhoto": "View photo",
+  "privacyPolicy": "Privacy Policy",
+  "clearAllData": "Clear all data",
+  "clearAllDataWarningTitle": "Clear all data?",
+  "clearAllDataWarningContent": "This will delete all records, categories, tags, and ID photos. This action cannot be undone.",
+  "continueAction": "Continue",
+  "clearAllDataConfirmTitle": "Final confirmation",
+  "clearAllDataConfirmContent": "This action cannot be undone. All local records and ID photos will be permanently deleted.",
+  "confirmClearAllData": "I confirm to delete all data",
+  "clearAllDataSuccess": "All data cleared successfully",
+  "cameraRationaleTitle": "Camera Permission",
+  "cameraRationaleMessage": "Taking photos is used to capture ID photos, which are saved only to this app's private storage",
+  "sharePhoto": "Share photo",
+  "saveToGallery": "Save to gallery",
+  "savedToGallery": "Saved to gallery",
+  "savePhotoFailed": "Save failed, please try again",
+  "galleryPermissionTitle": "Gallery Permission",
+  "galleryPermissionMessage": "Saving ID photos to the system gallery requires gallery permission. Photos are saved to the local gallery only"
+}

@@ -1,0 +1,547 @@
+{
+  "@@locale": "zh",
+  "@conflictCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@connectionFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@exportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@importFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@importPreview": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@importSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@infoCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@keywordCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@lastSuccess": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@lastSyncToday": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@lockoutTryLater": {
+    "placeholders": {
+      "seconds": {}
+    }
+  },
+  "@modified": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@pendingCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@syncedRecordCount": {
+    "placeholders": {
+      "synced": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@recordCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@recoverFailedObjects": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@recoverPartial": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@recoverProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@recoverRecordsRestored": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@selectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@timeToday": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@todoProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@updatedAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@wizardMergeCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@lockedKeysNotice": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "about": "关于",
+  "addCategory": "新增分类",
+  "addKeyword": "添加关键词",
+  "addTag": "新增标签",
+  "addTags": "添加标签",
+  "all": "全部",
+  "appLock": "应用锁",
+  "appLocked": "随存已锁定",
+  "appName": "随存",
+  "appTagline": "保存以后还要找的信息",
+  "appearance": "外观",
+  "autoSaveHint": "自动保存，无需手动点击保存。",
+  "backToSync": "返回同步设置",
+  "backup": "备份",
+  "backupPassword": "备份密码",
+  "backupPasswordHint": "换设备恢复需要此密码，请妥善保存",
+  "batchCategorize": "批量分类",
+  "batchDelete": "批量删除",
+  "batchFavorite": "批量收藏",
+  "bodyHint": "写下以后还要找的信息……",
+  "bodyLimit": "正文较长（超过 1 MiB），建议拆分",
+  "cancel": "取消",
+  "categories": "分类",
+  "categoriesEmpty": "还没有分类",
+  "category": "分类",
+  "categoryColor": "分类颜色",
+  "categoryName": "分类名称",
+  "changeCategory": "修改分类",
+  "changePin": "修改 PIN",
+  "clearFilter": "清除筛选",
+  "configSaved": "配置已保存",
+  "confirm": "确认",
+  "confirmPassword": "确认密码",
+  "confirmVaultPassword": "确认加密密码",
+  "copyRecoveryKey": "复制",
+  "conflictCount": "冲突：{count}",
+  "conflictHistoryNote": "被弃用的版本会保留到历史记录，不会被删除。",
+  "conflictTypeCategory": "分类",
+  "conflictTypeRecord": "记录",
+  "conflictTypeTag": "标签",
+  "conflictsEmpty": "没有未解决的冲突",
+  "conflictsTitle": "同步冲突",
+  "connectAndSync": "连接并同步",
+  "connectionFailed": "连接失败：{error}",
+  "connectionSuccess": "连接成功",
+  "createNewVault": "创建新库",
+  "createdAtPrefix": "创建于",
+  "data": "数据",
+  "delete": "删除",
+  "deleteCategory": "删除分类",
+  "deleteCategoryConfirm": "删除后，该分类下的记录将转为未分类。确认删除吗？",
+  "deleteTag": "删除标签",
+  "deleteTagConfirm": "删除后，相关记录仍然保留，只解除标签关联。确认删除吗？",
+  "directoryInvalid": "同步目录须以 / 开头",
+  "disableSync": "关闭同步",
+  "disableSyncConfirm": "关闭同步将停止网络任务，本地数据保留。确认吗？",
+  "duplicateName": "该名称已存在",
+  "e2eDesc": "内容加密后上传到你的存储空间。",
+  "e2eEnabled": "已开启",
+  "e2eEncryption": "端到端加密",
+  "e2eWipDialog": "端到端加密将在同步引擎（阶段 C）上线时启用。",
+  "editCategory": "编辑分类",
+  "editInfo": "编辑信息",
+  "editTag": "编辑标签",
+  "enableAppLock": "启用应用锁",
+  "encryptedBackup": "加密备份",
+  "encryptionOn": "本地数据库已加密",
+  "encryptionOnDesc": "数据库使用随机密钥加密，密钥保存在系统安全存储",
+  "enterPin": "输入 PIN 解锁",
+  "export": "导出",
+  "exportEncryptedBackup": "导出加密备份",
+  "exportFailed": "导出失败：{error}",
+  "exportJson": "导出 JSON 备份",
+  "exportMarkdownZip": "导出 Markdown ZIP",
+  "exportSuccess": "导出成功",
+  "exportTxt": "导出 TXT",
+  "favorite": "收藏",
+  "favoriteFailed": "收藏失败，请重试",
+  "favorites": "收藏",
+  "filterEmpty": "该筛选下没有记录",
+  "filterEmptyHint": "试试其他分类，或清除筛选条件",
+  "hidePassword": "隐藏密码",
+  "iHaveSavedPassword": "我已妥善保存加密密码",
+  "importData": "导入",
+  "importEncryptedBackup": "导入加密备份",
+  "importFailed": "导入失败：{error}",
+  "importJson": "从 JSON 恢复",
+  "importMarkdown": "导入 Markdown/TXT",
+  "importPreview": "即将导入 {count} 条记录",
+  "importSuccess": "成功导入 {count} 条记录",
+  "infoCount": "{count} 条信息",
+  "joinExistingVault": "加入已有库",
+  "keepBoth": "分别保留",
+  "keepLocal": "保留本机版本",
+  "keepPasswordSafe": "请妥善保管加密密码：丢失后无法找回，WebDAV 账号密码不能恢复笔记内容。",
+  "keepRemote": "保留另一版本",
+  "keywordCount": "{count} 个关键词",
+  "keywordHint": "输入关键词，回车添加",
+  "keywords": "关键词",
+  "manageKeywords": "管理关键词",
+  "renameCategory": "重命名",
+  "keywordsEmpty": "暂无关键词，添加后可自动推荐分类",
+  "lastSuccess": "上次成功：{time}",
+  "lastSuccessNever": "从未成功同步",
+  "lastSync": "上次同步",
+  "lastSyncToday": "今天 {time}",
+  "linkCopied": "已复制链接",
+  "localVersion": "本机版本",
+  "lockTimeout": "后台锁定超时",
+  "lockoutTryLater": "尝试次数过多，请 {seconds} 秒后再试",
+  "manage": "管理",
+  "manualMerge": "手动合并",
+  "maxTagsReached": "最多添加 10 个标签",
+  "mergeBodyHint": "合并后的正文",
+  "mergeDialogTitle": "手动合并",
+  "mergeTitleHint": "合并后的标题",
+  "modified": "修改于 {time}",
+  "myRecords": "我的信息",
+  "newInfo": "新建信息",
+  "newRecord": "新建记录",
+  "newVaultPassword": "新库加密密码",
+  "notYetInput": "尚未输入",
+  "ok": "确定",
+  "password": "密码",
+  "passwordMismatch": "两次输入的密码不一致",
+  "passwordRequired": "请填写密码",
+  "passwordStrengthFair": "密码强度：中",
+  "passwordStrengthStrong": "密码强度：强",
+  "passwordStrengthWeak": "密码强度：弱（建议 12 位以上，混合字母、数字和符号）",
+  "passwordTooShort": "密码至少 8 位",
+  "pendingCount": "待上传：{count}",
+  "pendingUpload": "待上传",
+  "syncedRecordCount": "已同步 {synced} / 共 {total} 条记录",
+  "permanentDelete": "彻底删除",
+  "permanentDeleteConfirm": "彻底删除后无法恢复。确认吗？",
+  "pinLabel": "PIN",
+  "pinNotSet": "未设置",
+  "pinSaved": "PIN 已保存",
+  "pinSet": "已设置",
+  "pinTooShort": "PIN 至少 4 位",
+  "probeInvalidConfig": "配置不完整",
+  "probeNotFound": "服务器上找不到该目录",
+  "probeNotHttps": "仅支持 HTTPS 地址",
+  "probeServerError": "服务器错误",
+  "probeTimeout": "连接超时",
+  "probeTls": "TLS 握手失败，请检查地址或证书",
+  "probeUnauthorized": "用户名或密码错误",
+  "probeUnknown": "未知错误",
+  "probeUnreachable": "无法连接到服务器",
+  "recordCount": "{count} 条记录",
+  "recordDeleted": "已移至回收站",
+  "recordsEmpty": "还没有保存的信息",
+  "recordsEmptyHint": "点击下方「＋ 新建信息」开始保存",
+  "recoverDesc": "在新设备上从 WebDAV 下载已上传的数据，重建本地库。只能恢复已成功上传的数据；尚未上传的离线编辑无法找回。",
+  "recoverFailedObjects": "失败对象：{count}",
+  "recoverFromWebdav": "从 WebDAV 恢复",
+  "recoverPartial": "部分完成，有 {count} 个对象失败，可重试继续。",
+  "recoverPhaseConnecting": "正在连接…",
+  "recoverPhaseDone": "恢复完成",
+  "recoverPhaseDownloading": "正在下载对象…",
+  "recoverPhaseError": "恢复失败",
+  "recoverPhaseListing": "正在列出远端对象…",
+  "recoverPhaseRebuilding": "正在重建本地库…",
+  "recoverProgress": "已完成 {done} / 共 {total}",
+  "recoverRecordsRestored": "已恢复记录：{count}",
+  "recoveryKeyCopied": "恢复密钥已复制",
+  "recoveryKeyTitle": "恢复密钥",
+  "recoveryKeyWarning": "这是恢复密钥唯一的展示机会，请立即抄写或保存到安全的地方，关闭后无法再次查看。",
+  "remoteVersion": "另一版本",
+  "removeCredentials": "移除凭据",
+  "removeCredentialsConfirm": "移除凭据将关闭同步并删除已保存的 WebDAV 账号密码，本地数据保留。确认吗？",
+  "rename": "改名",
+  "resolveSuccess": "冲突已解决",
+  "resolving": "正在处理…",
+  "restore": "恢复",
+  "retry": "重试",
+  "save": "保存",
+  "saveFailed": "保存失败，点击重试",
+  "saved": "已保存",
+  "saving": "保存中…",
+  "search": "搜索",
+  "searchEmpty": "没有找到相关信息",
+  "searchEmptyHint": "试试其他关键词，或清除搜索条件",
+  "searchHint": "搜索信息",
+  "security": "安全",
+  "securityNotImplemented": "安全功能将在后续版本推出",
+  "securityPageTitle": "安全",
+  "selectAll": "全选",
+  "selectCategory": "选择分类",
+  "selectTags": "选择标签",
+  "selectedCount": "已选 {count} 条",
+  "setPin": "设置 PIN",
+  "settings": "设置",
+  "showPassword": "显示密码",
+  "smartRecommend": "智能推荐",
+  "sortRecentlyCreated": "最近创建",
+  "sortRecentlyEdited": "最近编辑",
+  "sortTitle": "排序",
+  "sortTitleAZ": "标题 A–Z",
+  "startRecovery": "开始恢复",
+  "startSync": "开始同步",
+  "startSyncSetup": "开始同步设置",
+  "sync": "同步",
+  "syncCompleted": "同步已完成",
+  "syncDirectory": "同步目录",
+  "syncEngineWip": "同步引擎开发中（阶段 C）",
+  "syncNever": "未同步",
+  "syncNotConfigured": "尚未配置同步",
+  "syncNotImplemented": "同步功能将在后续版本推出",
+  "syncNow": "立即同步",
+  "syncStatusDisabled": "未启用",
+  "syncStatusEnabled": "已启用",
+  "syncStatusSyncing": "正在同步…",
+  "syncStatusUnavailable": "同步状态不可用",
+  "syncStatusUnavailableDesc": "同步引擎正在接入，稍后再试。",
+  "synced": "已同步",
+  "tagName": "标签名称",
+  "tags": "标签",
+  "tagsEmpty": "还没有标签",
+  "testConnection": "测试连接",
+  "theme": "主题",
+  "themeDark": "深色",
+  "themeLight": "浅色",
+  "themeSystem": "跟随系统",
+  "timeout1Min": "1 分钟",
+  "timeout5Min": "5 分钟",
+  "timeoutImmediately": "立即",
+  "timeToday": "今天 {time}",
+  "timeYesterday": "昨天",
+  "titleHint": "标题（可选）",
+  "trash": "回收站",
+  "trashEmpty": "回收站为空",
+  "uncategorized": "未分类",
+  "undoDelete": "撤销",
+  "unfavorite": "取消收藏",
+  "unlockApp": "解锁随存",
+  "unlockAndJoin": "解锁并加入",
+  "untitledRecord": "未命名记录",
+  "updatedAt": "更新于 {time}",
+  "useBiometric": "生物识别解锁",
+  "usePassword": "使用加密密码",
+  "useRecoveryKey": "使用恢复密钥",
+  "username": "用户名",
+  "usernameRequired": "请填写用户名",
+  "vaultPassword": "加密密码",
+  "vaultRecoveryKey": "恢复密钥",
+  "version": "版本",
+  "viewConflicts": "查看冲突",
+  "webdavConnectionSettings": "WebDAV 连接配置",
+  "webdavSync": "WebDAV 同步",
+  "webdavUrl": "WebDAV 地址",
+  "webdavUrlInvalid": "WebDAV 地址格式不正确",
+  "webdavUrlRequired": "请填写 WebDAV 地址",
+  "wizardConnectionDesc": "将测试与 WebDAV 服务器的连接，并检查目录中是否已有同步库。",
+  "wizardCreating": "正在创建同步库…",
+  "wizardDone": "同步设置完成",
+  "wizardDoneDesc": "加密同步库已就绪，可以开始同步。",
+  "wizardHasVaultDesc": "该目录下已存在同步库，请输入加密密码或恢复密钥加入。",
+  "wizardJoining": "正在加入同步库…",
+  "wizardMergeCount": "待同步内容：{count} 条",
+  "wizardMergeInfo": "本地已有内容不会被远端直接替换；同步将合并两端数据，出现的冲突可稍后手动解决。",
+  "wizardNoVaultDesc": "该目录下没有同步库，可以创建一个新加密库。",
+  "wizardStepConnection": "连接测试",
+  "wizardStepMerge": "合并确认",
+  "wizardStepSecurity": "加密配置",
+  "wizardStepVault": "选择同步库",
+  "wizardTestAndContinue": "测试并继续",
+  "wizardTitle": "同步设置向导",
+  "wrongPin": "PIN 错误，请重试",
+  "existingVaultJoined": "检测到已有同步库，已为你加入",
+  "lockedKeysNotice": "有 {count} 把密钥未解锁，部分内容暂时无法显示",
+  "migrationTitle": "发现旧协议同步库",
+  "migrationBody": "旧目录原样保留作备份，迁移为一次性拷贝。迁移后可使用新协议进行无冲突追加同步。",
+  "migrationBackupAndMigrate": "备份并迁移",
+  "passwordChangeDeferred": "密码修改功能暂未开放，普通同步不受影响",
+  "unlockKeyPrompt": "解锁密钥",
+  "enterKeyPassword": "输入密钥加密密码",
+  "templateSheetTitle": "选择模版",
+  "templateBlank": "空白笔记",
+  "templateBlankDesc": "从空白开始自由记录",
+  "templatePassword": "记密码",
+  "templatePasswordDesc": "网站、账号与密码，密码自动掩码",
+  "templateIdea": "灵感速记",
+  "templateIdeaDesc": "灵感、来源与下一步行动",
+  "templateTodo": "待办清单",
+  "templateTodoDesc": "复选框式待办事项",
+  "templateContact": "联系人",
+  "templateContactDesc": "姓名、电话、邮箱与地址",
+  "templateIdDocument": "证件",
+  "templateIdDocumentDesc": "身份证、驾驶证等证件照与号码，号码自动掩码",
+  "passwordCopied": "密码已复制",
+  "pinRecord": "置顶",
+  "unpinRecord": "取消置顶",
+  "deleteRecordTitle": "删除这条记录？",
+  "deleteRecordConfirm": "删除后可在回收站找回。",
+  "formatCheckbox": "勾选框",
+  "formatHeading": "标题",
+  "formatBold": "加粗",
+  "formatBullet": "无序列表",
+  "defaultCategoryWork": "工作",
+  "defaultCategoryStudy": "学习",
+  "defaultCategoryLife": "生活",
+  "defaultCategoryIdeas": "灵感",
+  "defaultCategoryTodo": "待办",
+  "recordTitlePassword": "密码记录",
+  "recordTitleIdea": "灵感记录",
+  "recordTitleTodo": "待办记录",
+  "todoProgress": "已完成 {done} / {total}",
+  "copied": "已复制",
+  "notFilled": "未填写",
+  "today": "今天",
+  "yesterday": "昨天",
+  "copy": "复制",
+  "fieldNotes": "备注",
+  "fieldPassword": "密码",
+  "fieldUsername": "用户名 / 邮箱",
+  "fieldWebsite": "网站 / 应用",
+  "fieldIdea": "灵感",
+  "fieldSource": "来源",
+  "fieldNextAction": "下一步行动",
+  "recordTitleContact": "联系人记录",
+  "recordTitleNote": "备忘记录",
+  "fieldName": "姓名",
+  "fieldPhone": "电话",
+  "fieldEmail": "邮箱",
+  "fieldAddress": "地址",
+  "recordTitleIdDocument": "证件记录",
+  "fieldDocType": "证件类型",
+  "fieldDocName": "姓名",
+  "fieldDocNumber": "证件号码",
+  "fieldValidUntil": "有效期至",
+  "fieldPhotoFront": "证件照片正面",
+  "fieldPhotoBack": "证件照片反面",
+  "docTypeIdCard": "身份证",
+  "docTypeDriverLicense": "驾驶证",
+  "docTypeVehicleLicense": "行驶证",
+  "docTypePassport": "护照",
+  "docTypeHmtPermit": "港澳通行证",
+  "docTypeSocialCard": "社保卡",
+  "docTypePropertyCert": "房产证",
+  "docTypeOther": "其他",
+  "docTypeCustomHint": "请输入证件类型",
+  "takePhoto": "拍照",
+  "chooseFromGallery": "从相册选择",
+  "viewPhoto": "查看大图",
+  "privacyPolicy": "隐私政策",
+  "clearAllData": "清除全部数据",
+  "clearAllDataWarningTitle": "清除全部数据？",
+  "clearAllDataWarningContent": "将删除所有记录、分类、标签及证件照片，不可恢复。",
+  "continueAction": "继续",
+  "clearAllDataConfirmTitle": "最终确认",
+  "clearAllDataConfirmContent": "此操作无法撤销，所有本地记录及证件照片将被彻底删除。",
+  "confirmClearAllData": "我确认要删除全部数据",
+  "clearAllDataSuccess": "已清除全部数据",
+  "cameraRationaleTitle": "相机权限说明",
+  "cameraRationaleMessage": "拍照用于拍摄证件照片，仅保存到本应用私有目录",
+  "sharePhoto": "分享照片",
+  "saveToGallery": "保存到相册",
+  "savedToGallery": "已保存到相册",
+  "savePhotoFailed": "保存失败，请重试",
+  "galleryPermissionTitle": "相册权限说明",
+  "galleryPermissionMessage": "保存证件照片到系统相册需要相册权限，照片仅保存到本地相册"
+}

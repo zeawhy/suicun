@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Stage B: Android Auto Backup exclusions (spec §9).
+  The encrypted database and the platform secure storage (which holds the
+  random database key and app-lock secrets) must never be uploaded to
+  Google Drive auto backup: a backup that silently carries the key next to
+  the ciphertext defeats the purpose, and unrestorable key backups would
+  brick the database on restore. Users move data via the in-app encrypted
+  backup instead.
+-->
+<full-backup-content>
+    <!-- Encrypted SQLite database + SQLCipher sidecars -->
+    <exclude domain="file" path="suicun.db"/>
+    <exclude domain="file" path="suicun.db-wal"/>
+    <exclude domain="file" path="suicun.db-shm"/>
+    <exclude domain="file" path="suicun.db-journal"/>
+    <exclude domain="file" path="suicun.db.migrating"/>
+    <!-- flutter_secure_storage (EncryptedSharedPreferences) -->
+    <exclude domain="sharedpref" path="FlutterSecureStorage"/>
+    <exclude domain="sharedpref" path="FlutterSecureStoragePreferences"/>
+</full-backup-content>
