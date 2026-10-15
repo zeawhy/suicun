@@ -206,6 +206,8 @@ void main() {
       await tester.pumpAndSettle();
       await tester.pageBack();
       await tester.pumpAndSettle();
+      await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 1050)));
       await tester.pump(const Duration(seconds: 1));
     }
 

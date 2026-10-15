@@ -355,7 +355,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                         width: 10,
                         height: 10,
                         decoration: BoxDecoration(
-                          color: AppTheme.getCategoryColor(c.name, c.color),
+                          color: Theme.of(ctx)
+                              .suiColors
+                              .colorForCategory(c.name, c.color),
                           shape: BoxShape.circle,
                         ),
                       ),

@@ -255,10 +255,12 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           _ColorDot(
-                            color: AppTheme.getCategoryColor(
-                              s.categoryName,
-                              _suggestionColors[s.categoryId],
-                            ),
+                            color: Theme.of(context)
+                                .suiColors
+                                .colorForCategory(
+                                  s.categoryName,
+                                  _suggestionColors[s.categoryId],
+                                ),
                           ),
                           const SizedBox(width: 6),
                           Text(
@@ -300,7 +302,11 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
               onPressed: () => Navigator.of(ctx).pop(c.id),
               child: Row(
                 children: [
-                  _ColorDot(color: AppTheme.getCategoryColor(c.name, c.color)),
+                  _ColorDot(
+                    color: Theme.of(ctx)
+                        .suiColors
+                        .colorForCategory(c.name, c.color),
+                  ),
                   const SizedBox(width: 12),
                   Expanded(child: Text(categoryDisplayName(ctx, c.name))),
                   if (record?.categoryId == c.id)
@@ -1544,10 +1550,12 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
               const Spacer(),
               if (category != null) ...[
                 _ColorDot(
-                  color: AppTheme.getCategoryColor(
-                    category.name,
-                    category.color,
-                  ),
+                  color: Theme.of(context)
+                      .suiColors
+                      .colorForCategory(
+                        category.name,
+                        category.color,
+                      ),
                 ),
                 const SizedBox(width: 8),
                 Text(categoryDisplayName(context, category.name),
