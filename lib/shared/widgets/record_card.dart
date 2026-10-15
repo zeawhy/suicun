@@ -2,6 +2,7 @@
 
 import 'dart:io';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -181,6 +182,8 @@ class RecordCard extends StatelessWidget {
       child: Slidable(
         key: ValueKey(record.id),
         enabled: !isMultiSelectMode,
+        closeOnScroll: true,
+        dragStartBehavior: DragStartBehavior.start,
         endActionPane: ActionPane(
           motion: const DrawerMotion(),
           children: [

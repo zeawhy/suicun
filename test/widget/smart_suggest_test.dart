@@ -16,7 +16,7 @@ import 'package:suicun/features/sync/entity_snapshot.dart';
 import 'package:suicun/main.dart';
 import 'package:suicun/services/auto_category_service.dart';
 
-import 'record_workflow_test.dart' show findByHint, freshDb;
+import 'record_workflow_test.dart' show findByHint, freshDb, openEditor;
 
 Future<ProviderContainer> pumpAppWithContainer(
   WidgetTester tester,
@@ -77,8 +77,7 @@ void main() {
         .setKeywords(cat.id, ['flutter']);
 
     // Open a new record and type matching text.
-    await tester.tap(find.byTooltip('New Record'));
-    await tester.pumpAndSettle();
+    await openEditor(tester);
     await tester.enterText(findByHint('Title (optional)'), 'flutter notes');
     // 500ms auto-save debounce + 1200ms suggestion debounce + save roundtrip.
     await tester.pump(const Duration(milliseconds: 1400));
@@ -99,8 +98,7 @@ void main() {
         .read(autoCategoryServiceProvider)
         .setKeywords(cat.id, ['flutter']);
 
-    await tester.tap(find.byTooltip('New Record'));
-    await tester.pumpAndSettle();
+    await openEditor(tester);
     await tester.enterText(findByHint('Title (optional)'), 'random cooking recipe');
     await tester.pump(const Duration(milliseconds: 1400));
     await tester.pumpAndSettle();
@@ -119,8 +117,7 @@ void main() {
         .read(autoCategoryServiceProvider)
         .setKeywords(cat.id, ['flutter']);
 
-    await tester.tap(find.byTooltip('New Record'));
-    await tester.pumpAndSettle();
+    await openEditor(tester);
     await tester.enterText(findByHint('Title (optional)'), 'flutter notes');
     await tester.pump(const Duration(milliseconds: 1400));
     await tester.pumpAndSettle();
@@ -151,8 +148,7 @@ void main() {
     await categoryRepo.createCategory('Dev', '#4866D5');
     await categoryRepo.createCategory('Other', '#333333');
 
-    await tester.tap(find.byTooltip('New Record'));
-    await tester.pumpAndSettle();
+    await openEditor(tester);
 
     // Tap category row to manually pick "Other"
     await tester.tap(find.text('Category'));
@@ -180,8 +176,7 @@ void main() {
       autoCategoryService: failingService,
     );
 
-    await tester.tap(find.byTooltip('New Record'));
-    await tester.pumpAndSettle();
+    await openEditor(tester);
     await tester.enterText(findByHint('Title (optional)'), 'some text');
     await tester.pump(const Duration(milliseconds: 1400));
     await tester.pumpAndSettle();
@@ -211,8 +206,7 @@ void main() {
     await pumpAppWithContainer(tester, db);
 
     // Open new record and type seed keyword '开会' or '项目'.
-    await tester.tap(find.byTooltip('New Record'));
-    await tester.pumpAndSettle();
+    await openEditor(tester);
     await tester.enterText(findByHint('Title (optional)'), '项目汇报');
     await tester.pump(const Duration(milliseconds: 1400));
     await tester.pumpAndSettle();

@@ -25,6 +25,16 @@ Finder findByHint(String hint) => find.byWidgetPredicate(
                   ((w.decoration!.hint as Text).data == hint))),
     );
 
+Future<void> openEditor(WidgetTester tester) async {
+  await tester.tap(find.byTooltip('New Record'));
+  await tester.pumpAndSettle();
+  final blankFinder = find.byKey(const Key('speed_dial_item_blank'));
+  if (blankFinder.evaluate().isNotEmpty) {
+    await tester.tap(blankFinder);
+    await tester.pumpAndSettle();
+  }
+}
+
 void main() {
   late AppDatabase db;
 
@@ -60,8 +70,7 @@ void main() {
     await pumpApp(tester);
 
     // 1. Create a blank note with title and body
-    await tester.tap(find.byTooltip('New Record'));
-    await tester.pumpAndSettle();
+    await openEditor(tester);
 
     await tester.enterText(findByHint('Title (optional)'), 'My Daily Log');
     await tester.enterText(
@@ -108,8 +117,7 @@ void main() {
     await pumpApp(tester);
 
     // 1. Create a blank note with only title and empty body
-    await tester.tap(find.byTooltip('New Record'));
-    await tester.pumpAndSettle();
+    await openEditor(tester);
 
     await tester.enterText(findByHint('Title (optional)'), 'Empty Note Title');
 
@@ -140,8 +148,7 @@ void main() {
     await pumpApp(tester);
 
     // 1. Create a note
-    await tester.tap(find.byTooltip('New Record'));
-    await tester.pumpAndSettle();
+    await openEditor(tester);
 
     await tester.enterText(findByHint('Title (optional)'), 'Tap Body Test');
     await tester.enterText(
@@ -179,8 +186,7 @@ void main() {
     await pumpApp(tester);
 
     // 1. Create a note
-    await tester.tap(find.byTooltip('New Record'));
-    await tester.pumpAndSettle();
+    await openEditor(tester);
 
     await tester.enterText(findByHint('Title (optional)'), 'Pencil Test');
     await tester.enterText(

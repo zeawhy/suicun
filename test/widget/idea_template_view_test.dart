@@ -60,7 +60,11 @@ void main() {
     await pumpApp(tester);
 
     // 1. Create an idea record via card form
-    await tester.longPress(find.byTooltip('New Record'));
+    await tester.tap(find.byTooltip('New Record'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('speed_dial_item_blank')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Blank note'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Quick idea'));
     await tester.pumpAndSettle();
@@ -171,6 +175,8 @@ void main() {
 
     // 1. Create a blank note with freeform text
     await tester.tap(find.byTooltip('New Record'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('speed_dial_item_blank')));
     await tester.pumpAndSettle();
 
     await tester.enterText(findByHint('Title (optional)'), 'Random Thoughts');

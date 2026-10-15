@@ -129,9 +129,9 @@ void main() {
       await pumpApp(tester);
 
       // 1. Create a contact record via card form
-      await tester.longPress(find.byTooltip('New Record'));
+      await tester.tap(find.byTooltip('New Record'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Contact'));
+      await tester.tap(find.byKey(const Key('speed_dial_item_address')));
       await tester.pumpAndSettle();
 
       // ContactTemplateView should be rendered directly in creation mode
@@ -258,6 +258,8 @@ void main() {
       await pumpApp(tester);
 
       await tester.tap(find.byTooltip('New Record'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('speed_dial_item_blank')));
       await tester.pumpAndSettle();
 
       await tester.enterText(findByHint('Title (optional)'), 'Casual Note');

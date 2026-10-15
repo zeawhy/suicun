@@ -197,4 +197,70 @@ void main() {
     expect(find.byType(TextField), findsOneWidget);
     expect(find.text('Cancel'), findsOneWidget);
   });
+
+  testWidgets('f. P1-3 Speed Dial: 点击展开 4 个子胶囊，点击遮罩收起', (tester) async {
+    await pumpApp(tester, db);
+
+    // Speed Dial 子胶囊初始不可见
+    expect(find.text('空白速记'), findsNothing);
+    expect(find.text('证件'), findsNothing);
+    expect(find.text('密码'), findsNothing);
+    expect(find.text('地址'), findsNothing);
+
+    // 主 FAB 存在
+    final fabFinder = find.byType(FloatingActionButton);
+    expect(fabFinder, findsOneWidget);
+
+    // 点击主 FAB
+    await tester.tap(fabFinder);
+    await tester.pumpAndSettle();
+
+    // 4 个子胶囊自上而下展开
+    expect(find.text('空白速记'), findsOneWidget);
+    expect(find.text('证件'), findsOneWidget);
+    expect(find.text('密码'), findsOneWidget);
+    expect(find.text('地址'), findsOneWidget);
+
+    // 点击半透明遮罩区域收起
+    await tester.tapAt(const Offset(100, 100));
+    await tester.pumpAndSettle();
+
+    expect(find.text('空白速记'), findsNothing);
+    expect(find.text('证件'), findsNothing);
+    expect(find.text('密码'), findsNothing);
+    expect(find.text('地址'), findsNothing);
+  });
+
+  testWidgets('g. P1-4 SyncBadge: 状态栏上移，点击已同步徽章弹窗', (tester) async {
+    final now = DateTime.now().toUtc();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appDatabaseProvider.overrideWithValue(db),
+          syncOverviewProvider.overrideWith(
+            (ref) => Stream<SyncOverview>.value(
+              SyncOverview(
+                enabled: true,
+                syncing: false,
+                lastSuccessAt: now,
+              ),
+            ),
+          ),
+        ],
+        child: const SuicunApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // 顶部 title 旁边有已同步云朵
+    expect(find.byIcon(Icons.cloud_done_outlined), findsOneWidget);
+
+    // 点击云朵弹出 BottomSheet
+    await tester.tap(find.byIcon(Icons.cloud_done_outlined));
+    await tester.pumpAndSettle();
+
+    expect(find.text('WebDAV 同步'), findsOneWidget);
+    expect(find.textContaining('上次同步时间：'), findsOneWidget);
+    expect(find.text('前往 WebDAV 设置'), findsOneWidget);
+  });
 }

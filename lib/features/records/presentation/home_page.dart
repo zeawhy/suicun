@@ -6,7 +6,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:go_router/go_router.dart';
@@ -20,7 +19,6 @@ import 'package:suicun/features/records/presentation/records_notifier.dart';
 import 'package:suicun/features/categories/presentation/category_display_name.dart';
 import 'package:suicun/features/records/data/quick_access_storage.dart';
 import 'package:suicun/features/records/presentation/quick_access_panel.dart';
-import 'package:suicun/features/records/presentation/template_sheet.dart';
 import 'package:suicun/features/settings/presentation/settings_page.dart';
 import 'package:suicun/features/sync/sync_contract.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
@@ -34,10 +32,12 @@ class HomePage extends ConsumerStatefulWidget {
   ConsumerState<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends ConsumerState<HomePage> {
+class _HomePageState extends ConsumerState<HomePage>
+    with TickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocus = FocusNode();
   final ScrollController _scrollController = ScrollController();
+  late final AnimationController _speedDialController;
   Timer? _debounce;
   bool _searchExpanded = false;
   String? _savedCategoryId;
@@ -52,6 +52,35 @@ class _HomePageState extends ConsumerState<HomePage> {
   static const Duration _sidebarAnimationDuration =
       Duration(milliseconds: 280);
   static const Curve _sidebarAnimationCurve = Curves.fastOutSlowIn;
+
+  bool get _isSpeedDialOpen =>
+      _speedDialController.status == AnimationStatus.forward ||
+      _speedDialController.status == AnimationStatus.completed;
+
+  void _toggleSpeedDial() {
+    if (_isSpeedDialOpen) {
+      _speedDialController.reverse();
+    } else {
+      _speedDialController.forward();
+    }
+    setState(() {});
+  }
+
+  void _closeSpeedDial() {
+    if (_speedDialController.value > 0) {
+      _speedDialController.reverse();
+      setState(() {});
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _speedDialController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 240),
+    );
+  }
 
   void _openSettings() {
     setState(() {
@@ -81,6 +110,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     _searchController.dispose();
     _searchFocus.dispose();
     _scrollController.dispose();
+    _speedDialController.dispose();
     super.dispose();
   }
 
@@ -476,7 +506,7 @@ class _HomePageState extends ConsumerState<HomePage> {
 
     final showQuickAndRecent = !isSearchOrFilterActive && !_isMultiSelect;
 
-    final mainContent = Scaffold(
+    final scaffoldContent = Scaffold(
       body: SafeArea(
         child: SlidableAutoCloseBehavior(
           child: NotificationListener<OverscrollNotification>(
@@ -718,10 +748,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      const Expanded(child: _SyncStatus()),
-                      const SizedBox(width: 8),
-                      _buildDualModeFab(context),
+                      const Spacer(),
+                      _buildSpeedDialFab(context),
                     ],
                   ),
                 ),
@@ -730,10 +758,21 @@ class _HomePageState extends ConsumerState<HomePage> {
           : null,
     );
 
+    final mainContent = Stack(
+      children: [
+        scaffoldContent,
+        if (!_isMultiSelect) _buildSpeedDialOverlay(context),
+      ],
+    );
+
     return PopScope(
-      canPop: !_settingsOpen,
+      canPop: !_settingsOpen && !_isSpeedDialOpen,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
+        if (_isSpeedDialOpen) {
+          _closeSpeedDial();
+          return;
+        }
         if (_settingsOpen) {
           _closeSettings();
         }
@@ -857,33 +896,192 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
-  Widget _buildDualModeFab(BuildContext context) {
+  Widget _buildSpeedDialFab(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return Tooltip(
-      message: l10n.newRecord,
-      triggerMode: TooltipTriggerMode.manual,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onLongPress: () async {
-          HapticFeedback.mediumImpact();
-          if (!context.mounted) return;
-          final templateId = await showTemplateSheet(context);
-          if (templateId == null || !context.mounted) return;
-          if (templateId == 'blank' || templateId == 'quick_note') {
-            context.push('/edit?template=blank&autofocus=true');
-          } else {
-            context.push('/edit?template=$templateId&autofocus=true');
-          }
-        },
-        child: FloatingActionButton.extended(
-          heroTag: 'dualModeFab',
-          elevation: 0,
-          highlightElevation: 2,
-          onPressed: () {
-            context.push('/edit?template=blank&autofocus=true');
-          },
-          icon: const Icon(Icons.add, size: 22),
-          label: Text(l10n.newInfo),
+    return FloatingActionButton(
+      heroTag: 'speedDialMainFab',
+      elevation: 2,
+      shape: const CircleBorder(),
+      tooltip: l10n.newRecord,
+      onPressed: _toggleSpeedDial,
+      child: AnimatedRotation(
+        turns: _isSpeedDialOpen ? 0.125 : 0.0,
+        duration: const Duration(milliseconds: 200),
+        child: const Icon(Icons.add, size: 24),
+      ),
+    );
+  }
+
+  Widget _buildSpeedDialOverlay(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _speedDialController,
+      builder: (context, child) {
+        if (_speedDialController.value == 0) {
+          return const SizedBox.shrink();
+        }
+        final theme = Theme.of(context);
+        final isDark = theme.brightness == Brightness.dark;
+        final items = _getSpeedDialItems(context, isDark);
+        final bottomPadding = MediaQuery.paddingOf(context).bottom + 12;
+
+        return Positioned.fill(
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: _closeSpeedDial,
+                  child: Container(
+                    color: Colors.black.withValues(
+                      alpha: 0.3 * _speedDialController.value,
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                right: 16,
+                bottom: bottomPadding + 56 + 12,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    for (int i = 0; i < items.length; i++) ...[
+                      if (i > 0) const SizedBox(height: 12),
+                      _buildSpeedDialItem(
+                        context,
+                        item: items[i],
+                        index: i,
+                        total: items.length,
+                        isDark: isDark,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              Positioned(
+                right: 16,
+                bottom: bottomPadding,
+                child: FloatingActionButton(
+                  heroTag: 'speedDialOverlayFab',
+                  elevation: 2,
+                  shape: const CircleBorder(),
+                  tooltip: AppLocalizations.of(context).newRecord,
+                  onPressed: _closeSpeedDial,
+                  child: AnimatedRotation(
+                    turns: _isSpeedDialOpen ? 0.125 : 0.0,
+                    duration: const Duration(milliseconds: 200),
+                    child: const Icon(Icons.add, size: 24),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  List<_SpeedDialItemData> _getSpeedDialItems(
+      BuildContext context, bool isDark) {
+    return [
+      _SpeedDialItemData(
+        id: 'blank',
+        label: '空白速记',
+        icon: Icons.edit_note_outlined,
+        accentColor: isDark ? const Color(0xFFE6C875) : const Color(0xFF785700),
+        route: '/edit?template=blank&autofocus=true',
+      ),
+      _SpeedDialItemData(
+        id: 'id_document',
+        label: '证件',
+        icon: Icons.badge_outlined,
+        accentColor: isDark ? const Color(0xFF90B8DE) : const Color(0xFF334155),
+        route: '/edit?template=id_document&autofocus=true',
+      ),
+      _SpeedDialItemData(
+        id: 'password',
+        label: '密码',
+        icon: Icons.lock_outline,
+        accentColor: isDark ? const Color(0xFF81C784) : const Color(0xFF1B5E20),
+        route: '/edit?template=password&autofocus=true',
+      ),
+      _SpeedDialItemData(
+        id: 'address',
+        label: '地址',
+        icon: Icons.location_on_outlined,
+        accentColor: isDark ? const Color(0xFFFFB74D) : const Color(0xFFC2410C),
+        route: '/edit?template=address&autofocus=true',
+      ),
+    ];
+  }
+
+  Widget _buildSpeedDialItem(
+    BuildContext context, {
+    required _SpeedDialItemData item,
+    required int index,
+    required int total,
+    required bool isDark,
+  }) {
+    final reverseIndex = total - 1 - index;
+    final begin = (reverseIndex * 0.12).clamp(0.0, 0.6);
+    final end = (begin + 0.4).clamp(0.0, 1.0);
+    final scaleAnim = CurvedAnimation(
+      parent: _speedDialController,
+      curve: Interval(begin, end, curve: Curves.easeOutBack),
+    );
+    final fadeAnim = CurvedAnimation(
+      parent: _speedDialController,
+      curve: Interval(begin, end, curve: Curves.easeIn),
+    );
+
+    return ScaleTransition(
+      scale: scaleAnim,
+      alignment: Alignment.bottomRight,
+      child: FadeTransition(
+        opacity: fadeAnim,
+        child: Material(
+          color: isDark ? const Color(0xFF242C36) : Colors.white,
+          elevation: 3,
+          shadowColor: Colors.black26,
+          borderRadius: BorderRadius.circular(24),
+          child: InkWell(
+            key: Key('speed_dial_item_${item.id}'),
+            borderRadius: BorderRadius.circular(24),
+            onTap: () {
+              _closeSpeedDial();
+              context.push(item.route);
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: item.accentColor.withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      item.icon,
+                      size: 16,
+                      color: item.accentColor,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    item.label,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.white : const Color(0xFF1E293B),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -1031,12 +1229,19 @@ class _HomePageState extends ConsumerState<HomePage> {
       pinned: false,
       backgroundColor: colorScheme.surface,
       surfaceTintColor: Colors.transparent,
-      title: const Text(
-        '随存 SuiVault',
-        style: TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-        ),
+      title: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            '随存 SuiVault',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(width: 8),
+          _SyncBadge(),
+        ],
       ),
       actions: [
         IconButton(
@@ -1048,6 +1253,22 @@ class _HomePageState extends ConsumerState<HomePage> {
       ],
     );
   }
+}
+
+class _SpeedDialItemData {
+  const _SpeedDialItemData({
+    required this.id,
+    required this.label,
+    required this.icon,
+    required this.accentColor,
+    required this.route,
+  });
+
+  final String id;
+  final String label;
+  final IconData icon;
+  final Color accentColor;
+  final String route;
 }
 
 class _CategoryFilterHeaderDelegate extends SliverPersistentHeaderDelegate {
@@ -1169,105 +1390,188 @@ class _CategoryFilterBar extends StatelessWidget {
   }
 }
 
-/// Sync status widget shown in the bottom bar.
-class _SyncStatus extends ConsumerWidget {
-  const _SyncStatus();
+/// Tiny cloud badge shown in the top SliverAppBar next to the title.
+class _SyncBadge extends ConsumerWidget {
+  const _SyncBadge();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context);
     final locale = Localizations.localeOf(context).toString();
     final syncOverviewAsync = ref.watch(syncOverviewProvider);
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(8),
+    return syncOverviewAsync.when(
+      loading: () => const SizedBox(
+        width: 14,
+        height: 14,
+        child: CircularProgressIndicator(strokeWidth: 1.5),
+      ),
+      error: (_, __) => _buildIconBadge(
+        context: context,
+        icon: Icons.cloud_off_outlined,
+        color: Colors.orange,
+        tooltip: l10n.syncStatusUnavailable,
         onTap: () => context.push('/settings/webdav'),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
-          child: syncOverviewAsync.when(
-            loading: () => const Row(
+      ),
+      data: (o) {
+        if (o.syncing) {
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            decoration: BoxDecoration(
+              color: colorScheme.primaryContainer.withValues(alpha: 0.6),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
+                  width: 11,
+                  height: 11,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 1.5,
+                    color: colorScheme.primary,
+                  ),
+                ),
+                const SizedBox(width: 5),
+                Text(
+                  l10n.syncStatusSyncing,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: colorScheme.primary,
+                  ),
                 ),
               ],
             ),
-            error: (_, __) => Text(
-              l10n.syncStatusUnavailable,
-              style: TextStyle(
-                fontSize: 13,
-                color: colorScheme.onSurfaceVariant,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            data: (o) {
-              final Widget icon;
-              final String text;
-              final Color textColor;
+          );
+        }
 
-              if (o.syncing) {
-                icon = Icon(
-                  Icons.cloud_sync_outlined,
-                  size: 20,
-                  color: colorScheme.primary,
-                );
-                text = l10n.syncStatusSyncing;
-                textColor = colorScheme.primary;
-              } else if (o.lastSuccessAt != null) {
-                icon = Icon(
-                  Icons.cloud_done_outlined,
-                  size: 20,
-                  color: colorScheme.primary,
-                );
-                final hm =
-                    DateFormat.Hm(locale).format(o.lastSuccessAt!.toLocal());
-                text = '${l10n.synced} · $hm';
-                textColor = colorScheme.onSurfaceVariant;
-              } else if (o.enabled) {
-                icon = Icon(
-                  Icons.cloud_off_outlined,
-                  size: 20,
-                  color: colorScheme.onSurfaceVariant,
-                );
-                text = l10n.syncNever;
-                textColor = colorScheme.onSurfaceVariant;
-              } else {
-                icon = Icon(
-                  Icons.cloud_off_outlined,
-                  size: 20,
-                  color: colorScheme.onSurfaceVariant,
-                );
-                text = l10n.syncStatusDisabled;
-                textColor = colorScheme.onSurfaceVariant;
-              }
-
-              return Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  icon,
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      text,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: textColor,
+        if (o.lastSuccessAt != null) {
+          const greenColor = Color(0xFF4CAF50);
+          return _buildIconBadge(
+            context: context,
+            icon: Icons.cloud_done_outlined,
+            color: greenColor,
+            tooltip: l10n.synced,
+            onTap: () {
+              final formattedTime = DateFormat.yMMMd(locale)
+                  .add_Hms()
+                  .format(o.lastSuccessAt!.toLocal());
+              showModalBottomSheet<void>(
+                context: context,
+                builder: (sheetContext) {
+                  return SafeArea(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 20,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                width: 36,
+                                height: 36,
+                                decoration: BoxDecoration(
+                                  color: greenColor.withValues(alpha: 0.15),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.cloud_done_outlined,
+                                  color: greenColor,
+                                  size: 20,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'WebDAV 同步',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      '上次同步时间：$formattedTime',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: theme
+                                            .colorScheme.onSurfaceVariant,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+                          SizedBox(
+                            width: double.infinity,
+                            child: FilledButton.tonal(
+                              onPressed: () {
+                                Navigator.pop(sheetContext);
+                                context.push('/settings/webdav');
+                              },
+                              child: const Text('前往 WebDAV 设置'),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  );
+                },
               );
             },
+          );
+        }
+
+        if (o.enabled) {
+          return _buildIconBadge(
+            context: context,
+            icon: Icons.cloud_queue_outlined,
+            color: Colors.orange,
+            tooltip: l10n.syncNever,
+            onTap: () => context.push('/settings/webdav'),
+          );
+        }
+
+        return _buildIconBadge(
+          context: context,
+          icon: Icons.cloud_off_outlined,
+          color: colorScheme.onSurfaceVariant.withValues(alpha: 0.45),
+          tooltip: l10n.syncStatusDisabled,
+          onTap: () => context.push('/settings/webdav'),
+        );
+      },
+    );
+  }
+
+  Widget _buildIconBadge({
+    required BuildContext context,
+    required IconData icon,
+    required Color color,
+    required String tooltip,
+    required VoidCallback onTap,
+  }) {
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(4),
+            child: Icon(icon, size: 16, color: color),
           ),
         ),
       ),
