@@ -94,7 +94,7 @@ void main() {
     await pumpApp(tester);
 
     // 1. Create a todo record via To-do template (card form)
-    await tester.tap(find.byTooltip('New Record'));
+    await tester.longPress(find.byTooltip('New Record'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('To-do list'));
     await tester.pumpAndSettle();
@@ -164,7 +164,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // 4. Re-open the record and verify persistence
-    await tester.tap(find.text('Trip Checklist'));
+    await tester.tap(find.text('Trip Checklist').first);
     await tester.pumpAndSettle();
 
     expect(find.byType(TodoTemplateView), findsOneWidget);
@@ -187,8 +187,6 @@ void main() {
 
     // 1. Create a note with mixed text
     await tester.tap(find.byTooltip('New Record'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Blank note'));
     await tester.pumpAndSettle();
 
     await tester.enterText(findByHint('Title (optional)'), 'Mixed Plan');

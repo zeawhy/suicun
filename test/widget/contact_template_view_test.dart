@@ -129,7 +129,7 @@ void main() {
       await pumpApp(tester);
 
       // 1. Create a contact record via card form
-      await tester.tap(find.byTooltip('New Record'));
+      await tester.longPress(find.byTooltip('New Record'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Contact'));
       await tester.pumpAndSettle();
@@ -258,8 +258,6 @@ void main() {
       await pumpApp(tester);
 
       await tester.tap(find.byTooltip('New Record'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Blank note'));
       await tester.pumpAndSettle();
 
       await tester.enterText(findByHint('Title (optional)'), 'Casual Note');

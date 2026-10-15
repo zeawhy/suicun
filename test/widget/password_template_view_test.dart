@@ -58,7 +58,7 @@ void main() {
     await pumpApp(tester);
 
     // 1. Create a password record via card form
-    await tester.tap(find.byTooltip('New Record'));
+    await tester.longPress(find.byTooltip('New Record'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Save a password'));
     await tester.pumpAndSettle();
@@ -147,8 +147,6 @@ void main() {
 
     // 1. Create a blank note with freeform text
     await tester.tap(find.byTooltip('New Record'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Blank note'));
     await tester.pumpAndSettle();
 
     await tester.enterText(findByHint('Title (optional)'), 'General Note');

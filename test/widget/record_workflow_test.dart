@@ -14,6 +14,7 @@ import 'package:suicun/features/records/presentation/template_views/password_tem
 import 'package:suicun/features/sync/sync_contract.dart';
 import 'package:suicun/main.dart';
 import 'package:suicun/shared/theme/theme_providers.dart';
+import 'package:suicun/shared/widgets/record_card.dart';
 
 /// Pumps the full app with the database provider overridden to use
 /// an in-memory SQLite database.
@@ -51,8 +52,6 @@ Future<AppDatabase> freshDb() async {
 /// Opens the editor from home, selecting the blank note template.
 Future<void> openEditor(WidgetTester tester) async {
   await tester.tap(find.byTooltip('New Record'));
-  await tester.pumpAndSettle();
-  await tester.tap(find.text('Blank note'));
   await tester.pumpAndSettle();
 }
 
@@ -125,13 +124,13 @@ void main() {
     await tester.pumpAndSettle();
 
     // Filter
-    await tester.enterText(findByHint('Search info'), 'Alpha');
+    await tester.enterText(find.byType(TextField), 'Alpha');
     await tester.pumpAndSettle();
     expect(find.text('Alpha note'), findsOneWidget);
     expect(find.text('Beta note'), findsNothing);
 
     // Clear filter
-    await tester.enterText(findByHint('Search info'), '');
+    await tester.enterText(find.byType(TextField), '');
     await tester.pumpAndSettle();
     expect(find.text('Beta note'), findsOneWidget);
   });
@@ -149,9 +148,7 @@ void main() {
     // Not favorited yet: no star_rounded icon shown
     expect(find.byIcon(Icons.star_rounded), findsNothing);
 
-    await tester.tap(find.byIcon(Icons.more_horiz));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Favorite'));
+    await tester.tap(find.byIcon(Icons.star_outline));
     await tester.pumpAndSettle();
     expect(find.byIcon(Icons.star_rounded), findsOneWidget);
   });
@@ -167,8 +164,8 @@ void main() {
     await tester.pageBack();
     await tester.pumpAndSettle();
 
-    // Delete via the overflow menu
-    await tester.tap(find.byIcon(Icons.more_horiz));
+    // Delete via long-press action sheet
+    await tester.longPress(find.text('Doomed').first);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Delete'));
     await tester.pumpAndSettle();
@@ -209,13 +206,15 @@ void main() {
       await tester.pumpAndSettle();
       await tester.pageBack();
       await tester.pumpAndSettle();
-      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pump(const Duration(seconds: 1));
     }
 
     // Default: Recently edited -> 'A note' on top (earlier y), 'B note' below (later y)
     expect(find.text('Recently edited'), findsOneWidget);
-    var posA = tester.getTopLeft(find.text('A note'));
-    var posB = tester.getTopLeft(find.text('B note'));
+    var posA = tester.getTopLeft(find.descendant(
+        of: find.byType(RecordCard), matching: find.text('A note')));
+    var posB = tester.getTopLeft(find.descendant(
+        of: find.byType(RecordCard), matching: find.text('B note')));
     expect(posA.dy < posB.dy, isTrue);
 
     // Open sort sheet and select 'Title A–Z'
@@ -227,15 +226,19 @@ void main() {
 
     // With Title A–Z: A note is before B note
     expect(find.text('Title A–Z'), findsOneWidget);
-    posA = tester.getTopLeft(find.text('A note'));
-    posB = tester.getTopLeft(find.text('B note'));
+    posA = tester.getTopLeft(find.descendant(
+        of: find.byType(RecordCard), matching: find.text('A note')));
+    posB = tester.getTopLeft(find.descendant(
+        of: find.byType(RecordCard), matching: find.text('B note')));
     expect(posA.dy < posB.dy, isTrue);
 
     // Restart pump (re-pump with the same db) -> preference persists
     await pumpApp(tester, db);
     expect(find.text('Title A–Z'), findsOneWidget);
-    posA = tester.getTopLeft(find.text('A note'));
-    posB = tester.getTopLeft(find.text('B note'));
+    posA = tester.getTopLeft(find.descendant(
+        of: find.byType(RecordCard), matching: find.text('A note')));
+    posB = tester.getTopLeft(find.descendant(
+        of: find.byType(RecordCard), matching: find.text('B note')));
     expect(posA.dy < posB.dy, isTrue);
   });
 
@@ -260,7 +263,7 @@ void main() {
   testWidgets('template selector pre-fills password template', (tester) async {
     await pumpApp(tester, db);
 
-    await tester.tap(find.byTooltip('New Record'));
+    await tester.longPress(find.byTooltip('New Record'));
     await tester.pumpAndSettle();
 
     expect(find.text('Choose a template'), findsOneWidget);

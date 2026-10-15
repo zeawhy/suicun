@@ -110,15 +110,9 @@ void main() {
     expect(find.text('Normal Record'), findsOneWidget);
     expect(find.text('Favorited Record'), findsOneWidget);
 
-    // Each card has more_horiz popup menu, no standalone star button
-    expect(find.byIcon(Icons.more_horiz), findsNWidgets(2));
-    expect(find.byIcon(Icons.star_border), findsNothing);
-
-    // Only the favorited record shows the small star
-    final starFinder = find.byIcon(Icons.star_rounded);
-    expect(starFinder, findsOneWidget);
-    final iconWidget = tester.widget<Icon>(starFinder);
-    expect(iconWidget.size, 14.0);
+    // Each card has a star button: star_rounded for favorited, star_outline for unfavorited
+    expect(find.byIcon(Icons.star_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.star_outline), findsOneWidget);
   });
 
   testWidgets(
@@ -195,8 +189,8 @@ void main() {
     // Search bar is hidden initially
     expect(find.byType(TextField), findsNothing);
 
-    // Drag down on the ListView to trigger overscroll
-    await tester.drag(find.byType(ListView), const Offset(0, 200));
+    // Drag down on the CustomScrollView to trigger overscroll
+    await tester.drag(find.byType(CustomScrollView), const Offset(0, 200));
     await tester.pumpAndSettle();
 
     // Search bar expands

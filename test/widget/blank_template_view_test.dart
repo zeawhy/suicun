@@ -62,8 +62,6 @@ void main() {
     // 1. Create a blank note with title and body
     await tester.tap(find.byTooltip('New Record'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Blank note'));
-    await tester.pumpAndSettle();
 
     await tester.enterText(findByHint('Title (optional)'), 'My Daily Log');
     await tester.enterText(
@@ -112,8 +110,6 @@ void main() {
     // 1. Create a blank note with only title and empty body
     await tester.tap(find.byTooltip('New Record'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Blank note'));
-    await tester.pumpAndSettle();
 
     await tester.enterText(findByHint('Title (optional)'), 'Empty Note Title');
 
@@ -145,8 +141,6 @@ void main() {
 
     // 1. Create a note
     await tester.tap(find.byTooltip('New Record'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Blank note'));
     await tester.pumpAndSettle();
 
     await tester.enterText(findByHint('Title (optional)'), 'Tap Body Test');
@@ -186,8 +180,6 @@ void main() {
 
     // 1. Create a note
     await tester.tap(find.byTooltip('New Record'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Blank note'));
     await tester.pumpAndSettle();
 
     await tester.enterText(findByHint('Title (optional)'), 'Pencil Test');
