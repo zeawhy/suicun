@@ -11,6 +11,7 @@ import 'package:suicun/features/records/data/quick_access_storage.dart';
 import 'package:suicun/features/records/data/record_repository.dart';
 import 'package:suicun/features/records/domain/record_model.dart';
 import 'package:suicun/features/records/presentation/id_presentation_page.dart';
+import 'package:suicun/features/records/presentation/quick_access_panel.dart';
 import 'package:suicun/features/sync/sync_contract.dart';
 import 'package:suicun/main.dart';
 
@@ -227,6 +228,155 @@ void main() {
       // Search field is updated to '银行' and shows matching record
       expect(find.text('银行账户'), findsOneWidget);
       expect(find.text('身份证件'), findsNothing);
+    });
+  });
+
+  group('P0-1 & P0-2：常用面板截断修复与尾号副标题', () {
+    test('getQuickSubtitle idDocument 尾号显示与短数字保护', () {
+      final now = DateTime.now().toUtc();
+      // >= 8 位纯数字
+      final rec1 = RecordDetail(
+        record: RecordModel(
+          id: '1',
+          title: '身份证',
+          body: '证件类型：身份证\n证件号码：330102199003074829',
+          isFavorite: false,
+          createdAt: now,
+          updatedAt: now,
+        ),
+        tags: const [],
+      );
+      expect(getQuickSubtitle(rec1, QuickRecordType.idDocument), '尾号 4829');
+
+      // 带 X
+      final rec2 = RecordDetail(
+        record: RecordModel(
+          id: '2',
+          title: '身份证',
+          body: '证件类型：身份证\n证件号码：11010119900307234X',
+          isFavorite: false,
+          createdAt: now,
+          updatedAt: now,
+        ),
+        tags: const [],
+      );
+      expect(getQuickSubtitle(rec2, QuickRecordType.idDocument), '尾号 234X');
+
+      // <= 6 位短数字
+      final rec3 = RecordDetail(
+        record: RecordModel(
+          id: '3',
+          title: '临时证件',
+          body: '证件类型：通行证\n证件号码：123456',
+          isFavorite: false,
+          createdAt: now,
+          updatedAt: now,
+        ),
+        tags: const [],
+      );
+      expect(getQuickSubtitle(rec3, QuickRecordType.idDocument), '******');
+    });
+
+    testWidgets('count == 0 时可点击 × 关闭按钮隐藏引导条', (tester) async {
+      await pumpApp(tester, db);
+
+      expect(find.text('长按任意记录可设为常用'), findsOneWidget);
+      expect(find.byIcon(Icons.close), findsOneWidget);
+
+      await tester.tap(find.byIcon(Icons.close));
+      await tester.pumpAndSettle();
+
+      expect(find.text('长按任意记录可设为常用'), findsNothing);
+    });
+
+    testWidgets('count == 1、2、3 项时的布局尺寸与表现', (tester) async {
+      final repo = RecordRepository(db);
+      final r1 = await repo.createRecord(title: '记录1', body: '普通内容1');
+      final r2 = await repo.createRecord(title: '记录2', body: '普通内容2');
+      final r3 = await repo.createRecord(title: '记录3', body: '普通内容3');
+
+      // count == 1
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: SizedBox(
+                width: 400,
+                child: QuickAccessGrid(
+                  records: [r1],
+                  onRecordAction: (_) {},
+                  onLongPress: (_) {},
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('记录1'), findsOneWidget);
+      final cardFinder1 = find.ancestor(
+        of: find.text('记录1'),
+        matching: find.byType(SizedBox),
+      ).first;
+      final size1 = tester.getSize(cardFinder1);
+      // 通栏宽度 400 - horizontal padding 32 = 368
+      expect(size1.width, closeTo(368, 1));
+
+      // count == 2
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: SizedBox(
+                width: 400,
+                child: QuickAccessGrid(
+                  records: [r1, r2],
+                  onRecordAction: (_) {},
+                  onLongPress: (_) {},
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('记录1'), findsOneWidget);
+      expect(find.text('记录2'), findsOneWidget);
+      final cardFinder2 = find.ancestor(
+        of: find.text('记录1'),
+        matching: find.byType(SizedBox),
+      ).first;
+      final size2 = tester.getSize(cardFinder2);
+      // (368 - 8) / 2 = 180
+      expect(size2.width, closeTo(180, 1));
+
+      // count >= 3
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: SizedBox(
+                width: 400,
+                child: QuickAccessGrid(
+                  records: [r1, r2, r3],
+                  onRecordAction: (_) {},
+                  onLongPress: (_) {},
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('记录1'), findsOneWidget);
+      expect(find.text('记录2'), findsOneWidget);
+      final cardFinder3 = find.ancestor(
+        of: find.text('记录1'),
+        matching: find.byType(SizedBox),
+      ).first;
+      final size3 = tester.getSize(cardFinder3);
+      // (368 - 8) / 2.25 = 160
+      expect(size3.width, closeTo(160, 1));
     });
   });
 }

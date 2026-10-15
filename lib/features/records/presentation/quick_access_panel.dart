@@ -164,9 +164,7 @@ String getQuickSubtitle(RecordDetail record, QuickRecordType type) {
       if (idData?.docNumber != null && idData!.docNumber!.trim().isNotEmpty) {
         final raw = idData.docNumber!.trim();
         if (raw.length <= 6) return '******';
-        final start = raw.substring(0, 4);
-        final end = raw.substring(raw.length - 4);
-        return '$start${'*' * (raw.length - 8).clamp(2, 6)}$end';
+        return '尾号 ${raw.substring(raw.length - 4)}';
       }
       if (idData?.docType != null && idData!.docType!.trim().isNotEmpty) {
         return idData.docType!.trim();
@@ -259,6 +257,19 @@ Future<void> executeQuickAction({
   }
 }
 
+/// Ephemeral in-memory flag for dismissing the quick-access empty hint.
+class QuickAccessDismissedNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void dismiss() => state = true;
+}
+
+final quickAccessDismissedProvider =
+    NotifierProvider<QuickAccessDismissedNotifier, bool>(
+  QuickAccessDismissedNotifier.new,
+);
+
 /// The 2-column grid of rounded quick-access blocks (up to 6 items).
 /// Shows a gentle empty state if no quick access items are set.
 class QuickAccessGrid extends ConsumerWidget {
@@ -279,6 +290,10 @@ class QuickAccessGrid extends ConsumerWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     if (records.isEmpty) {
+      final isDismissed = ref.watch(quickAccessDismissedProvider);
+      if (isDismissed) {
+        return const SizedBox.shrink();
+      }
       return Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -291,8 +306,8 @@ class QuickAccessGrid extends ConsumerWidget {
           ),
         ),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            const Spacer(),
             Icon(
               Icons.touch_app_outlined,
               size: 16,
@@ -305,6 +320,21 @@ class QuickAccessGrid extends ConsumerWidget {
                 fontSize: 13,
                 color: theme.colorScheme.onSurfaceVariant,
                 fontWeight: FontWeight.w400,
+              ),
+            ),
+            const Spacer(),
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {
+                ref.read(quickAccessDismissedProvider.notifier).dismiss();
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(2),
+                child: Icon(
+                  Icons.close,
+                  size: 16,
+                  color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                ),
               ),
             ),
           ],
@@ -340,22 +370,65 @@ class QuickAccessGrid extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 8),
-          SizedBox(
-            height: 68,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: displayRecords.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 8),
-              itemBuilder: (context, index) {
-                final r = displayRecords[index];
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final totalWidth = constraints.maxWidth;
+              if (displayRecords.length == 1) {
                 return _QuickAccessCapsule(
-                  record: r,
+                  width: totalWidth,
+                  record: displayRecords[0],
                   isDark: isDark,
-                  onTap: () => onRecordAction(r),
-                  onLongPress: () => onLongPress(r),
+                  onTap: () => onRecordAction(displayRecords[0]),
+                  onLongPress: () => onLongPress(displayRecords[0]),
                 );
-              },
-            ),
+              }
+              if (displayRecords.length == 2) {
+                final itemWidth = (totalWidth - 8) / 2;
+                return Row(
+                  children: [
+                    Expanded(
+                      child: _QuickAccessCapsule(
+                        width: itemWidth,
+                        record: displayRecords[0],
+                        isDark: isDark,
+                        onTap: () => onRecordAction(displayRecords[0]),
+                        onLongPress: () => onLongPress(displayRecords[0]),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _QuickAccessCapsule(
+                        width: itemWidth,
+                        record: displayRecords[1],
+                        isDark: isDark,
+                        onTap: () => onRecordAction(displayRecords[1]),
+                        onLongPress: () => onLongPress(displayRecords[1]),
+                      ),
+                    ),
+                  ],
+                );
+              }
+              final peekItemWidth = (totalWidth - 8) / 2.25;
+              return SizedBox(
+                height: 68,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: displayRecords.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 8),
+                  itemBuilder: (context, index) {
+                    final r = displayRecords[index];
+                    return _QuickAccessCapsule(
+                      width: peekItemWidth,
+                      record: r,
+                      isDark: isDark,
+                      onTap: () => onRecordAction(r),
+                      onLongPress: () => onLongPress(r),
+                    );
+                  },
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -365,12 +438,14 @@ class QuickAccessGrid extends ConsumerWidget {
 
 class _QuickAccessCapsule extends StatelessWidget {
   const _QuickAccessCapsule({
+    required this.width,
     required this.record,
     required this.isDark,
     required this.onTap,
     required this.onLongPress,
   });
 
+  final double width;
   final RecordDetail record;
   final bool isDark;
   final VoidCallback onTap;
@@ -383,12 +458,9 @@ class _QuickAccessCapsule extends StatelessWidget {
     final subtitle = getQuickSubtitle(record, type);
     final title = record.title.isNotEmpty ? record.title : '未命名记录';
 
-    return ConstrainedBox(
-      constraints: const BoxConstraints(
-        minWidth: 160,
-        maxWidth: 220,
-        maxHeight: 68,
-      ),
+    return SizedBox(
+      width: width,
+      height: 68,
       child: Container(
         decoration: BoxDecoration(
           color: style.backgroundColor,
@@ -402,12 +474,12 @@ class _QuickAccessCapsule extends StatelessWidget {
             onTap: onTap,
             onLongPress: onLongPress,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
               child: Row(
                 children: [
                   Container(
-                    width: 32,
-                    height: 32,
+                    width: 30,
+                    height: 30,
                     decoration: BoxDecoration(
                       color: style.accentColor.withValues(alpha: 0.14),
                       borderRadius: BorderRadius.circular(10),
