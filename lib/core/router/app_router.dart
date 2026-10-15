@@ -28,9 +28,12 @@ GoRouter appRouter(Ref ref) {
             builder: (context, state) {
               final templateId = state.uri.queryParameters['template'];
               final autofocus = state.uri.queryParameters['autofocus'] == 'true';
+              final initialText = state.uri.queryParameters['initialText'] ??
+                  (state.extra is String ? state.extra as String : null);
               return EditRecordPage(
                 templateId: templateId,
                 autofocus: autofocus,
+                initialText: initialText,
               );
             },
           ),

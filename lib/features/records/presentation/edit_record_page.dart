@@ -38,11 +38,13 @@ class EditRecordPage extends ConsumerStatefulWidget {
     this.recordId,
     this.templateId,
     this.autofocus = false,
+    this.initialText,
   });
 
   final String? recordId;
   final String? templateId;
   final bool autofocus;
+  final String? initialText;
 
   @override
   ConsumerState<EditRecordPage> createState() => _EditRecordPageState();
@@ -503,6 +505,11 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
       if (state.record != null) {
         _titleController.text = state.record!.title;
         _bodyController.text = state.record!.body;
+        _initialized = true;
+      } else if (_isNew &&
+          widget.initialText != null &&
+          widget.initialText!.isNotEmpty) {
+        _bodyController.text = widget.initialText!;
         _initialized = true;
       } else if (_isNew &&
           widget.templateId != null &&

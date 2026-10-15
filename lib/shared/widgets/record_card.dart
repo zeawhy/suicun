@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:suicun/features/records/domain/record_model.dart';
 import 'package:suicun/features/records/presentation/home_sort_provider.dart';
+import 'package:suicun/features/records/presentation/search/pinyin_search_helper.dart';
 import 'package:suicun/features/records/presentation/template_views/id_photo_storage.dart';
 import 'package:suicun/features/records/presentation/template_views/template_detector.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
@@ -28,6 +29,7 @@ class RecordCard extends StatelessWidget {
   const RecordCard({
     super.key,
     required this.record,
+    this.searchQuery,
     required this.sortMode,
     required this.isSelected,
     required this.isMultiSelectMode,
@@ -43,6 +45,7 @@ class RecordCard extends StatelessWidget {
   });
 
   final RecordDetail record;
+  final String? searchQuery;
   final RecordSortMode sortMode;
   final bool isSelected;
   final bool isMultiSelectMode;
@@ -260,16 +263,38 @@ class RecordCard extends StatelessWidget {
                             ),
                             const SizedBox(width: 6),
                             Expanded(
-                              child: Text(
-                                displayTitle,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: theme.textTheme.titleMedium?.copyWith(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                  color: titleColor,
-                                ),
-                              ),
+                              child: searchQuery != null && searchQuery!.isNotEmpty
+                                  ? Text.rich(
+                                      TextSpan(
+                                        children: buildHighlightedSpans(
+                                          text: displayTitle,
+                                          query: searchQuery!,
+                                          baseStyle: theme.textTheme.titleMedium?.copyWith(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w600,
+                                            color: titleColor,
+                                          ),
+                                          highlightStyle: theme.textTheme.titleMedium?.copyWith(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold,
+                                            color: colorScheme.primary,
+                                            backgroundColor: colorScheme.primary.withValues(alpha: 0.15),
+                                          ),
+                                        ),
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    )
+                                  : Text(
+                                      displayTitle,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: theme.textTheme.titleMedium?.copyWith(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
+                                        color: titleColor,
+                                      ),
+                                    ),
                             ),
                             const SizedBox(width: 4),
                             IconButton(
@@ -428,11 +453,29 @@ class RecordCard extends StatelessWidget {
         final pwd = parsePasswordTemplate(record.body);
         final username = pwd?.username?.trim();
         final hasUsername = username != null && username.isNotEmpty;
+        final baseStyle = theme.textTheme.bodyMedium?.copyWith(
+          fontSize: 13,
+          color: colorScheme.onSurfaceVariant,
+          fontFeatures: const [FontFeature.tabularFigures()],
+        );
+        final highlightStyle = baseStyle?.copyWith(
+          fontWeight: FontWeight.bold,
+          color: colorScheme.primary,
+          backgroundColor: colorScheme.primary.withValues(alpha: 0.15),
+        );
         return Text.rich(
           TextSpan(
             children: [
               if (hasUsername) ...[
-                TextSpan(text: '$username  ·  '),
+                if (searchQuery != null && searchQuery!.isNotEmpty)
+                  ...buildHighlightedSpans(
+                    text: '$username  ·  ',
+                    query: searchQuery!,
+                    baseStyle: baseStyle,
+                    highlightStyle: highlightStyle,
+                  )
+                else
+                  TextSpan(text: '$username  ·  '),
               ],
               const TextSpan(
                 text: '••••••••',
@@ -442,11 +485,7 @@ class RecordCard extends StatelessWidget {
           ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            fontSize: 13,
-            color: colorScheme.onSurfaceVariant,
-            fontFeatures: const [FontFeature.tabularFigures()],
-          ),
+          style: baseStyle,
         );
 
       case RecordCardTemplateType.idDocument:
@@ -456,15 +495,36 @@ class RecordCard extends StatelessWidget {
         final maskedNum = _maskDocNumber(num);
         final prefix =
             (docType != null && docType.isNotEmpty) ? '$docType: ' : '';
+        final fullText = '$prefix$maskedNum';
+        final baseStyle = theme.textTheme.bodyMedium?.copyWith(
+          fontSize: 13,
+          color: colorScheme.onSurfaceVariant,
+          fontFeatures: const [FontFeature.tabularFigures()],
+        );
+        if (searchQuery != null && searchQuery!.isNotEmpty) {
+          final highlightStyle = baseStyle?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: colorScheme.primary,
+            backgroundColor: colorScheme.primary.withValues(alpha: 0.15),
+          );
+          return Text.rich(
+            TextSpan(
+              children: buildHighlightedSpans(
+                text: fullText,
+                query: searchQuery!,
+                baseStyle: baseStyle,
+                highlightStyle: highlightStyle,
+              ),
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          );
+        }
         return Text(
-          '$prefix$maskedNum',
+          fullText,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            fontSize: 13,
-            color: colorScheme.onSurfaceVariant,
-            fontFeatures: const [FontFeature.tabularFigures()],
-          ),
+          style: baseStyle,
         );
 
       case RecordCardTemplateType.contact:
@@ -480,15 +540,35 @@ class RecordCard extends StatelessWidget {
         if (text.isEmpty) {
           return _buildDefaultBody(theme, colorScheme);
         }
+        final baseStyle = theme.textTheme.bodyMedium?.copyWith(
+          fontSize: 13,
+          color: colorScheme.onSurfaceVariant,
+          fontFeatures: const [FontFeature.tabularFigures()],
+        );
+        if (searchQuery != null && searchQuery!.isNotEmpty) {
+          final highlightStyle = baseStyle?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: colorScheme.primary,
+            backgroundColor: colorScheme.primary.withValues(alpha: 0.15),
+          );
+          return Text.rich(
+            TextSpan(
+              children: buildHighlightedSpans(
+                text: text,
+                query: searchQuery!,
+                baseStyle: baseStyle,
+                highlightStyle: highlightStyle,
+              ),
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          );
+        }
         return Text(
           text,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            fontSize: 13,
-            color: colorScheme.onSurfaceVariant,
-            fontFeatures: const [FontFeature.tabularFigures()],
-          ),
+          style: baseStyle,
         );
 
       case RecordCardTemplateType.todo:
@@ -506,15 +586,36 @@ class RecordCard extends StatelessWidget {
         .take(2)
         .toList();
     if (bodyLines.isEmpty) return const SizedBox.shrink();
+    final bodyText = bodyLines.join('\n');
+    final baseStyle = theme.textTheme.bodyMedium?.copyWith(
+      fontSize: 13,
+      color: colorScheme.onSurfaceVariant,
+      height: 1.35,
+    );
+    if (searchQuery != null && searchQuery!.isNotEmpty) {
+      final highlightStyle = baseStyle?.copyWith(
+        fontWeight: FontWeight.bold,
+        color: colorScheme.primary,
+        backgroundColor: colorScheme.primary.withValues(alpha: 0.15),
+      );
+      return Text.rich(
+        TextSpan(
+          children: buildHighlightedSpans(
+            text: bodyText,
+            query: searchQuery!,
+            baseStyle: baseStyle,
+            highlightStyle: highlightStyle,
+          ),
+        ),
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+      );
+    }
     return Text(
-      bodyLines.join('\n'),
+      bodyText,
       maxLines: 2,
       overflow: TextOverflow.ellipsis,
-      style: theme.textTheme.bodyMedium?.copyWith(
-        fontSize: 13,
-        color: colorScheme.onSurfaceVariant,
-        height: 1.35,
-      ),
+      style: baseStyle,
     );
   }
 

@@ -22,6 +22,8 @@ import 'package:suicun/features/records/presentation/quick_access_panel.dart';
 import 'package:suicun/features/settings/presentation/settings_page.dart';
 import 'package:suicun/features/sync/sync_contract.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
+import 'package:flutter/services.dart';
+import 'package:suicun/features/records/presentation/clipboard_sniffer.dart';
 import 'package:suicun/shared/theme/app_theme.dart';
 import 'package:suicun/shared/widgets/record_card.dart';
 
@@ -33,12 +35,15 @@ class HomePage extends ConsumerStatefulWidget {
 }
 
 class _HomePageState extends ConsumerState<HomePage>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocus = FocusNode();
   final ScrollController _scrollController = ScrollController();
   late final AnimationController _speedDialController;
   Timer? _debounce;
+  Timer? _clipboardTimer;
+  SniffedClipboardData? _sniffedClipboardData;
+  String? _lastDismissedClipboardText;
   bool _searchExpanded = false;
   String? _savedCategoryId;
   bool _savedFavoritesOnly = false;
@@ -76,10 +81,39 @@ class _HomePageState extends ConsumerState<HomePage>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _speedDialController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 240),
     );
+    _checkClipboardWithDebounce();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _checkClipboardWithDebounce();
+    }
+  }
+
+  void _checkClipboardWithDebounce() {
+    _clipboardTimer?.cancel();
+    _clipboardTimer = Timer(const Duration(milliseconds: 500), () async {
+      if (!mounted) return;
+      try {
+        final data = await Clipboard.getData(Clipboard.kTextPlain);
+        final text = data?.text?.trim() ?? '';
+        if (text.isEmpty || text == _lastDismissedClipboardText) return;
+        final sniffed = sniffClipboardText(text);
+        if (mounted) {
+          setState(() {
+            _sniffedClipboardData = sniffed;
+          });
+        }
+      } catch (_) {
+        // Ignore clipboard access errors
+      }
+    });
   }
 
   void _openSettings() {
@@ -106,6 +140,8 @@ class _HomePageState extends ConsumerState<HomePage>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _clipboardTimer?.cancel();
     _debounce?.cancel();
     _searchController.dispose();
     _searchFocus.dispose();
@@ -526,6 +562,10 @@ class _HomePageState extends ConsumerState<HomePage>
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
                 _buildSliverAppBar(l10n, colorScheme),
+                if (_sniffedClipboardData != null)
+                  SliverToBoxAdapter(
+                    child: _buildClipboardSnifferBanner(context, colorScheme),
+                  ),
                 if (showQuickAndRecent)
                   SliverToBoxAdapter(
                     child: Column(
@@ -663,6 +703,7 @@ class _HomePageState extends ConsumerState<HomePage>
                         final r = records[index];
                         return RecordCard(
                           record: r,
+                          searchQuery: filter.query.trim(),
                           sortMode: sortMode,
                           isSelected: _selectedIds.contains(r.id),
                           isMultiSelectMode: _isMultiSelect,
@@ -1083,6 +1124,113 @@ class _HomePageState extends ConsumerState<HomePage>
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildClipboardSnifferBanner(
+    BuildContext context,
+    ColorScheme colorScheme,
+  ) {
+    final data = _sniffedClipboardData;
+    if (data == null) return const SizedBox.shrink();
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final icon = switch (data.type) {
+      SniffedType.idDocument => Icons.badge_outlined,
+      SniffedType.address => Icons.location_on_outlined,
+      SniffedType.link => Icons.link_rounded,
+    };
+
+    return Container(
+      key: const Key('clipboard_sniff_banner'),
+      margin: const EdgeInsets.fromLTRB(16, 6, 16, 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: colorScheme.primary.withValues(alpha: 0.25),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            size: 18,
+            color: colorScheme.primary,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              '${data.bannerLabel}：${data.previewText}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: colorScheme.onSurface,
+              ),
+            ),
+          ),
+          const SizedBox(width: 6),
+          TextButton(
+            key: const Key('clipboard_sniff_save_button'),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              minimumSize: const Size(0, 32),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              backgroundColor: colorScheme.primary.withValues(alpha: 0.12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            onPressed: () {
+              final text = data.rawText;
+              final templateId = data.templateId;
+              final initialBody = data.initialBody;
+              setState(() {
+                _lastDismissedClipboardText = text;
+                _sniffedClipboardData = null;
+              });
+              context.push(
+                '/edit?template=$templateId&autofocus=true',
+                extra: initialBody,
+              );
+            },
+            child: Text(
+              data.actionLabel,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: colorScheme.primary,
+              ),
+            ),
+          ),
+          const SizedBox(width: 4),
+          TextButton(
+            key: const Key('clipboard_sniff_ignore_button'),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+              minimumSize: const Size(0, 32),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            onPressed: () {
+              setState(() {
+                _lastDismissedClipboardText = data.rawText;
+                _sniffedClipboardData = null;
+              });
+            },
+            child: Text(
+              '忽略',
+              style: TextStyle(
+                fontSize: 12,
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
