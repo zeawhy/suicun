@@ -340,28 +340,22 @@ class QuickAccessGrid extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 8),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              const spacing = 10.0;
-              final itemWidth = (constraints.maxWidth - spacing) / 2;
-
-              return Wrap(
-                spacing: spacing,
-                runSpacing: spacing,
-                children: [
-                  for (final r in displayRecords)
-                    SizedBox(
-                      width: itemWidth,
-                      child: _QuickAccessBlock(
-                        record: r,
-                        isDark: isDark,
-                        onTap: () => onRecordAction(r),
-                        onLongPress: () => onLongPress(r),
-                      ),
-                    ),
-                ],
-              );
-            },
+          SizedBox(
+            height: 68,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: displayRecords.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              itemBuilder: (context, index) {
+                final r = displayRecords[index];
+                return _QuickAccessCapsule(
+                  record: r,
+                  isDark: isDark,
+                  onTap: () => onRecordAction(r),
+                  onLongPress: () => onLongPress(r),
+                );
+              },
+            ),
           ),
         ],
       ),
@@ -369,8 +363,8 @@ class QuickAccessGrid extends ConsumerWidget {
   }
 }
 
-class _QuickAccessBlock extends StatelessWidget {
-  const _QuickAccessBlock({
+class _QuickAccessCapsule extends StatelessWidget {
+  const _QuickAccessCapsule({
     required this.record,
     required this.isDark,
     required this.onTap,
@@ -389,99 +383,107 @@ class _QuickAccessBlock extends StatelessWidget {
     final subtitle = getQuickSubtitle(record, type);
     final title = record.title.isNotEmpty ? record.title : '未命名记录';
 
-    return Container(
-      decoration: BoxDecoration(
-        color: style.backgroundColor,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: style.borderColor, width: 1.2),
+    return ConstrainedBox(
+      constraints: const BoxConstraints(
+        minWidth: 160,
+        maxWidth: 220,
+        maxHeight: 68,
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
+      child: Container(
+        decoration: BoxDecoration(
+          color: style.backgroundColor,
           borderRadius: BorderRadius.circular(16),
-          onTap: onTap,
-          onLongPress: onLongPress,
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Top row: Icon on left, Quick Action button on right
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        color: style.accentColor.withValues(alpha: 0.14),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Icon(
-                        style.icon,
-                        size: 18,
-                        color: style.accentColor,
-                      ),
+          border: Border.all(color: style.borderColor, width: 1.2),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: onTap,
+            onLongPress: onLongPress,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              child: Row(
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: style.accentColor.withValues(alpha: 0.14),
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: style.accentColor.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            style.actionIcon,
-                            size: 13,
-                            color: style.accentColor,
+                    child: Icon(
+                      style.icon,
+                      size: 18,
+                      color: style.accentColor,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
-                          const SizedBox(width: 4),
+                        ),
+                        if (subtitle.isNotEmpty) ...[
+                          const SizedBox(height: 2),
                           Text(
-                            style.actionLabel,
+                            subtitle,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: style.accentColor,
+                              fontSize: 11,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant
+                                  .withValues(alpha: 0.85),
                             ),
                           ),
                         ],
-                      ),
+                      ],
                     ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                // Title
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: Theme.of(context).colorScheme.onSurface,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 3),
-                // Subtitle
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurfaceVariant
-                        .withValues(alpha: 0.85),
+                  const SizedBox(width: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 7,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: style.accentColor.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          style.actionIcon,
+                          size: 12,
+                          color: style.accentColor,
+                        ),
+                        const SizedBox(width: 3),
+                        Text(
+                          style.actionLabel,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: style.accentColor,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

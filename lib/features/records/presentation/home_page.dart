@@ -6,6 +6,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:go_router/go_router.dart';
@@ -354,7 +355,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                         width: 10,
                         height: 10,
                         decoration: BoxDecoration(
-                          color: AppTheme.getCategoryColor(c.name, c.color),
+                          color: Theme.of(ctx)
+                              .suiColors
+                              .colorForCategory(c.name, c.color),
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -450,337 +453,217 @@ class _HomePageState extends ConsumerState<HomePage> {
       RecordSortMode.byTitle => l10n.sortTitleAZ,
     };
 
+    final isSearchOrFilterActive = filter.query.trim().isNotEmpty ||
+        filter.categoryId != null ||
+        filter.favoritesOnly;
+
+    final records = recordsAsync.value ?? const [];
+
+    final quickIds = ref.watch(quickAccessIdsProvider).value ?? const [];
+    final recentOpenedIds =
+        ref.watch(recentOpenedIdsProvider).value ?? const [];
+
+    final recordMap = {for (final r in records) r.id: r};
+    final quickRecords = quickIds
+        .map((id) => recordMap[id])
+        .whereType<RecordDetail>()
+        .toList();
+    final recentRecords = recentOpenedIds
+        .map((id) => recordMap[id])
+        .whereType<RecordDetail>()
+        .take(5)
+        .toList();
+
+    final showQuickAndRecent = !isSearchOrFilterActive && !_isMultiSelect;
+
     final mainContent = Scaffold(
       body: SafeArea(
-        child: Column(
-          children: [
-            // a) Top Row: Multi-select actions OR Category tabs + Search button
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 8, 4),
-              child: _isMultiSelect
-                  ? Row(
+        child: SlidableAutoCloseBehavior(
+          child: NotificationListener<OverscrollNotification>(
+            onNotification: (notification) {
+              if (notification.overscroll < 0 &&
+                  _scrollController.hasClients &&
+                  _scrollController.offset <= 0 &&
+                  !_searchExpanded) {
+                if (mounted) {
+                  _openSearch(requestFocus: false);
+                }
+              }
+              return false;
+            },
+            child: CustomScrollView(
+              controller: _scrollController,
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                _buildSliverAppBar(l10n, colorScheme),
+                if (showQuickAndRecent)
+                  SliverToBoxAdapter(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        IconButton(
-                          icon: const Icon(Icons.close),
-                          constraints: const BoxConstraints(
-                              minWidth: 48, minHeight: 48),
-                          tooltip: l10n.cancel,
-                          onPressed: _exitMultiSelect,
+                        QuickAccessGrid(
+                          records: quickRecords,
+                          onRecordAction: (r) => executeQuickAction(
+                            context: context,
+                            record: r,
+                            onOpenRecord: _openRecord,
+                          ),
+                          onLongPress: (r) => _showRecordActionSheet(r),
                         ),
-                        Text(
-                          l10n.selectedCount(_selectedIds.length),
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: colorScheme.onSurface,
+                        RecentOpenedBar(
+                          records: recentRecords,
+                          onTap: (r) => executeQuickAction(
+                            context: context,
+                            record: r,
+                            onOpenRecord: _openRecord,
                           ),
                         ),
-                        const Spacer(),
-                        IconButton(
-                          icon: const Icon(Icons.delete_outline),
-                          constraints: const BoxConstraints(
-                              minWidth: 48, minHeight: 48),
-                          tooltip: l10n.batchDelete,
-                          onPressed: () async {
-                            final repo = ref.read(recordRepositoryProvider);
-                            for (final id in _selectedIds) {
-                              await repo.softDeleteRecord(id);
-                            }
-                            ref.invalidate(recordsListProvider);
-                            ref.invalidate(trashListProvider);
-                            _exitMultiSelect();
+                      ],
+                    ),
+                  ),
+                if (!_isMultiSelect)
+                  SliverPersistentHeader(
+                    pinned: true,
+                    delegate: _CategoryFilterHeaderDelegate(
+                      height: 46,
+                      backgroundColor: colorScheme.surface,
+                      child: categoriesAsync.maybeWhen(
+                        data: (categories) => _CategoryFilterBar(
+                          filter: filter,
+                          categories: categories,
+                          onAll: () {
+                            final notifier =
+                                ref.read(recordsFilterProvider.notifier);
+                            notifier.setCategory(null);
+                            notifier.setFavoritesOnly(false);
+                          },
+                          onFavorites: () {
+                            final notifier =
+                                ref.read(recordsFilterProvider.notifier);
+                            notifier.setFavoritesOnly(true);
+                            notifier.setCategory(null);
+                          },
+                          onCategory: (id) {
+                            final notifier =
+                                ref.read(recordsFilterProvider.notifier);
+                            notifier.setCategory(id);
+                            notifier.setFavoritesOnly(false);
                           },
                         ),
-                      ],
-                    )
-                  : Row(
-                      children: [
-                        Expanded(
-                          child: categoriesAsync.maybeWhen(
-                            data: (categories) => _CategoryFilterBar(
-                              filter: filter,
-                              categories: categories,
-                              onAll: () {
-                                final notifier =
-                                    ref.read(recordsFilterProvider.notifier);
-                                notifier.setCategory(null);
-                                notifier.setFavoritesOnly(false);
-                              },
-                              onFavorites: () {
-                                final notifier =
-                                    ref.read(recordsFilterProvider.notifier);
-                                notifier.setFavoritesOnly(true);
-                                notifier.setCategory(null);
-                              },
-                              onCategory: (id) {
-                                final notifier =
-                                    ref.read(recordsFilterProvider.notifier);
-                                notifier.setCategory(id);
-                                notifier.setFavoritesOnly(false);
-                              },
-                            ),
-                            orElse: () => const SizedBox(height: 38),
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.search_rounded, size: 22),
-                          constraints: const BoxConstraints(
-                              minWidth: 48, minHeight: 48),
-                          tooltip: l10n.search,
-                          onPressed: () => _openSearch(requestFocus: true),
-                        ),
-                      ],
-                    ),
-            ),
-
-            // b) Expanded search row (when search is expanded and not multi-selecting)
-            if (_searchExpanded && !_isMultiSelect) ...[
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _searchController,
-                        focusNode: _searchFocus,
-                        onChanged: _onSearchChanged,
-                        onSubmitted: (value) {
-                          if (value.trim().isNotEmpty) {
-                            ref
-                                .read(recentSearchProvider.notifier)
-                                .addQuery(value);
-                          }
-                        },
-                        decoration: InputDecoration(
-                          hintText: '搜索，也可以输入拼音首字母',
-                          suffixIcon: _searchController.text.isNotEmpty
-                              ? IconButton(
-                                  icon: const Icon(Icons.clear, size: 20),
-                                  constraints: const BoxConstraints(
-                                      minWidth: 48, minHeight: 48),
-                                  onPressed: _clearSearch,
-                                )
-                              : null,
-                          filled: true,
-                          fillColor: colorScheme.surfaceContainerLowest,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16),
-                            borderSide: BorderSide(
-                              color: colorScheme.outlineVariant,
-                              width: 1,
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16),
-                            borderSide: BorderSide(
-                              color: colorScheme.outlineVariant,
-                              width: 1,
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16),
-                            borderSide: BorderSide(
-                              color: colorScheme.primary,
-                              width: 1.5,
-                            ),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 14,
-                          ),
-                        ),
+                        orElse: () => const SizedBox(height: 46),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    TextButton(
-                      onPressed: _cancelSearch,
-                      child: Text(l10n.cancel),
-                    ),
-                  ],
-                ),
-              ),
-              ref.watch(recentSearchProvider).maybeWhen(
-                    data: (searches) {
-                      if (searches.isEmpty) return const SizedBox.shrink();
-                      return RecentSearchChips(
-                        queries: searches,
-                        onSelectQuery: (q) {
-                          _searchController.text = q;
-                          ref.read(recordsFilterProvider.notifier).setQuery(q);
-                          ref.read(recentSearchProvider.notifier).addQuery(q);
-                        },
-                        onClear: () =>
-                            ref.read(recentSearchProvider.notifier).clear(),
-                      );
-                    },
-                    orElse: () => const SizedBox.shrink(),
                   ),
-            ],
-
-            // d & e) Record count + sort switcher & record list
-            Expanded(
-              child: recordsAsync.when(
-                loading: () =>
-                    const Center(child: CircularProgressIndicator()),
-                error: (e, _) => Center(child: Text(e.toString())),
-                data: (records) {
-                  final isSearchOrFilterActive =
-                      filter.query.trim().isNotEmpty ||
-                          filter.categoryId != null ||
-                          filter.favoritesOnly;
-
-                  if (records.isEmpty) {
-                    return _EmptyState(
+                if (recordsAsync.isLoading && !recordsAsync.hasValue)
+                  const SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Center(child: CircularProgressIndicator()),
+                  )
+                else if (recordsAsync.hasError && !recordsAsync.hasValue)
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Center(
+                      child: Text(recordsAsync.error.toString()),
+                    ),
+                  )
+                else if (records.isEmpty)
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: _EmptyState(
                       filter: filter,
                       onClearFilter: () => ref
                           .read(recordsFilterProvider.notifier)
                           .clearFilter(),
-                    );
-                  }
-
-                  final quickIds =
-                      ref.watch(quickAccessIdsProvider).value ?? const [];
-                  final recentOpenedIds =
-                      ref.watch(recentOpenedIdsProvider).value ?? const [];
-
-                  final recordMap = {for (final r in records) r.id: r};
-                  final quickRecords = quickIds
-                      .map((id) => recordMap[id])
-                      .whereType<RecordDetail>()
-                      .toList();
-                  final recentRecords = recentOpenedIds
-                      .map((id) => recordMap[id])
-                      .whereType<RecordDetail>()
-                      .take(5)
-                      .toList();
-
-                  final showQuickAndRecent =
-                      !isSearchOrFilterActive && !_isMultiSelect;
-
-                  return NotificationListener<OverscrollNotification>(
-                    onNotification: (notification) {
-                      if (notification.overscroll < 0 &&
-                          _scrollController.hasClients &&
-                          _scrollController.offset <= 0 &&
-                          !_searchExpanded) {
-                        if (mounted) {
-                          _openSearch(requestFocus: false);
-                        }
-                      }
-                      return false;
-                    },
-                    child: SlidableAutoCloseBehavior(
-                      child: ListView(
-                        controller: _scrollController,
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        padding: const EdgeInsets.fromLTRB(0, 4, 0, 16),
+                    ),
+                  )
+                else ...[
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                      child: Row(
                         children: [
-                          if (showQuickAndRecent) ...[
-                            QuickAccessGrid(
-                              records: quickRecords,
-                              onRecordAction: (r) => executeQuickAction(
-                                context: context,
-                                record: r,
-                                onOpenRecord: _openRecord,
-                              ),
-                              onLongPress: (r) => _showRecordActionSheet(r),
-                            ),
-                            RecentOpenedBar(
-                              records: recentRecords,
-                              onTap: (r) => executeQuickAction(
-                                context: context,
-                                record: r,
-                                onOpenRecord: _openRecord,
-                              ),
-                            ),
-                          ],
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-                            child: Row(
-                              children: [
-                                Text(
-                                  l10n.infoCount(records.length),
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: colorScheme.onSurfaceVariant,
-                                  ),
-                                ),
-                                const Spacer(),
-                                Material(
-                                  color: Colors.transparent,
-                                  child: InkWell(
-                                    borderRadius: BorderRadius.circular(8),
-                                    onTap: _showSortSheet,
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 10,
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Text(
-                                            sortTitleText,
-                                            style: TextStyle(
-                                              fontSize: 13,
-                                              color: colorScheme.onSurface,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                          const Icon(
-                                            Icons.arrow_drop_down,
-                                            size: 18,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
+                          Text(
+                            l10n.infoCount(records.length),
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: colorScheme.onSurfaceVariant,
                             ),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Column(
-                              children: [
-                                for (final r in records)
-                                  RecordCard(
-                                    record: r,
-                                    sortMode: sortMode,
-                                    isSelected: _selectedIds.contains(r.id),
-                                    isMultiSelectMode: _isMultiSelect,
-                                    untitledLabel: l10n.untitledRecord,
-                                    uncategorizedLabel: l10n.uncategorized,
-                                    onTap: () {
-                                      if (_isMultiSelect) {
-                                        _toggleMultiSelect(r.id);
-                                      } else {
-                                        _openRecord(r);
-                                      }
-                                    },
-                                    onLongPress: () {
-                                      if (!_isMultiSelect) {
-                                        _showRecordActionSheet(r);
-                                      }
-                                    },
-                                    onFavoriteToggle: () => _toggleFavorite(r),
-                                    onPinToggle: () => _toggleFavorite(r),
-                                    onEdit: () => _openRecord(r),
-                                    onChangeCategory: () =>
-                                        _showChangeCategoryDialog(r),
-                                    onDelete: () => _deleteRecord(r.id),
-                                  ),
-                              ],
+                          const Spacer(),
+                          Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(8),
+                              onTap: _showSortSheet,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 10,
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      sortTitleText,
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: colorScheme.onSurface,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    const Icon(
+                                      Icons.arrow_drop_down,
+                                      size: 18,
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
                           ),
                         ],
                       ),
                     ),
-                  );
-                },
-              ),
+                  ),
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 80),
+                    sliver: SliverList.separated(
+                      itemCount: records.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 8),
+                      itemBuilder: (context, index) {
+                        final r = records[index];
+                        return RecordCard(
+                          record: r,
+                          sortMode: sortMode,
+                          isSelected: _selectedIds.contains(r.id),
+                          isMultiSelectMode: _isMultiSelect,
+                          untitledLabel: l10n.untitledRecord,
+                          uncategorizedLabel: l10n.uncategorized,
+                          onTap: () {
+                            if (_isMultiSelect) {
+                              _toggleMultiSelect(r.id);
+                            } else {
+                              _openRecord(r);
+                            }
+                          },
+                          onLongPress: () {
+                            if (!_isMultiSelect) {
+                              _showRecordActionSheet(r);
+                            }
+                          },
+                          onFavoriteToggle: () => _toggleFavorite(r),
+                          onPinToggle: () => _toggleFavorite(r),
+                          onEdit: () => _openRecord(r),
+                          onChangeCategory: () =>
+                              _showChangeCategoryDialog(r),
+                          onDelete: () => _deleteRecord(r.id),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ],
             ),
-          ],
+          ),
         ),
       ),
       bottomNavigationBar: !_isMultiSelect
@@ -838,33 +721,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                       const SizedBox(width: 8),
                       const Expanded(child: _SyncStatus()),
                       const SizedBox(width: 8),
-                      Tooltip(
-                        message: l10n.newRecord,
-                        child: FilledButton.icon(
-                          icon: const Icon(Icons.add, size: 22),
-                          label: Text(l10n.newInfo),
-                          style: FilledButton.styleFrom(
-                            minimumSize: const Size(0, 52),
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 20),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                          ),
-                          onPressed: () async {
-                            final templateId =
-                                await showTemplateSheet(context);
-                            if (templateId == null || !context.mounted) {
-                              return;
-                            }
-                            if (templateId == 'blank') {
-                              context.push('/edit');
-                            } else {
-                              context.push('/edit?template=$templateId');
-                            }
-                          },
-                        ),
-                      ),
+                      _buildDualModeFab(context),
                     ],
                   ),
                 ),
@@ -998,6 +855,237 @@ class _HomePageState extends ConsumerState<HomePage> {
         ),
       ),
     );
+  }
+
+  Widget _buildDualModeFab(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Tooltip(
+      message: l10n.newRecord,
+      triggerMode: TooltipTriggerMode.manual,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onLongPress: () async {
+          HapticFeedback.mediumImpact();
+          if (!context.mounted) return;
+          final templateId = await showTemplateSheet(context);
+          if (templateId == null || !context.mounted) return;
+          if (templateId == 'blank' || templateId == 'quick_note') {
+            context.push('/edit?template=blank&autofocus=true');
+          } else {
+            context.push('/edit?template=$templateId&autofocus=true');
+          }
+        },
+        child: FloatingActionButton.extended(
+          heroTag: 'dualModeFab',
+          elevation: 0,
+          highlightElevation: 2,
+          onPressed: () {
+            context.push('/edit?template=blank&autofocus=true');
+          },
+          icon: const Icon(Icons.add, size: 22),
+          label: Text(l10n.newInfo),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSliverAppBar(AppLocalizations l10n, ColorScheme colorScheme) {
+    if (_isMultiSelect) {
+      return SliverAppBar(
+        floating: true,
+        snap: true,
+        pinned: false,
+        backgroundColor: colorScheme.surface,
+        surfaceTintColor: Colors.transparent,
+        title: Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.close),
+              constraints:
+                  const BoxConstraints(minWidth: 48, minHeight: 48),
+              tooltip: l10n.cancel,
+              onPressed: _exitMultiSelect,
+            ),
+            Text(
+              l10n.selectedCount(_selectedIds.length),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: colorScheme.onSurface,
+              ),
+            ),
+            const Spacer(),
+            IconButton(
+              icon: const Icon(Icons.delete_outline),
+              constraints:
+                  const BoxConstraints(minWidth: 48, minHeight: 48),
+              tooltip: l10n.batchDelete,
+              onPressed: () async {
+                final repo = ref.read(recordRepositoryProvider);
+                for (final id in _selectedIds) {
+                  await repo.softDeleteRecord(id);
+                }
+                ref.invalidate(recordsListProvider);
+                ref.invalidate(trashListProvider);
+                _exitMultiSelect();
+              },
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_searchExpanded) {
+      final recentSearches =
+          ref.watch(recentSearchProvider).value ?? const [];
+      return SliverAppBar(
+        floating: true,
+        snap: true,
+        pinned: false,
+        backgroundColor: colorScheme.surface,
+        surfaceTintColor: Colors.transparent,
+        titleSpacing: 16,
+        title: Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _searchController,
+                focusNode: _searchFocus,
+                onChanged: _onSearchChanged,
+                onSubmitted: (value) {
+                  if (value.trim().isNotEmpty) {
+                    ref.read(recentSearchProvider.notifier).addQuery(value);
+                  }
+                },
+                decoration: InputDecoration(
+                  hintText: '搜索，也可以输入拼音首字母',
+                  suffixIcon: _searchController.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear, size: 20),
+                          constraints: const BoxConstraints(
+                              minWidth: 48, minHeight: 48),
+                          onPressed: _clearSearch,
+                        )
+                      : null,
+                  filled: true,
+                  fillColor: colorScheme.surfaceContainerLowest,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(
+                      color: colorScheme.outlineVariant,
+                      width: 1,
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(
+                      color: colorScheme.outlineVariant,
+                      width: 1,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(
+                      color: colorScheme.primary,
+                      width: 1.5,
+                    ),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            TextButton(
+              onPressed: _cancelSearch,
+              child: Text(l10n.cancel),
+            ),
+          ],
+        ),
+        bottom: recentSearches.isNotEmpty
+            ? PreferredSize(
+                preferredSize: const Size.fromHeight(42),
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: RecentSearchChips(
+                    queries: recentSearches,
+                    onSelectQuery: (q) {
+                      _searchController.text = q;
+                      ref.read(recordsFilterProvider.notifier).setQuery(q);
+                      ref.read(recentSearchProvider.notifier).addQuery(q);
+                    },
+                    onClear: () =>
+                        ref.read(recentSearchProvider.notifier).clear(),
+                  ),
+                ),
+              )
+            : null,
+      );
+    }
+
+    return SliverAppBar(
+      floating: true,
+      snap: true,
+      pinned: false,
+      backgroundColor: colorScheme.surface,
+      surfaceTintColor: Colors.transparent,
+      title: const Text(
+        '随存 SuiVault',
+        style: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.search_rounded, size: 22),
+          constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+          tooltip: l10n.search,
+          onPressed: () => _openSearch(requestFocus: true),
+        ),
+      ],
+    );
+  }
+}
+
+class _CategoryFilterHeaderDelegate extends SliverPersistentHeaderDelegate {
+  _CategoryFilterHeaderDelegate({
+    required this.height,
+    required this.backgroundColor,
+    required this.child,
+  });
+
+  final double height;
+  final Color backgroundColor;
+  final Widget child;
+
+  @override
+  double get minExtent => height;
+
+  @override
+  double get maxExtent => height;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return Container(
+      height: height,
+      color: backgroundColor,
+      alignment: Alignment.centerLeft,
+      child: child,
+    );
+  }
+
+  @override
+  bool shouldRebuild(covariant _CategoryFilterHeaderDelegate oldDelegate) {
+    return oldDelegate.height != height ||
+        oldDelegate.backgroundColor != backgroundColor ||
+        oldDelegate.child != child;
   }
 }
 

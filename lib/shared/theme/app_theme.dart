@@ -23,10 +23,10 @@ class AppTheme {
   static const Color dangerColor = Color(0xFFC43D48);
 
   /// Unified category color mapping across all pages:
-  /// 学习紫色 #805AD5, 工作蓝色 #477FD0, 待办红色 #D65C65, 灵感黄色 #D49A25, 生活绿色 #3C9567
+  /// 学习紫色 #805AD5, 工作蓝色 #3265E5, 待办红色 #D65C65, 灵感黄色 #D49A25, 生活绿色 #3C9567
   static const Map<String, Color> categoryColorMap = {
     '学习': Color(0xFF805AD5),
-    '工作': Color(0xFF477FD0),
+    '工作': Color(0xFF3265E5),
     '待办': Color(0xFFD65C65),
     '灵感': Color(0xFFD49A25),
     '生活': Color(0xFF3C9567),
@@ -34,17 +34,7 @@ class AppTheme {
 
   /// Fallback category color parser that respects the unified category colors.
   static Color getCategoryColor(String? name, [String? hex]) {
-    if (name != null && categoryColorMap.containsKey(name.trim())) {
-      return categoryColorMap[name.trim()]!;
-    }
-    if (hex != null && hex.isNotEmpty) {
-      final clean = hex.toUpperCase().replaceAll('#', '');
-      if (clean.length == 6) {
-        return Color(int.tryParse('FF$clean', radix: 16) ?? 0xFF3265E5);
-      }
-      return Color(int.tryParse(clean, radix: 16) ?? 0xFF3265E5);
-    }
-    return primaryBlue;
+    return SuiVaultColors.light.colorForCategory(name, hex);
   }
 
   // ─── Shared text theme ────────────────────────────────────────────────────
@@ -239,6 +229,14 @@ class AppTheme {
           ),
         ),
       ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          minimumSize: const Size(48, 48),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      ),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
         backgroundColor: primaryBlue,
         foregroundColor: Colors.white,
@@ -251,6 +249,9 @@ class AppTheme {
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
+      extensions: const [
+        SuiVaultColors.light,
+      ],
     );
   }
 
@@ -318,7 +319,7 @@ class AppTheme {
         backgroundColor: const Color(0xFF1F2422),
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
         ),
         titleTextStyle: const TextStyle(
           color: Color(0xFFE9EDEB),
@@ -330,7 +331,7 @@ class AppTheme {
         backgroundColor: Color(0xFF1F2422),
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
         dragHandleColor: Color(0xFF2E3431),
       ),
@@ -389,6 +390,14 @@ class AppTheme {
           side: const BorderSide(color: Color(0xFF2A3342)),
         ),
       ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          minimumSize: const Size(48, 48),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           minimumSize: const Size(48, 40),
@@ -409,6 +418,109 @@ class AppTheme {
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
+      extensions: const [
+        SuiVaultColors.dark,
+      ],
     );
   }
+}
+
+/// Theme extension defining semantic status colors and unified category palettes
+/// for SuiVault, supporting smooth transitions and dark mode adaptation.
+@immutable
+class SuiVaultColors extends ThemeExtension<SuiVaultColors> {
+  const SuiVaultColors({
+    required this.success,
+    required this.warning,
+    required this.danger,
+    required this.categoryPalette,
+  });
+
+  final Color success;
+  final Color warning;
+  final Color danger;
+  final Map<String, Color> categoryPalette;
+
+  static const SuiVaultColors light = SuiVaultColors(
+    success: Color(0xFF2D8263),
+    warning: Color(0xFFA76A12),
+    danger: Color(0xFFC43D48),
+    categoryPalette: {
+      '学习': Color(0xFF805AD5),
+      '工作': Color(0xFF3265E5),
+      '待办': Color(0xFFD65C65),
+      '灵感': Color(0xFFD49A25),
+      '生活': Color(0xFF3C9567),
+    },
+  );
+
+  static const SuiVaultColors dark = SuiVaultColors(
+    success: Color(0xFF56C29B),
+    warning: Color(0xFFF0B45B),
+    danger: Color(0xFFF2747E),
+    categoryPalette: {
+      '学习': Color(0xFFB794F4),
+      '工作': Color(0xFF7FA3F7),
+      '待办': Color(0xFFF6878F),
+      '灵感': Color(0xFFF6C863),
+      '生活': Color(0xFF68D391),
+    },
+  );
+
+  Color colorForCategory(String? name, [String? hex]) {
+    if (name != null && categoryPalette.containsKey(name.trim())) {
+      return categoryPalette[name.trim()]!;
+    }
+    if (hex != null && hex.isNotEmpty) {
+      final clean = hex.toUpperCase().replaceAll('#', '');
+      if (clean.length == 6) {
+        final parsed = int.tryParse('FF$clean', radix: 16);
+        if (parsed != null) return Color(parsed);
+      } else {
+        final parsed = int.tryParse(clean, radix: 16);
+        if (parsed != null) return Color(parsed);
+      }
+    }
+    return categoryPalette['工作'] ?? const Color(0xFF3265E5);
+  }
+
+  @override
+  SuiVaultColors copyWith({
+    Color? success,
+    Color? warning,
+    Color? danger,
+    Map<String, Color>? categoryPalette,
+  }) {
+    return SuiVaultColors(
+      success: success ?? this.success,
+      warning: warning ?? this.warning,
+      danger: danger ?? this.danger,
+      categoryPalette: categoryPalette ?? this.categoryPalette,
+    );
+  }
+
+  @override
+  SuiVaultColors lerp(ThemeExtension<SuiVaultColors>? other, double t) {
+    if (other is! SuiVaultColors) {
+      return this;
+    }
+    return SuiVaultColors(
+      success: Color.lerp(success, other.success, t) ?? success,
+      warning: Color.lerp(warning, other.warning, t) ?? warning,
+      danger: Color.lerp(danger, other.danger, t) ?? danger,
+      categoryPalette: t < 0.5 ? categoryPalette : other.categoryPalette,
+    );
+  }
+}
+
+extension SuiVaultThemeDataX on ThemeData {
+  SuiVaultColors get suiColors =>
+      extension<SuiVaultColors>() ??
+      (brightness == Brightness.dark
+          ? SuiVaultColors.dark
+          : SuiVaultColors.light);
+}
+
+extension SuiVaultBuildContextX on BuildContext {
+  SuiVaultColors get suiColors => Theme.of(this).suiColors;
 }

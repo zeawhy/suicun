@@ -27,6 +27,7 @@ import 'package:suicun/features/records/presentation/template_views/password_tem
 import 'package:suicun/features/records/presentation/template_views/template_detector.dart';
 import 'package:suicun/features/records/presentation/template_views/todo_template_view.dart';
 import 'package:suicun/features/tags/domain/tag_model.dart';
+import 'package:suicun/features/records/presentation/template_sheet.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
 import 'package:suicun/services/auto_category_service.dart';
 import 'package:suicun/shared/theme/app_theme.dart';
@@ -36,10 +37,12 @@ class EditRecordPage extends ConsumerStatefulWidget {
     super.key,
     this.recordId,
     this.templateId,
+    this.autofocus = false,
   });
 
   final String? recordId;
   final String? templateId;
+  final bool autofocus;
 
   @override
   ConsumerState<EditRecordPage> createState() => _EditRecordPageState();
@@ -77,6 +80,50 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
         setState(() => _bodyEditing = false);
       }
     });
+
+    if (widget.autofocus) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {
+            _bodyEditing = true;
+          });
+          _bodyFocusNode.requestFocus();
+        }
+      });
+    }
+  }
+
+  String _getCurrentTemplateTitle(AppLocalizations l10n) {
+    final currentTemplate = NoteTemplate.byId(widget.templateId);
+    if (currentTemplate != null) {
+      return currentTemplate.getTitle(l10n);
+    }
+    final body = _bodyController.text;
+    if (parsePasswordTemplate(body) != null) return l10n.templatePassword;
+    if (parseIdeaTemplate(body) != null) return l10n.templateIdea;
+    if (parseTodoTemplate(body) != null) return l10n.templateTodo;
+    if (parseContactTemplate(body) != null) return l10n.templateContact;
+    if (parseIdDocumentTemplate(body) != null) return l10n.templateIdDocument;
+    return l10n.templateBlank;
+  }
+
+  void _switchTemplate(String templateId) {
+    final locale = Localizations.localeOf(context).languageCode;
+    final template = NoteTemplate.byId(templateId);
+    if (template != null) {
+      final templateBody = template.getBody(locale);
+      if (_bodyController.text.trim().isEmpty) {
+        _bodyController.text = templateBody;
+      } else {
+        _bodyController.text =
+            '${_bodyController.text}\n\n$templateBody'.trim();
+      }
+      _onChanged();
+      setState(() {
+        _bodyEditing = true;
+      });
+      _bodyFocusNode.requestFocus();
+    }
   }
 
   @override
@@ -208,10 +255,12 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           _ColorDot(
-                            color: AppTheme.getCategoryColor(
-                              s.categoryName,
-                              _suggestionColors[s.categoryId],
-                            ),
+                            color: Theme.of(context)
+                                .suiColors
+                                .colorForCategory(
+                                  s.categoryName,
+                                  _suggestionColors[s.categoryId],
+                                ),
                           ),
                           const SizedBox(width: 6),
                           Text(
@@ -253,7 +302,11 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
               onPressed: () => Navigator.of(ctx).pop(c.id),
               child: Row(
                 children: [
-                  _ColorDot(color: AppTheme.getCategoryColor(c.name, c.color)),
+                  _ColorDot(
+                    color: Theme.of(ctx)
+                        .suiColors
+                        .colorForCategory(c.name, c.color),
+                  ),
                   const SizedBox(width: 12),
                   Expanded(child: Text(categoryDisplayName(ctx, c.name))),
                   if (record?.categoryId == c.id)
@@ -670,11 +723,14 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
       );
     }
 
+    final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
+
     return PopScope(
       onPopInvokedWithResult: (_, __) async {
         await ref.read(editRecordProvider(widget.recordId).notifier).flush();
       },
       child: Scaffold(
+        resizeToAvoidBottomInset: true,
         appBar: AppBar(
           title: appBarTitle,
           actions: [
@@ -946,6 +1002,120 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
                     ),
                   ],
                 ),
+        ),
+        bottomNavigationBar: AnimatedPadding(
+          duration: const Duration(milliseconds: 120),
+          curve: Curves.easeOut,
+          padding: EdgeInsets.only(bottom: bottomInset),
+          child: SafeArea(
+            top: false,
+            child: Container(
+              height: 48,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                color: colorScheme.surfaceContainerLowest,
+                border: Border(
+                  top: BorderSide(
+                    color: colorScheme.outlineVariant.withValues(alpha: 0.6),
+                    width: 0.5,
+                  ),
+                ),
+              ),
+              child: Row(
+                children: [
+                  // 模板切换胶囊
+                  InkWell(
+                    onTap: () async {
+                      final selected = await showTemplateSheet(context);
+                      if (selected != null && mounted) {
+                        _switchTemplate(selected);
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(14),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color:
+                            colorScheme.primaryContainer.withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.dashboard_customize_outlined,
+                            size: 16,
+                            color: colorScheme.primary,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            _getCurrentTemplateTitle(l10n),
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: colorScheme.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  // 快捷插入待办 checkbox
+                  IconButton(
+                    icon: const Icon(Icons.check_box_outlined, size: 20),
+                    tooltip: l10n.formatCheckbox,
+                    padding: EdgeInsets.zero,
+                    constraints:
+                        const BoxConstraints(minWidth: 36, minHeight: 36),
+                    onPressed: () {
+                      if (!_bodyEditing) {
+                        setState(() => _bodyEditing = true);
+                      }
+                      _applyLineFormat(toggleCheckboxAt);
+                    },
+                  ),
+                  const SizedBox(width: 6),
+                  // 智能分类推荐 Chip
+                  if (_suggestions.isNotEmpty)
+                    Expanded(
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.auto_awesome_outlined,
+                              size: 14,
+                              color: colorScheme.primary,
+                            ),
+                            const SizedBox(width: 4),
+                            for (final s in _suggestions)
+                              Padding(
+                                padding: const EdgeInsets.only(right: 6),
+                                child: ActionChip(
+                                  visualDensity: VisualDensity.compact,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 4,
+                                  ),
+                                  label: Text(
+                                    s.categoryName,
+                                    style: const TextStyle(fontSize: 12),
+                                  ),
+                                  onPressed: () => _applySuggestion(s),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -1380,10 +1550,12 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
               const Spacer(),
               if (category != null) ...[
                 _ColorDot(
-                  color: AppTheme.getCategoryColor(
-                    category.name,
-                    category.color,
-                  ),
+                  color: Theme.of(context)
+                      .suiColors
+                      .colorForCategory(
+                        category.name,
+                        category.color,
+                      ),
                 ),
                 const SizedBox(width: 8),
                 Text(categoryDisplayName(context, category.name),

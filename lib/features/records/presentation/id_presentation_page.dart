@@ -62,6 +62,7 @@ class _IdPresentationPageState extends State<IdPresentationPage> {
   bool _isLandscape = false;
   bool _obscureNumber = false;
   final bool _showNumberBar = true;
+  bool _largeTextMode = false;
 
   bool _loading = true;
   final List<_IdPhotoItem> _photoItems = [];
@@ -205,15 +206,18 @@ class _IdPresentationPageState extends State<IdPresentationPage> {
   }
 
   void _toggleZoom() {
-    if (_transformControllers.isEmpty || _currentPage >= _transformControllers.length) {
-      return;
-    }
-    final controller = _transformControllers[_currentPage];
-    final currentScale = controller.value.getMaxScaleOnAxis();
-    if (currentScale > 1.05) {
-      controller.value = Matrix4.identity();
+    if (_photoItems.isNotEmpty && _currentPage < _transformControllers.length) {
+      final controller = _transformControllers[_currentPage];
+      final currentScale = controller.value.getMaxScaleOnAxis();
+      if (currentScale > 1.05) {
+        controller.value = Matrix4.identity();
+      } else {
+        controller.value = Matrix4.diagonal3Values(2.0, 2.0, 1.0);
+      }
     } else {
-      controller.value = Matrix4.diagonal3Values(2.0, 2.0, 1.0);
+      setState(() {
+        _largeTextMode = !_largeTextMode;
+      });
     }
   }
 
@@ -238,200 +242,248 @@ class _IdPresentationPageState extends State<IdPresentationPage> {
       body: AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle.light,
         child: SafeArea(
-          child: Column(
-            children: [
-              // ── Top Header ──────────────────────────────────────────────
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                child: Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white, size: 26),
-                      tooltip: '关闭',
-                      onPressed: () => Navigator.of(context).pop(),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        headerTitle,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // ── Center PageView (Photos) ────────────────────────────────
-              Expanded(
-                child: _loading
-                    ? const Center(
-                        child: CircularProgressIndicator(color: Colors.white),
-                      )
-                    : _photoItems.isEmpty
-                        ? Center(
-                            child: Padding(
-                              padding: const EdgeInsets.all(24),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(
-                                    Icons.badge_outlined,
-                                    size: 72,
-                                    color: Colors.white38,
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    _docName ?? title,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    _docNumber != null && _docNumber!.isNotEmpty
-                                        ? _formatNumber(_docNumber!)
-                                        : '暂无证件照片与号码',
-                                    style: const TextStyle(
-                                      color: Colors.white70,
-                                      fontSize: 16,
-                                      letterSpacing: 1.2,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          )
-                        : PageView.builder(
-                            controller: _pageController,
-                            itemCount: _photoItems.length,
-                            onPageChanged: (idx) {
-                              setState(() {
-                                _currentPage = idx;
-                              });
-                            },
-                            itemBuilder: (context, index) {
-                              final item = _photoItems[index];
-                              return InteractiveViewer(
-                                transformationController:
-                                    _transformControllers[index],
-                                minScale: 1.0,
-                                maxScale: 5.0,
-                                child: Center(
-                                  child: Image.file(
-                                    item.file,
-                                    fit: BoxFit.contain,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-              ),
-
-              // ── Dots Indicator ──────────────────────────────────────────
-              if (_photoItems.length > 1)
+          child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onVerticalDragEnd: (details) {
+              final isZoomed = _transformControllers.isNotEmpty &&
+                  _currentPage < _transformControllers.length &&
+                  _transformControllers[_currentPage].value.getMaxScaleOnAxis() > 1.05;
+              if (!isZoomed && (details.primaryVelocity ?? 0) > 300) {
+                Navigator.of(context).maybePop();
+              }
+            },
+            child: Column(
+              children: [
+                // ── Top Header ──────────────────────────────────────────────
                 Padding(
-                  padding: const EdgeInsets.only(top: 8, bottom: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(
-                      _photoItems.length,
-                      (i) => Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: _currentPage == i
-                              ? Colors.white
-                              : Colors.white24,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-
-              // ── Number Display Bar ──────────────────────────────────────
-              if (_docNumber != null && _docNumber!.isNotEmpty && _showNumberBar)
-                Container(
-                  margin: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.white12,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        _formatNumber(_docNumber!),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 1.1,
-                        ),
+                      IconButton(
+                        icon: const Icon(Icons.close, color: Colors.white, size: 26),
+                        tooltip: '关闭',
+                        onPressed: () => Navigator.of(context).pop(),
                       ),
                       const SizedBox(width: 8),
-                      GestureDetector(
-                        onTap: _toggleNumberVisibility,
-                        child: Icon(
-                          _obscureNumber
-                              ? Icons.visibility_off_outlined
-                              : Icons.visibility_outlined,
-                          size: 18,
-                          color: Colors.white70,
+                      Expanded(
+                        child: Text(
+                          headerTitle,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
                   ),
                 ),
 
-              // ── Bottom 4 Action Buttons ─────────────────────────────────
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: const BoxDecoration(
-                  border: Border(
-                    top: BorderSide(color: Colors.white12, width: 0.5),
+                // ── Center PageView (Photos) ────────────────────────────────
+                Expanded(
+                  child: _loading
+                      ? const Center(
+                          child: CircularProgressIndicator(color: Colors.white),
+                        )
+                      : _photoItems.isEmpty
+                          ? Center(
+                              child: Padding(
+                                padding: const EdgeInsets.all(24),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(
+                                      Icons.badge_outlined,
+                                      size: 72,
+                                      color: Colors.white38,
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      _docName ?? title,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          _largeTextMode = !_largeTextMode;
+                                        });
+                                      },
+                                      child: Text(
+                                        _docNumber != null && _docNumber!.isNotEmpty
+                                            ? _formatNumber(_docNumber!)
+                                            : '暂无证件照片与号码',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: _largeTextMode ? 24 : 16,
+                                          fontWeight: _largeTextMode
+                                              ? FontWeight.bold
+                                              : FontWeight.normal,
+                                          letterSpacing: _largeTextMode ? 2.0 : 1.2,
+                                          fontFeatures: const [
+                                            FontFeature.tabularFigures()
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
+                          : PageView.builder(
+                              controller: _pageController,
+                              itemCount: _photoItems.length,
+                              onPageChanged: (idx) {
+                                setState(() {
+                                  _currentPage = idx;
+                                });
+                              },
+                              itemBuilder: (context, index) {
+                                final item = _photoItems[index];
+                                return InteractiveViewer(
+                                  transformationController:
+                                      _transformControllers[index],
+                                  minScale: 1.0,
+                                  maxScale: 5.0,
+                                  child: Center(
+                                    child: Image.file(
+                                      item.file,
+                                      fit: BoxFit.contain,
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                ),
+
+                // ── Dots Indicator ──────────────────────────────────────────
+                if (_photoItems.length > 1)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8, bottom: 4),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(
+                        _photoItems.length,
+                        (i) => Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: _currentPage == i
+                                ? Colors.white
+                                : Colors.white24,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                // ── Number Display Bar ──────────────────────────────────────
+                if (_docNumber != null && _docNumber!.isNotEmpty && _showNumberBar)
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _largeTextMode = !_largeTextMode;
+                      });
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: _largeTextMode ? 22 : 16,
+                        vertical: _largeTextMode ? 12 : 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _largeTextMode ? Colors.white24 : Colors.white12,
+                        borderRadius:
+                            BorderRadius.circular(_largeTextMode ? 16 : 20),
+                        border: _largeTextMode
+                            ? Border.all(color: Colors.white70, width: 1.5)
+                            : null,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            _formatNumber(_docNumber!),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: _largeTextMode ? 24 : 15,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: _largeTextMode ? 2.0 : 1.1,
+                              fontFeatures: const [
+                                FontFeature.tabularFigures()
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          GestureDetector(
+                            onTap: _toggleNumberVisibility,
+                            child: Icon(
+                              _obscureNumber
+                                  ? Icons.visibility_off_outlined
+                                  : Icons.visibility_outlined,
+                              size: _largeTextMode ? 22 : 18,
+                              color: Colors.white70,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Icon(
+                            _largeTextMode
+                                ? Icons.zoom_out_map_rounded
+                                : Icons.zoom_in_rounded,
+                            size: _largeTextMode ? 20 : 16,
+                            color: Colors.white60,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                // ── Bottom 4 Action Buttons ─────────────────────────────────
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: const BoxDecoration(
+                    border: Border(
+                      top: BorderSide(color: Colors.white12, width: 0.5),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _ActionButton(
+                        icon: Icons.screen_rotation_outlined,
+                        label: '横屏',
+                        onTap: _toggleOrientation,
+                      ),
+                      _ActionButton(
+                        icon: _obscureNumber
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
+                        label: _obscureNumber ? '显示号码' : '隐藏号码',
+                        onTap: _toggleNumberVisibility,
+                      ),
+                      _ActionButton(
+                        icon: Icons.copy_rounded,
+                        label: '复制号码',
+                        onTap: _copyNumber,
+                      ),
+                      _ActionButton(
+                        icon: Icons.zoom_in_rounded,
+                        label: '放大',
+                        onTap: _toggleZoom,
+                      ),
+                    ],
                   ),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _ActionButton(
-                      icon: Icons.screen_rotation_outlined,
-                      label: '横屏',
-                      onTap: _toggleOrientation,
-                    ),
-                    _ActionButton(
-                      icon: _obscureNumber
-                          ? Icons.visibility_off_outlined
-                          : Icons.visibility_outlined,
-                      label: _obscureNumber ? '显示号码' : '隐藏号码',
-                      onTap: _toggleNumberVisibility,
-                    ),
-                    _ActionButton(
-                      icon: Icons.copy_rounded,
-                      label: '复制号码',
-                      onTap: _copyNumber,
-                    ),
-                    _ActionButton(
-                      icon: Icons.zoom_in_rounded,
-                      label: '放大',
-                      onTap: _toggleZoom,
-                    ),
-                  ],
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

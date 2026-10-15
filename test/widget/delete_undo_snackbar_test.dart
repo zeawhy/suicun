@@ -56,8 +56,6 @@ void main() {
     // Create a record
     await tester.tap(find.byTooltip('New Record'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Blank note'));
-    await tester.pumpAndSettle();
 
     await tester.enterText(findByHint('Title (optional)'), 'Record A');
     await tester.pump(const Duration(milliseconds: 700));
@@ -67,8 +65,8 @@ void main() {
 
     expect(find.text('Record A'), findsOneWidget);
 
-    // Delete via overflow menu
-    await tester.tap(find.byIcon(Icons.more_horiz));
+    // Delete via long-press action sheet
+    await tester.longPress(find.text('Record A').first);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Delete'));
     await tester.pumpAndSettle();
@@ -94,8 +92,6 @@ void main() {
     // Create a record
     await tester.tap(find.byTooltip('New Record'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Blank note'));
-    await tester.pumpAndSettle();
 
     await tester.enterText(findByHint('Title (optional)'), 'Record B');
     await tester.pump(const Duration(milliseconds: 700));
@@ -105,8 +101,8 @@ void main() {
 
     expect(find.text('Record B'), findsOneWidget);
 
-    // Delete
-    await tester.tap(find.byIcon(Icons.more_horiz));
+    // Delete via long-press action sheet
+    await tester.longPress(find.text('Record B').first);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Delete'));
     await tester.pumpAndSettle();
@@ -129,8 +125,6 @@ void main() {
 
     // Create a record and stay in edit page
     await tester.tap(find.byTooltip('New Record'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Blank note'));
     await tester.pumpAndSettle();
 
     await tester.enterText(findByHint('Title (optional)'), 'Record C');

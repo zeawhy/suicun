@@ -220,7 +220,7 @@ class CategoriesPage extends ConsumerWidget {
                         itemBuilder: (context, index) {
                           final cat = categories[index];
                           final color =
-                              AppTheme.getCategoryColor(cat.name, cat.color);
+                              theme.suiColors.colorForCategory(cat.name, cat.color);
                           return ListTile(
                             leading: Container(
                               width: 44,

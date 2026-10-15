@@ -4,6 +4,9 @@
 import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+export 'app_theme.dart'
+    show SuiVaultColors, SuiVaultBuildContextX, SuiVaultThemeDataX;
+
 part 'theme_providers.g.dart';
 
 /// The three modes a user can choose for the app's appearance.
