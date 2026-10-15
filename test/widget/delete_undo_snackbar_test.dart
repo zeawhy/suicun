@@ -37,6 +37,16 @@ Finder findByHint(String hint) => find.byWidgetPredicate(
                   ((w.decoration!.hint as Text).data == hint))),
     );
 
+Future<void> openEditor(WidgetTester tester) async {
+  await tester.tap(find.byTooltip('New Record'));
+  await tester.pumpAndSettle();
+  final blankFinder = find.byKey(const Key('speed_dial_item_blank'));
+  if (blankFinder.evaluate().isNotEmpty) {
+    await tester.tap(blankFinder);
+    await tester.pumpAndSettle();
+  }
+}
+
 void main() {
   late AppDatabase db;
 
@@ -54,8 +64,7 @@ void main() {
     await pumpApp(tester, db);
 
     // Create a record
-    await tester.tap(find.byTooltip('New Record'));
-    await tester.pumpAndSettle();
+    await openEditor(tester);
 
     await tester.enterText(findByHint('Title (optional)'), 'Record A');
     await tester.pump(const Duration(milliseconds: 700));
@@ -90,8 +99,7 @@ void main() {
     await pumpApp(tester, db);
 
     // Create a record
-    await tester.tap(find.byTooltip('New Record'));
-    await tester.pumpAndSettle();
+    await openEditor(tester);
 
     await tester.enterText(findByHint('Title (optional)'), 'Record B');
     await tester.pump(const Duration(milliseconds: 700));
@@ -124,8 +132,7 @@ void main() {
     await pumpApp(tester, db);
 
     // Create a record and stay in edit page
-    await tester.tap(find.byTooltip('New Record'));
-    await tester.pumpAndSettle();
+    await openEditor(tester);
 
     await tester.enterText(findByHint('Title (optional)'), 'Record C');
     await tester.pump(const Duration(milliseconds: 700));

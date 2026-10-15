@@ -109,6 +109,9 @@ class NoteTemplate {
   /// Finds a template by its [id].
   static NoteTemplate? byId(String? id) {
     if (id == null) return null;
+    if (id == 'address') {
+      return byId('contact');
+    }
     for (final template in all) {
       if (template.id == id) return template;
     }

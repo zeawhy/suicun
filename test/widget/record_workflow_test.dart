@@ -53,6 +53,11 @@ Future<AppDatabase> freshDb() async {
 Future<void> openEditor(WidgetTester tester) async {
   await tester.tap(find.byTooltip('New Record'));
   await tester.pumpAndSettle();
+  final blankFinder = find.byKey(const Key('speed_dial_item_blank'));
+  if (blankFinder.evaluate().isNotEmpty) {
+    await tester.tap(blankFinder);
+    await tester.pumpAndSettle();
+  }
 }
 
 void main() {
@@ -265,13 +270,13 @@ void main() {
   testWidgets('template selector pre-fills password template', (tester) async {
     await pumpApp(tester, db);
 
-    await tester.longPress(find.byTooltip('New Record'));
+    await tester.tap(find.byTooltip('New Record'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Choose a template'), findsOneWidget);
-    expect(find.text('Save a password'), findsOneWidget);
+    final pwdFinder = find.byKey(const Key('speed_dial_item_password'));
+    expect(pwdFinder, findsOneWidget);
 
-    await tester.tap(find.text('Save a password'));
+    await tester.tap(pwdFinder);
     await tester.pumpAndSettle();
 
     // The editor opens directly with the password template card UI in creation mode

@@ -1,5 +1,4 @@
-// test/unit/pinyin_search_helper_test.dart
-
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:suicun/features/records/domain/record_model.dart';
 import 'package:suicun/features/records/presentation/search/pinyin_search_helper.dart';
@@ -61,4 +60,58 @@ void main() {
       expect(matchesRecordPinyinOrText(sampleRecord, 'yh'), isFalse);
     });
   });
+
+  group('findMatchRanges', () {
+    test('direct substring matching finds correct ranges', () {
+      final ranges = findMatchRanges(text: 'Alpha note beta note', query: 'note');
+      expect(ranges, const [MatchRange(6, 10), MatchRange(16, 20)]);
+    });
+
+    test('pinyin acronym matching finds correct ranges', () {
+      final ranges = findMatchRanges(text: '我的身份证号码', query: 'sfz');
+      expect(ranges, const [MatchRange(2, 5)]); // "身份证"
+    });
+
+    test('case-insensitive acronym matching', () {
+      final ranges = findMatchRanges(text: '家庭住址', query: 'JTZZ');
+      expect(ranges, const [MatchRange(0, 4)]);
+    });
+
+    test('overlapping matches merge gracefully', () {
+      final ranges = findMatchRanges(text: 'abcde', query: 'bcd');
+      expect(ranges, const [MatchRange(1, 4)]);
+    });
+  });
+
+  group('buildHighlightedSpans', () {
+    test('returns unhighlighted span if query is empty or not matched', () {
+      final spans = buildHighlightedSpans(
+        text: 'Hello world',
+        query: 'xyz',
+        baseStyle: null,
+        highlightStyle: null,
+      );
+      expect(spans.length, 1);
+      expect(spans.first.text, 'Hello world');
+    });
+
+    test('highlights matched pinyin in Chinese text', () {
+      const baseStyle = TextStyle(color: Color(0xFF000000));
+      const highlightStyle = TextStyle(color: Color(0xFFFF0000));
+      final spans = buildHighlightedSpans(
+        text: '我的身份证件',
+        query: 'sfz',
+        baseStyle: baseStyle,
+        highlightStyle: highlightStyle,
+      );
+      expect(spans.length, 3);
+      expect(spans[0].text, '我的');
+      expect(spans[0].style, baseStyle);
+      expect(spans[1].text, '身份证');
+      expect(spans[1].style, highlightStyle);
+      expect(spans[2].text, '件');
+      expect(spans[2].style, baseStyle);
+    });
+  });
 }
+
