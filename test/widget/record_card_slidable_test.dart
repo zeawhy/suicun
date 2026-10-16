@@ -32,7 +32,10 @@ RecordDetail createMockRecord({
 Widget createTestWidget({
   required RecordDetail record,
   bool isMultiSelectMode = false,
-  VoidCallback? onPinToggle,
+  bool isQuickAccess = false,
+  VoidCallback? onQuickAccessToggle,
+  VoidCallback? onAnySlideAction,
+  bool showSwipeHint = false,
   VoidCallback? onEdit,
   VoidCallback? onDelete,
   VoidCallback? onFavoriteToggle,
@@ -54,7 +57,10 @@ Widget createTestWidget({
               onTap: () {},
               onLongPress: () {},
               onFavoriteToggle: onFavoriteToggle ?? () {},
-              onPinToggle: onPinToggle ?? () {},
+              isQuickAccess: isQuickAccess,
+              onQuickAccessToggle: onQuickAccessToggle ?? () {},
+              onAnySlideAction: onAnySlideAction,
+              showSwipeHint: showSwipeHint,
               onEdit: onEdit ?? () {},
               onChangeCategory: () {},
               onDelete: onDelete ?? () {},
@@ -69,15 +75,16 @@ Widget createTestWidget({
 }
 
 void main() {
-  testWidgets('left-drag reveals action pane and triggers onPinToggle (unpinned)',
+  testWidgets('left-drag reveals action pane and triggers onQuickAccessToggle (unpinned)',
       (tester) async {
-    var pinToggled = false;
+    var quickAccessToggled = false;
     final record = createMockRecord(isFavorite: false);
 
     await tester.pumpWidget(
       createTestWidget(
         record: record,
-        onPinToggle: () => pinToggled = true,
+        isQuickAccess: false,
+        onQuickAccessToggle: () => quickAccessToggled = true,
       ),
     );
     await tester.pumpAndSettle();
@@ -88,24 +95,25 @@ void main() {
 
     // Verify pin icon and label for unpinned record
     expect(find.byIcon(Icons.push_pin_outlined), findsOneWidget);
-    expect(find.text('置顶'), findsOneWidget);
+    expect(find.text('设为常用'), findsOneWidget);
 
-    // Tap pin action
+    // Tap quick access action
     await tester.tap(find.byIcon(Icons.push_pin_outlined));
     await tester.pumpAndSettle();
 
-    expect(pinToggled, isTrue);
+    expect(quickAccessToggled, isTrue);
   });
 
-  testWidgets('left-drag reveals unpin action when record is already pinned',
+  testWidgets('left-drag reveals unpin action when record is already quick access',
       (tester) async {
-    var pinToggled = false;
+    var quickAccessToggled = false;
     final record = createMockRecord(isFavorite: true);
 
     await tester.pumpWidget(
       createTestWidget(
         record: record,
-        onPinToggle: () => pinToggled = true,
+        isQuickAccess: true,
+        onQuickAccessToggle: () => quickAccessToggled = true,
       ),
     );
     await tester.pumpAndSettle();
@@ -113,13 +121,13 @@ void main() {
     await tester.drag(find.byType(RecordCard), const Offset(-300, 0));
     await tester.pumpAndSettle();
 
-    expect(find.byIcon(Icons.push_pin), findsOneWidget);
-    expect(find.text('取消置顶'), findsOneWidget);
+    expect(find.widgetWithIcon(SlidableAction, Icons.push_pin), findsOneWidget);
+    expect(find.text('取消常用'), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.push_pin));
+    await tester.tap(find.widgetWithIcon(SlidableAction, Icons.push_pin));
     await tester.pumpAndSettle();
 
-    expect(pinToggled, isTrue);
+    expect(quickAccessToggled, isTrue);
   });
 
   testWidgets('left-drag reveals edit action and triggers onEdit',

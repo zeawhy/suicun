@@ -10,6 +10,7 @@ class QuickAccessKeys {
   static const String quickAccessRecordIds = 'quick_access_record_ids';
   static const String recentOpenedRecordIds = 'recent_opened_record_ids';
   static const String recentSearchQueries = 'recent_search_queries';
+  static const String swipeHintSeen = 'swipe_hint_seen';
 }
 
 /// Service managing local persistence for quick-access items, recent opened records,
@@ -225,4 +226,23 @@ class RecentSearchNotifier extends AsyncNotifier<List<String>> {
 final recentSearchProvider =
     AsyncNotifierProvider<RecentSearchNotifier, List<String>>(
   RecentSearchNotifier.new,
+);
+
+class SwipeHintSeenNotifier extends AsyncNotifier<bool> {
+  @override
+  Future<bool> build() async {
+    final prefs = await ref.watch(sharedPreferencesProvider.future);
+    return prefs.getBool(QuickAccessKeys.swipeHintSeen) ?? false;
+  }
+
+  Future<void> markSeen() async {
+    final prefs = await ref.read(sharedPreferencesProvider.future);
+    await prefs.setBool(QuickAccessKeys.swipeHintSeen, true);
+    state = const AsyncData(true);
+  }
+}
+
+final swipeHintSeenProvider =
+    AsyncNotifierProvider<SwipeHintSeenNotifier, bool>(
+  SwipeHintSeenNotifier.new,
 );

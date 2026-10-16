@@ -1181,4 +1181,19 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get clipboardSniffSubtitle =>
       'Recognize ID numbers, addresses, and links from clipboard upon returning to app. Processed locally only.';
+
+  @override
+  String get setQuickAccess => 'Set as quick access';
+
+  @override
+  String get unsetQuickAccess => 'Remove from quick access';
+
+  @override
+  String get quickAccessAdded => 'Added to quick access';
+
+  @override
+  String get quickAccessRemoved => 'Removed from quick access';
+
+  @override
+  String get quickAccessLimitReached => 'Maximum 6 quick access items allowed';
 }

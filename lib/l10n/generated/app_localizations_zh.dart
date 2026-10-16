@@ -1151,4 +1151,19 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get clipboardSniffSubtitle => '回到 App 时识别剪贴板中的证件号、地址、链接，仅在本地处理';
+
+  @override
+  String get setQuickAccess => '设为常用';
+
+  @override
+  String get unsetQuickAccess => '取消常用';
+
+  @override
+  String get quickAccessAdded => '已设为常用';
+
+  @override
+  String get quickAccessRemoved => '已取消常用';
+
+  @override
+  String get quickAccessLimitReached => '常用最多只能添加 6 个';
 }

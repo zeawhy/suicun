@@ -545,5 +545,10 @@
   "galleryPermissionTitle": "Gallery Permission",
   "galleryPermissionMessage": "Saving ID photos to the system gallery requires gallery permission. Photos are saved to the local gallery only",
   "clipboardSniffTitle": "Clipboard Recognition",
-  "clipboardSniffSubtitle": "Recognize ID numbers, addresses, and links from clipboard upon returning to app. Processed locally only."
+  "clipboardSniffSubtitle": "Recognize ID numbers, addresses, and links from clipboard upon returning to app. Processed locally only.",
+  "setQuickAccess": "Set as quick access",
+  "unsetQuickAccess": "Remove from quick access",
+  "quickAccessAdded": "Added to quick access",
+  "quickAccessRemoved": "Removed from quick access",
+  "quickAccessLimitReached": "Maximum 6 quick access items allowed"
 }

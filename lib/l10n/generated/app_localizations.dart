@@ -2281,6 +2281,36 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'回到 App 时识别剪贴板中的证件号、地址、链接，仅在本地处理'**
   String get clipboardSniffSubtitle;
+
+  /// No description provided for @setQuickAccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'设为常用'**
+  String get setQuickAccess;
+
+  /// No description provided for @unsetQuickAccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'取消常用'**
+  String get unsetQuickAccess;
+
+  /// No description provided for @quickAccessAdded.
+  ///
+  /// In zh, this message translates to:
+  /// **'已设为常用'**
+  String get quickAccessAdded;
+
+  /// No description provided for @quickAccessRemoved.
+  ///
+  /// In zh, this message translates to:
+  /// **'已取消常用'**
+  String get quickAccessRemoved;
+
+  /// No description provided for @quickAccessLimitReached.
+  ///
+  /// In zh, this message translates to:
+  /// **'常用最多只能添加 6 个'**
+  String get quickAccessLimitReached;
 }
 
 class _AppLocalizationsDelegate

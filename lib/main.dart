@@ -107,7 +107,9 @@ class _StartupFailureApp extends StatelessWidget {
 }
 
 class SuicunApp extends ConsumerWidget {
-  const SuicunApp({super.key});
+  const SuicunApp({super.key, this.locale});
+
+  final Locale? locale;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -117,6 +119,7 @@ class SuicunApp extends ConsumerWidget {
     return MaterialApp.router(
       title: '随存',
       debugShowCheckedModeBanner: false,
+      locale: locale,
       themeMode: currentThemeMode,
       theme: AppTheme.lightTheme(),
       darkTheme: AppTheme.darkTheme(),
