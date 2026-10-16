@@ -28,3 +28,9 @@ class AppLockController extends Notifier<bool> {
 
 final appLockControllerProvider =
     NotifierProvider<AppLockController, bool>(AppLockController.new);
+
+/// Whether app lock is currently enabled in settings.
+final appLockEnabledProvider = FutureProvider<bool>((ref) async {
+  final service = ref.watch(appLockServiceProvider);
+  return service.isEnabled();
+});

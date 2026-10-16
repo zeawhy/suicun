@@ -610,7 +610,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchEmptyHint => 'Try different keywords or clear search';
 
   @override
-  String get searchHint => 'Search info';
+  String get searchHint => 'Search title, content, supports pinyin';
 
   @override
   String get security => 'Security';
@@ -1196,4 +1196,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get quickAccessLimitReached => 'Maximum 6 quick access items allowed';
+
+  @override
+  String get searchPromptEmpty => 'Enter keywords to search all records';
+
+  @override
+  String get manageCategories => 'Manage categories';
+
+  @override
+  String get quickAdd => 'Quick add';
+
+  @override
+  String get backupAndSync => 'Backup & sync';
+
+  @override
+  String get backupAndExport => 'Backup and export';
+
+  @override
+  String get securityAndPrivacy => 'Security & privacy';
+
+  @override
+  String get appLockStatusEnabled => 'Enabled';
+
+  @override
+  String get appLockStatusDisabled => 'Disabled';
+
+  @override
+  String get dangerousOperations => 'Dangerous operations';
 }

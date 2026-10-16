@@ -65,6 +65,7 @@ class _SecurityPageState extends ConsumerState<SecurityPage> {
       if (set != true) return;
     }
     await service.setEnabled(value);
+    ref.invalidate(appLockEnabledProvider);
     await _reload();
   }
 

@@ -177,6 +177,9 @@ class _HomePageState extends ConsumerState<HomePage>
     _savedFavoritesOnly = currentFilter.favoritesOnly;
     _savedOffset =
         _scrollController.hasClients ? _scrollController.offset : 0.0;
+    final notifier = ref.read(recordsFilterProvider.notifier);
+    notifier.setCategory(null);
+    notifier.setFavoritesOnly(false);
     setState(() {
       _searchExpanded = true;
     });
@@ -582,9 +585,17 @@ class _HomePageState extends ConsumerState<HomePage>
       }
     }
 
-    final showQuickAndRecent = !isSearchOrFilterActive && !_isMultiSelect;
+    final showQuickAndRecent =
+        !_searchExpanded && !isSearchOrFilterActive && !_isMultiSelect;
+    final showQuickAdd = !isSearchOrFilterActive &&
+        !_searchExpanded &&
+        !_isMultiSelect &&
+        records.length < 3;
 
     final scaffoldContent = Scaffold(
+      floatingActionButton:
+          _isMultiSelect ? null : _buildSpeedDialFab(context),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       body: SafeArea(
         child: SlidableAutoCloseBehavior(
           child: NotificationListener<OverscrollNotification>(
@@ -635,7 +646,7 @@ class _HomePageState extends ConsumerState<HomePage>
                       ],
                     ),
                   ),
-                if (!_isMultiSelect)
+                if (!_isMultiSelect && !_searchExpanded)
                   SliverPersistentHeader(
                     pinned: true,
                     delegate: _CategoryFilterHeaderDelegate(
@@ -668,7 +679,31 @@ class _HomePageState extends ConsumerState<HomePage>
                       ),
                     ),
                   ),
-                if (recordsAsync.isLoading && !recordsAsync.hasValue)
+                if (_searchExpanded && filter.query.trim().isEmpty)
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.search,
+                            size: 32,
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            l10n.searchPromptEmpty,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                else if (recordsAsync.isLoading && !recordsAsync.hasValue)
                   const SliverFillRemaining(
                     hasScrollBody: false,
                     child: Center(child: CircularProgressIndicator()),
@@ -739,7 +774,7 @@ class _HomePageState extends ConsumerState<HomePage>
                     ),
                   ),
                   SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 80),
+                    padding: EdgeInsets.fromLTRB(16, 0, 16, showQuickAdd ? 16 : 80),
                     sliver: SliverList.separated(
                       itemCount: records.length,
                       separatorBuilder: (_, __) => const SizedBox(height: 8),
@@ -781,72 +816,48 @@ class _HomePageState extends ConsumerState<HomePage>
                       },
                     ),
                   ),
+                  if (showQuickAdd)
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 96),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              l10n.quickAdd,
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: [
+                                for (final item in _getSpeedDialItems(
+                                  context,
+                                  theme.brightness == Brightness.dark,
+                                ))
+                                  _TemplateChip(
+                                    item: item,
+                                    isDark: theme.brightness == Brightness.dark,
+                                    inkWellKey: Key('quick_add_item_${item.id}'),
+                                    onTap: () => context.push(item.route),
+                                  ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                 ],
               ],
             ),
           ),
         ),
       ),
-      bottomNavigationBar: !_isMultiSelect
-          ? Container(
-              decoration: BoxDecoration(
-                color: colorScheme.surfaceContainerLowest,
-                border: Border(
-                  top: BorderSide(
-                    color: colorScheme.outlineVariant,
-                    width: 1,
-                  ),
-                ),
-              ),
-              child: SafeArea(
-                top: false,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  child: Row(
-                    children: [
-                      Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(8),
-                          onTap: _toggleSettings,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 8,
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.settings_outlined,
-                                  size: 20,
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  l10n.settings,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: colorScheme.onSurfaceVariant,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      const Spacer(),
-                      _buildSpeedDialFab(context),
-                    ],
-                  ),
-                ),
-              ),
-            )
-          : null,
     );
 
     final mainContent = Stack(
@@ -1013,7 +1024,7 @@ class _HomePageState extends ConsumerState<HomePage>
         final theme = Theme.of(context);
         final isDark = theme.brightness == Brightness.dark;
         final items = _getSpeedDialItems(context, isDark);
-        final bottomPadding = MediaQuery.paddingOf(context).bottom + 12;
+        final bottomPadding = MediaQuery.paddingOf(context).bottom + 16;
 
         return Positioned.fill(
           child: Stack(
@@ -1031,7 +1042,7 @@ class _HomePageState extends ConsumerState<HomePage>
               ),
               Positioned(
                 right: 16,
-                bottom: bottomPadding + 56 + 12,
+                bottom: bottomPadding + 56 + 16,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.end,
@@ -1130,49 +1141,16 @@ class _HomePageState extends ConsumerState<HomePage>
       alignment: Alignment.bottomRight,
       child: FadeTransition(
         opacity: fadeAnim,
-        child: Material(
-          color: isDark ? const Color(0xFF242C36) : Colors.white,
+        child: _TemplateChip(
+          item: item,
+          isDark: isDark,
           elevation: 3,
           shadowColor: Colors.black26,
-          borderRadius: BorderRadius.circular(24),
-          child: InkWell(
-            key: Key('speed_dial_item_${item.id}'),
-            borderRadius: BorderRadius.circular(24),
-            onTap: () {
-              _closeSpeedDial();
-              context.push(item.route);
-            },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 28,
-                    height: 28,
-                    decoration: BoxDecoration(
-                      color: item.accentColor.withValues(alpha: 0.15),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      item.icon,
-                      size: 16,
-                      color: item.accentColor,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    item.label,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: isDark ? Colors.white : const Color(0xFF1E293B),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          inkWellKey: Key('speed_dial_item_${item.id}'),
+          onTap: () {
+            _closeSpeedDial();
+            context.push(item.route);
+          },
         ),
       ),
     );
@@ -1364,7 +1342,7 @@ class _HomePageState extends ConsumerState<HomePage>
                   }
                 },
                 decoration: InputDecoration(
-                  hintText: '搜索，也可以输入拼音首字母',
+                  hintText: l10n.searchHint,
                   suffixIcon: _searchController.text.isNotEmpty
                       ? IconButton(
                           icon: const Icon(Icons.clear, size: 20),
@@ -1437,6 +1415,12 @@ class _HomePageState extends ConsumerState<HomePage>
       pinned: false,
       backgroundColor: colorScheme.surface,
       surfaceTintColor: Colors.transparent,
+      leading: IconButton(
+        icon: const Icon(Icons.menu_rounded),
+        tooltip: l10n.settings,
+        onPressed: _toggleSettings,
+      ),
+      titleSpacing: 4,
       title: const Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -1477,6 +1461,69 @@ class _SpeedDialItemData {
   final IconData icon;
   final Color accentColor;
   final String route;
+}
+
+class _TemplateChip extends StatelessWidget {
+  const _TemplateChip({
+    required this.item,
+    required this.isDark,
+    required this.onTap,
+    this.elevation = 2,
+    this.shadowColor,
+    this.inkWellKey,
+  });
+
+  final _SpeedDialItemData item;
+  final bool isDark;
+  final VoidCallback onTap;
+  final double elevation;
+  final Color? shadowColor;
+  final Key? inkWellKey;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: isDark ? const Color(0xFF242C36) : Colors.white,
+      elevation: elevation,
+      shadowColor: shadowColor ?? Colors.black26,
+      borderRadius: BorderRadius.circular(24),
+      child: InkWell(
+        key: inkWellKey,
+        borderRadius: BorderRadius.circular(24),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: item.accentColor.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  item.icon,
+                  size: 16,
+                  color: item.accentColor,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                item.label,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? Colors.white : const Color(0xFF1E293B),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _CategoryFilterHeaderDelegate extends SliverPersistentHeaderDelegate {
@@ -1542,9 +1589,12 @@ class _CategoryFilterBar extends StatelessWidget {
 
     Widget tabItem({
       required String label,
+      IconData? icon,
       required bool selected,
       required VoidCallback onTap,
     }) {
+      final itemColor =
+          selected ? colorScheme.primary : colorScheme.onSurfaceVariant;
       return InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(4),
@@ -1558,42 +1608,71 @@ class _CategoryFilterBar extends StatelessWidget {
               ),
             ),
           ),
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: selected ? FontWeight.bold : FontWeight.normal,
-              color: selected
-                  ? colorScheme.primary
-                  : colorScheme.onSurfaceVariant,
-            ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (icon != null) ...[
+                Icon(icon, size: 14, color: itemColor),
+                const SizedBox(width: 4),
+              ],
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+                  color: itemColor,
+                ),
+              ),
+            ],
           ),
         ),
       );
     }
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          tabItem(
-            label: l10n.all,
-            selected: allSelected,
-            onTap: onAll,
-          ),
-          tabItem(
-            label: l10n.favorites,
-            selected: filter.favoritesOnly,
-            onTap: onFavorites,
-          ),
-          for (final c in categories)
-            tabItem(
-              label: categoryDisplayName(context, c.name),
-              selected: !filter.favoritesOnly && filter.categoryId == c.id,
-              onTap: () => onCategory(c.id),
+    return Row(
+      children: [
+        Expanded(
+          child: ShaderMask(
+            shaderCallback: (rect) => const LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: [Colors.black, Colors.black, Colors.transparent],
+              stops: [0.0, 0.92, 1.0],
+            ).createShader(rect),
+            blendMode: BlendMode.dstIn,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  tabItem(
+                    label: l10n.all,
+                    selected: allSelected,
+                    onTap: onAll,
+                  ),
+                  tabItem(
+                    label: l10n.favorites,
+                    icon: Icons.star_rounded,
+                    selected: filter.favoritesOnly,
+                    onTap: onFavorites,
+                  ),
+                  for (final c in categories)
+                    tabItem(
+                      label: categoryDisplayName(context, c.name),
+                      selected:
+                          !filter.favoritesOnly && filter.categoryId == c.id,
+                      onTap: () => onCategory(c.id),
+                    ),
+                ],
+              ),
             ),
-        ],
-      ),
+          ),
+        ),
+        IconButton(
+          icon: const Icon(Icons.tune_rounded, size: 20),
+          tooltip: l10n.manageCategories,
+          onPressed: () => context.push('/settings/categories'),
+        ),
+      ],
     );
   }
 }

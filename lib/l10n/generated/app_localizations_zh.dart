@@ -598,7 +598,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get searchEmptyHint => '试试其他关键词，或清除搜索条件';
 
   @override
-  String get searchHint => '搜索信息';
+  String get searchHint => '搜索标题、内容，支持拼音首字母';
 
   @override
   String get security => '安全';
@@ -1166,4 +1166,31 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get quickAccessLimitReached => '常用最多只能添加 6 个';
+
+  @override
+  String get searchPromptEmpty => '输入关键词搜索全部记录';
+
+  @override
+  String get manageCategories => '管理分类';
+
+  @override
+  String get quickAdd => '快速添加';
+
+  @override
+  String get backupAndSync => '备份与同步';
+
+  @override
+  String get backupAndExport => '备份与导出';
+
+  @override
+  String get securityAndPrivacy => '安全与隐私';
+
+  @override
+  String get appLockStatusEnabled => '已开启';
+
+  @override
+  String get appLockStatusDisabled => '未开启';
+
+  @override
+  String get dangerousOperations => '危险操作';
 }

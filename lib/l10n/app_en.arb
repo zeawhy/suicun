@@ -365,7 +365,7 @@
   "search": "Search",
   "searchEmpty": "No matching info found",
   "searchEmptyHint": "Try different keywords or clear search",
-  "searchHint": "Search info",
+  "searchHint": "Search title, content, supports pinyin",
   "security": "Security",
   "securityNotImplemented": "Security features will be available in a future version",
   "securityPageTitle": "Security",
@@ -550,5 +550,15 @@
   "unsetQuickAccess": "Remove from quick access",
   "quickAccessAdded": "Added to quick access",
   "quickAccessRemoved": "Removed from quick access",
-  "quickAccessLimitReached": "Maximum 6 quick access items allowed"
+  "quickAccessLimitReached": "Maximum 6 quick access items allowed",
+  "searchPromptEmpty": "Enter keywords to search all records",
+  "manageCategories": "Manage categories",
+  "quickAdd": "Quick add",
+  "backupAndSync": "Backup & sync",
+  "backupAndExport": "Backup and export",
+  "securityAndPrivacy": "Security & privacy",
+  "appLock": "App lock",
+  "appLockStatusEnabled": "Enabled",
+  "appLockStatusDisabled": "Disabled",
+  "dangerousOperations": "Dangerous operations"
 }
