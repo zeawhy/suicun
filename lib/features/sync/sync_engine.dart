@@ -275,9 +275,9 @@ class SyncEngine implements SyncActions {
 
   /// Self-healing: publishes live local entities that never got a revision
   /// (e.g. saved while the engine was not yet initialized). Runs at most once
-  /// per vault and only with an active session. Joins/creates mark the vault
-  /// as done in [_finishJoinV2], so the wizard's merge-confirmation flow stays
-  /// the sole owner of that decision. Never throws.
+  /// per vault and only with an active session. Both joinVault and createVault
+  /// already call backfillLocalEntities() directly, so this is only a safety
+  /// net for edge cases (e.g. app crash between join and backfill). Never throws.
   Future<void> _backfillOncePerVault(String vaultId) async {
     try {
       final flagKey = _backfillDoneKey(vaultId);
@@ -1324,7 +1324,8 @@ class SyncEngine implements SyncActions {
       );
       await _finishJoinV2(config, provider, session, caps, password);
       // A freshly created vault starts empty on the server: publish what this
-      // device already has. (joinVault deliberately does NOT do this.)
+      // device already has. joinVault also runs backfillLocalEntities() for the
+      // same reason (records created before sync was configured).
       await backfillLocalEntities();
       _pendingRecoveryKey = created.recoveryKey;
       ok = true;
@@ -1480,6 +1481,10 @@ class SyncEngine implements SyncActions {
         legacyKeys: legacyKeys,
       );
       await _finishJoinV2(config, provider, session, caps, credential, lockedKeys: lockedKeys, allKeys: allKeys);
+      // Backfill any local records that were created before this vault session
+      // existed (e.g. the user added data before enabling sync). This mirrors
+      // the same call in createVault so both join paths heal pre-existing data.
+      await backfillLocalEntities();
       ok = true;
     } finally {
       if (!ok) provider.close();
@@ -1508,7 +1513,8 @@ class SyncEngine implements SyncActions {
           enabled: true,
         ));
     await _configStore.saveConfig(config);
-    // Explicit join/create already decided about local data; no startup backfill.
+    // Both joinVault and createVault call backfillLocalEntities() themselves;
+    // mark the flag so the startup self-heal (_backfillOncePerVault) is skipped.
     await _secureStore.write(_backfillDoneKey(v2VaultId), '1');
 
     // Save kvault2 and keys2
