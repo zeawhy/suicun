@@ -1145,4 +1145,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get galleryPermissionMessage => '保存证件照片到系统相册需要相册权限，照片仅保存到本地相册';
+
+  @override
+  String get clipboardSniffTitle => '剪贴板识别';
+
+  @override
+  String get clipboardSniffSubtitle => '回到 App 时识别剪贴板中的证件号、地址、链接，仅在本地处理';
 }

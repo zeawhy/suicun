@@ -2269,6 +2269,18 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'保存证件照片到系统相册需要相册权限，照片仅保存到本地相册'**
   String get galleryPermissionMessage;
+
+  /// No description provided for @clipboardSniffTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'剪贴板识别'**
+  String get clipboardSniffTitle;
+
+  /// No description provided for @clipboardSniffSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'回到 App 时识别剪贴板中的证件号、地址、链接，仅在本地处理'**
+  String get clipboardSniffSubtitle;
 }
 
 class _AppLocalizationsDelegate

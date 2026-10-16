@@ -87,8 +87,8 @@ void main() {
       expect(find.text('2/6'), findsOneWidget);
 
       // Verify quick action labels: 证件 -> 出示, 密码 -> 复制
-      expect(find.text('出示'), findsOneWidget);
-      expect(find.text('复制'), findsOneWidget);
+      expect(find.byTooltip('出示'), findsOneWidget);
+      expect(find.byTooltip('复制'), findsOneWidget);
 
       // Verify titles inside blocks
       expect(find.text('身份证件'), findsWidgets);
@@ -115,7 +115,7 @@ void main() {
 
       // Now "常用" section appears with the item and "查看" action
       expect(find.text('常用'), findsOneWidget);
-      expect(find.text('查看'), findsOneWidget);
+      expect(find.byTooltip('查看'), findsOneWidget);
     });
   });
 

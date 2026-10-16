@@ -1174,4 +1174,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get galleryPermissionMessage =>
       'Saving ID photos to the system gallery requires gallery permission. Photos are saved to the local gallery only';
+
+  @override
+  String get clipboardSniffTitle => 'Clipboard Recognition';
+
+  @override
+  String get clipboardSniffSubtitle =>
+      'Recognize ID numbers, addresses, and links from clipboard upon returning to app. Processed locally only.';
 }

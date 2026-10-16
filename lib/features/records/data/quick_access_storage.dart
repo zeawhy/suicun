@@ -49,6 +49,18 @@ class QuickAccessService {
     await setQuickAccessIds(current);
   }
 
+  Future<void> removeEverywhere(String id) async {
+    await removeFromQuickAccess(id);
+    final recent = getRecentOpenedIds()..remove(id);
+    await _prefs.setStringList(QuickAccessKeys.recentOpenedRecordIds, recent);
+  }
+
+  Future<void> clearAll() async {
+    await _prefs.remove(QuickAccessKeys.quickAccessRecordIds);
+    await _prefs.remove(QuickAccessKeys.recentOpenedRecordIds);
+    await _prefs.remove(QuickAccessKeys.recentSearchQueries);
+  }
+
   Future<bool> toggleQuickAccess(String id) async {
     final current = getQuickAccessIds();
     if (current.contains(id)) {
@@ -143,6 +155,23 @@ class QuickAccessIdsNotifier extends AsyncNotifier<List<String>> {
     final service = QuickAccessService(prefs);
     await service.removeFromQuickAccess(id);
     state = AsyncData(service.getQuickAccessIds());
+  }
+
+  Future<void> removeEverywhere(String id) async {
+    final prefs = await ref.read(sharedPreferencesProvider.future);
+    final service = QuickAccessService(prefs);
+    await service.removeEverywhere(id);
+    state = AsyncData(service.getQuickAccessIds());
+    ref.invalidate(recentOpenedIdsProvider);
+  }
+
+  Future<void> clearAll() async {
+    final prefs = await ref.read(sharedPreferencesProvider.future);
+    final service = QuickAccessService(prefs);
+    await service.clearAll();
+    state = const AsyncData([]);
+    ref.invalidate(recentOpenedIdsProvider);
+    ref.invalidate(recentSearchProvider);
   }
 }
 

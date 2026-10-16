@@ -15,7 +15,8 @@ void main() {
       final data = sniffClipboardText('本人身份证号是 110101199003072345 请查收');
       expect(data, isNotNull);
       expect(data!.type, SniffedType.idDocument);
-      expect(data.actionLabel, '一键存为证件');
+      expect(data.bannerLabel, '检测到证件号');
+      expect(data.actionLabel, '存为证件');
       expect(data.templateId, 'id_document');
       expect(data.initialBody, contains('110101199003072345'));
       expect(data.previewText, '1101****2345');
@@ -32,7 +33,8 @@ void main() {
       final data = sniffClipboardText('张三 13800138000 上海市徐汇区宜山路700号');
       expect(data, isNotNull);
       expect(data!.type, SniffedType.address);
-      expect(data.actionLabel, '一键存为地址');
+      expect(data.bannerLabel, '检测到地址');
+      expect(data.actionLabel, '存为地址');
       expect(data.templateId, 'address');
       expect(data.initialBody, contains('13800138000'));
       expect(data.initialBody, contains('上海市徐汇区宜山路700号'));
@@ -42,7 +44,8 @@ void main() {
       final data = sniffClipboardText('北京市海淀区中关村南大街5号楼');
       expect(data, isNotNull);
       expect(data!.type, SniffedType.address);
-      expect(data.actionLabel, '一键存为地址');
+      expect(data.bannerLabel, '检测到地址');
+      expect(data.actionLabel, '存为地址');
       expect(data.initialBody, contains('北京市海淀区中关村南大街5号楼'));
     });
 
@@ -50,7 +53,9 @@ void main() {
       final data = sniffClipboardText('请访问 https://github.com/login 完成登录');
       expect(data, isNotNull);
       expect(data!.type, SniffedType.link);
-      expect(data.actionLabel, '一键存为密码');
+      expect(data.bannerLabel, '检测到链接');
+      expect(data.actionLabel, '存为网站账号');
+      expect(data.previewText, 'github.com');
       expect(data.templateId, 'password');
       expect(data.initialBody, contains('https://github.com/login'));
     });

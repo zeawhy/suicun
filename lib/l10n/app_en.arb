@@ -543,5 +543,7 @@
   "savedToGallery": "Saved to gallery",
   "savePhotoFailed": "Save failed, please try again",
   "galleryPermissionTitle": "Gallery Permission",
-  "galleryPermissionMessage": "Saving ID photos to the system gallery requires gallery permission. Photos are saved to the local gallery only"
+  "galleryPermissionMessage": "Saving ID photos to the system gallery requires gallery permission. Photos are saved to the local gallery only",
+  "clipboardSniffTitle": "Clipboard Recognition",
+  "clipboardSniffSubtitle": "Recognize ID numbers, addresses, and links from clipboard upon returning to app. Processed locally only."
 }

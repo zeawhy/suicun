@@ -6,7 +6,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:suicun/core/database/providers.dart';
+import 'package:suicun/features/records/data/quick_access_storage.dart';
 import 'package:suicun/features/records/presentation/template_views/id_photo_storage.dart';
+import 'package:suicun/features/settings/data/privacy_prefs.dart';
 import 'package:suicun/features/sync/sync_contract.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
 import 'package:suicun/shared/theme/theme_providers.dart';
@@ -107,6 +109,7 @@ class SettingsView extends ConsumerWidget {
       }
     });
     await deleteAllIdPhotos();
+    await ref.read(quickAccessIdsProvider.notifier).clearAll();
 
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -233,11 +236,27 @@ class SettingsView extends ConsumerWidget {
         _buildSectionHeader(context, l10n.security),
         Card(
           margin: EdgeInsets.zero,
-          child: _navTile(
-            context,
-            icon: Icons.lock_outline,
-            title: l10n.security,
-            onTap: () => _push(context, '/settings/security'),
+          child: Column(
+            children: [
+              _navTile(
+                context,
+                icon: Icons.lock_outline,
+                title: l10n.security,
+                onTap: () => _push(context, '/settings/security'),
+              ),
+              const Divider(height: 1, indent: 56, endIndent: 16),
+              SwitchListTile(
+                secondary: const Icon(Icons.content_paste_search_outlined),
+                title: Text(l10n.clipboardSniffTitle),
+                subtitle: Text(l10n.clipboardSniffSubtitle),
+                value: ref.watch(clipboardSniffEnabledProvider).value ?? false,
+                onChanged: (val) {
+                  ref
+                      .read(clipboardSniffEnabledProvider.notifier)
+                      .setEnabled(val);
+                },
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 16),

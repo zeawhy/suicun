@@ -19,6 +19,7 @@ import 'package:suicun/features/records/presentation/records_notifier.dart';
 import 'package:suicun/features/categories/presentation/category_display_name.dart';
 import 'package:suicun/features/records/data/quick_access_storage.dart';
 import 'package:suicun/features/records/presentation/quick_access_panel.dart';
+import 'package:suicun/features/settings/data/privacy_prefs.dart';
 import 'package:suicun/features/settings/presentation/settings_page.dart';
 import 'package:suicun/features/sync/sync_contract.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
@@ -43,7 +44,7 @@ class _HomePageState extends ConsumerState<HomePage>
   Timer? _debounce;
   Timer? _clipboardTimer;
   SniffedClipboardData? _sniffedClipboardData;
-  String? _lastDismissedClipboardText;
+  String? _lastHandledHash;
   bool _searchExpanded = false;
   String? _savedCategoryId;
   bool _savedFavoritesOnly = false;
@@ -86,7 +87,24 @@ class _HomePageState extends ConsumerState<HomePage>
       vsync: this,
       duration: const Duration(milliseconds: 240),
     );
+    _loadLastHandledClipboardHash();
     _checkClipboardWithDebounce();
+  }
+
+  Future<void> _loadLastHandledClipboardHash() async {
+    try {
+      final prefs = await ref.read(sharedPreferencesProvider.future);
+      _lastHandledHash = prefs.getString('clipboard_last_handled_hash');
+    } catch (_) {}
+  }
+
+  Future<void> _markClipboardHandled(String text) async {
+    final hash = text.hashCode.toString();
+    _lastHandledHash = hash;
+    try {
+      final prefs = await ref.read(sharedPreferencesProvider.future);
+      await prefs.setString('clipboard_last_handled_hash', hash);
+    } catch (_) {}
   }
 
   @override
@@ -101,9 +119,11 @@ class _HomePageState extends ConsumerState<HomePage>
     _clipboardTimer = Timer(const Duration(milliseconds: 500), () async {
       if (!mounted) return;
       try {
+        final enabled = await ref.read(clipboardSniffEnabledProvider.future);
+        if (!enabled) return;
         final data = await Clipboard.getData(Clipboard.kTextPlain);
         final text = data?.text?.trim() ?? '';
-        if (text.isEmpty || text == _lastDismissedClipboardText) return;
+        if (text.isEmpty || text.hashCode.toString() == _lastHandledHash) return;
         final sniffed = sniffClipboardText(text);
         if (mounted) {
           setState(() {
@@ -345,6 +365,7 @@ class _HomePageState extends ConsumerState<HomePage>
 
   Future<void> _deleteRecord(String id) async {
     await ref.read(recordRepositoryProvider).softDeleteRecord(id);
+    await ref.read(quickAccessIdsProvider.notifier).removeEverywhere(id);
     ref.invalidate(recordsListProvider);
     ref.invalidate(trashListProvider);
     if (!mounted) return;
@@ -534,11 +555,25 @@ class _HomePageState extends ConsumerState<HomePage>
         .map((id) => recordMap[id])
         .whereType<RecordDetail>()
         .toList();
+    final quickIdSet = quickRecords.map((r) => r.id).toSet();
     final recentRecords = recentOpenedIds
+        .where((id) => !quickIdSet.contains(id))   // 已在常用里的不再重复显示
         .map((id) => recordMap[id])
         .whereType<RecordDetail>()
         .take(5)
         .toList();
+    final showRecentBar = recentRecords.isNotEmpty && records.length > 3;
+
+    if (!isSearchOrFilterActive && recordsAsync.hasValue) {
+      final staleIds = quickIds.where((id) => !recordMap.containsKey(id)).toList();
+      if (staleIds.isNotEmpty) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          for (final id in staleIds) {
+            ref.read(quickAccessIdsProvider.notifier).removeEverywhere(id);
+          }
+        });
+      }
+    }
 
     final showQuickAndRecent = !isSearchOrFilterActive && !_isMultiSelect;
 
@@ -570,6 +605,7 @@ class _HomePageState extends ConsumerState<HomePage>
                   SliverToBoxAdapter(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         QuickAccessGrid(
                           records: quickRecords,
@@ -580,14 +616,15 @@ class _HomePageState extends ConsumerState<HomePage>
                           ),
                           onLongPress: (r) => _showRecordActionSheet(r),
                         ),
-                        RecentOpenedBar(
-                          records: recentRecords,
-                          onTap: (r) => executeQuickAction(
-                            context: context,
-                            record: r,
-                            onOpenRecord: _openRecord,
+                        if (showRecentBar)
+                          RecentOpenedBar(
+                            records: recentRecords,
+                            onTap: (r) => executeQuickAction(
+                              context: context,
+                              record: r,
+                              onOpenRecord: _openRecord,
+                            ),
                           ),
-                        ),
                       ],
                     ),
                   ),
@@ -1145,7 +1182,7 @@ class _HomePageState extends ConsumerState<HomePage>
     return Container(
       key: const Key('clipboard_sniff_banner'),
       margin: const EdgeInsets.fromLTRB(16, 6, 16, 6),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.fromLTRB(12, 10, 4, 10),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
         borderRadius: BorderRadius.circular(12),
@@ -1163,15 +1200,30 @@ class _HomePageState extends ConsumerState<HomePage>
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(
-              '${data.bannerLabel}：${data.previewText}',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: colorScheme.onSurface,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  data.bannerLabel,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: colorScheme.onSurface,
+                  ),
+                  maxLines: 1,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  data.previewText,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
           ),
           const SizedBox(width: 6),
@@ -1190,8 +1242,8 @@ class _HomePageState extends ConsumerState<HomePage>
               final text = data.rawText;
               final templateId = data.templateId;
               final initialBody = data.initialBody;
+              _markClipboardHandled(text);
               setState(() {
-                _lastDismissedClipboardText = text;
                 _sniffedClipboardData = null;
               });
               context.push(
@@ -1209,26 +1261,19 @@ class _HomePageState extends ConsumerState<HomePage>
             ),
           ),
           const SizedBox(width: 4),
-          TextButton(
+          IconButton(
             key: const Key('clipboard_sniff_ignore_button'),
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-              minimumSize: const Size(0, 32),
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            ),
+            icon: const Icon(Icons.close, size: 18),
+            tooltip: '忽略',
+            color: colorScheme.onSurfaceVariant,
+            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+            padding: const EdgeInsets.all(4),
             onPressed: () {
+              _markClipboardHandled(data.rawText);
               setState(() {
-                _lastDismissedClipboardText = data.rawText;
                 _sniffedClipboardData = null;
               });
             },
-            child: Text(
-              '忽略',
-              style: TextStyle(
-                fontSize: 12,
-                color: colorScheme.onSurfaceVariant,
-              ),
-            ),
           ),
         ],
       ),
@@ -1268,8 +1313,10 @@ class _HomePageState extends ConsumerState<HomePage>
               tooltip: l10n.batchDelete,
               onPressed: () async {
                 final repo = ref.read(recordRepositoryProvider);
+                final quickNotifier = ref.read(quickAccessIdsProvider.notifier);
                 for (final id in _selectedIds) {
                   await repo.softDeleteRecord(id);
+                  await quickNotifier.removeEverywhere(id);
                 }
                 ref.invalidate(recordsListProvider);
                 ref.invalidate(trashListProvider);
