@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:suicun/core/database/providers.dart';
+import 'package:suicun/features/records/data/quick_access_storage.dart';
 import 'package:suicun/features/records/domain/record_model.dart';
 import 'package:suicun/features/records/presentation/records_notifier.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
@@ -38,8 +39,10 @@ class TrashPage extends ConsumerWidget {
     );
     if (confirmed != true) return;
     final repo = ref.read(recordRepositoryProvider);
+    final quickNotifier = ref.read(quickAccessIdsProvider.notifier);
     for (final r in records) {
       await repo.permanentDeleteRecord(r.id);
+      await quickNotifier.removeEverywhere(r.id);
     }
     ref.invalidate(trashListProvider);
   }
@@ -103,6 +106,9 @@ class TrashPage extends ConsumerWidget {
       );
       if (confirmed == true) {
         await repo.permanentDeleteRecord(record.id);
+        await ref
+            .read(quickAccessIdsProvider.notifier)
+            .removeEverywhere(record.id);
         ref.invalidate(trashListProvider);
       }
     }

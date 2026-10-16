@@ -59,8 +59,8 @@ SniffedClipboardData? sniffClipboardText(String rawText) {
       type: SniffedType.idDocument,
       rawText: text,
       previewText: masked,
-      bannerLabel: '检测到剪贴板证件号',
-      actionLabel: '一键存为证件',
+      bannerLabel: '检测到证件号',
+      actionLabel: '存为证件',
       templateId: 'id_document',
       initialBody: '证件类型：身份证\n证件号码：$idNumber\n姓名：',
     );
@@ -88,8 +88,8 @@ SniffedClipboardData? sniffClipboardText(String rawText) {
       type: SniffedType.address,
       rawText: text,
       previewText: preview,
-      bannerLabel: '检测到剪贴板地址',
-      actionLabel: '一键存为地址',
+      bannerLabel: '检测到地址',
+      actionLabel: '存为地址',
       templateId: 'address',
       initialBody: bodyBuffer.toString(),
     );
@@ -99,13 +99,14 @@ SniffedClipboardData? sniffClipboardText(String rawText) {
   final urlMatch = _urlRegExp.firstMatch(text);
   if (urlMatch != null) {
     final url = urlMatch.group(0)!;
-    final preview = url.length > 24 ? '${url.substring(0, 24)}…' : url;
+    final parsedHost = Uri.tryParse(url)?.host;
+    final host = (parsedHost != null && parsedHost.isNotEmpty) ? parsedHost : url;
     return SniffedClipboardData(
       type: SniffedType.link,
       rawText: text,
-      previewText: preview,
-      bannerLabel: '检测到剪贴板链接',
-      actionLabel: '一键存为密码',
+      previewText: host,
+      bannerLabel: '检测到链接',
+      actionLabel: '存为网站账号',
       templateId: 'password',
       initialBody: '网站/应用：$url\n用户名：\n密码：',
     );

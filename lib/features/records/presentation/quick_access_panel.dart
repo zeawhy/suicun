@@ -410,7 +410,7 @@ class QuickAccessGrid extends ConsumerWidget {
               }
               final peekItemWidth = (totalWidth - 8) / 2.25;
               return SizedBox(
-                height: 68,
+                height: 64,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   physics: const BouncingScrollPhysics(),
@@ -460,7 +460,7 @@ class _QuickAccessCapsule extends StatelessWidget {
 
     return SizedBox(
       width: width,
-      height: 68,
+      height: 64,
       child: Container(
         decoration: BoxDecoration(
           color: style.backgroundColor,
@@ -474,19 +474,19 @@ class _QuickAccessCapsule extends StatelessWidget {
             onTap: onTap,
             onLongPress: onLongPress,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              padding: const EdgeInsets.fromLTRB(10, 8, 8, 8),
               child: Row(
                 children: [
                   Container(
-                    width: 30,
-                    height: 30,
+                    width: 28,
+                    height: 28,
                     decoration: BoxDecoration(
                       color: style.accentColor.withValues(alpha: 0.14),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Icon(
                       style.icon,
-                      size: 18,
+                      size: 16,
                       color: style.accentColor,
                     ),
                   ),
@@ -525,33 +525,24 @@ class _QuickAccessCapsule extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 6),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 7,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: style.accentColor.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
+                  Semantics(
+                    label: style.actionLabel,
+                    button: true,
+                    child: Tooltip(
+                      message: style.actionLabel,
+                      child: Container(
+                        width: 28,
+                        height: 28,
+                        decoration: BoxDecoration(
+                          color: style.accentColor.withValues(alpha: 0.12),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
                           style.actionIcon,
-                          size: 12,
+                          size: 16,
                           color: style.accentColor,
                         ),
-                        const SizedBox(width: 3),
-                        Text(
-                          style.actionLabel,
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: style.accentColor,
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ),
                 ],

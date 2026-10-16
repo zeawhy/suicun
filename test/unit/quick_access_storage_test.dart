@@ -132,4 +132,47 @@ void main() {
       expect(updated[1], 'rec_12');
     });
   });
+
+  group('QuickAccessService - removeEverywhere 与 clearAll', () {
+    late SharedPreferences prefs;
+    late QuickAccessService service;
+
+    setUp(() async {
+      SharedPreferences.setMockInitialValues({});
+      prefs = await SharedPreferences.getInstance();
+      service = QuickAccessService(prefs);
+    });
+
+    test('removeEverywhere clears id from both quick access and recent opened records', () async {
+      await service.addToQuickAccess('rec_1');
+      await service.addToQuickAccess('rec_2');
+      await service.recordOpened('rec_1');
+      await service.recordOpened('rec_3');
+
+      expect(service.getQuickAccessIds(), contains('rec_1'));
+      expect(service.getRecentOpenedIds(), contains('rec_1'));
+
+      await service.removeEverywhere('rec_1');
+
+      expect(service.getQuickAccessIds(), ['rec_2']);
+      expect(service.getRecentOpenedIds(), ['rec_3']);
+
+      // Calling with non-existent id does not throw
+      await service.removeEverywhere('non_existent_id');
+      expect(service.getQuickAccessIds(), ['rec_2']);
+      expect(service.getRecentOpenedIds(), ['rec_3']);
+    });
+
+    test('clearAll removes quick access, recent opened, and recent searches', () async {
+      await service.addToQuickAccess('rec_1');
+      await service.recordOpened('rec_2');
+      await service.addSearchQuery('query_1');
+
+      await service.clearAll();
+
+      expect(service.getQuickAccessIds(), isEmpty);
+      expect(service.getRecentOpenedIds(), isEmpty);
+      expect(service.getRecentSearches(), isEmpty);
+    });
+  });
 }

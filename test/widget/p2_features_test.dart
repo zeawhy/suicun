@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:suicun/core/database/app_database.dart';
 import 'package:suicun/core/database/providers.dart';
+import 'package:suicun/features/records/data/quick_access_storage.dart';
 import 'package:suicun/features/records/domain/record_model.dart';
 import 'package:suicun/features/records/presentation/home_sort_provider.dart';
 import 'package:suicun/features/records/presentation/template_views/contact_template_view.dart';
@@ -16,11 +17,19 @@ import 'package:suicun/l10n/generated/app_localizations.dart';
 import 'package:suicun/main.dart';
 import 'package:suicun/shared/widgets/record_card.dart';
 
-Future<void> pumpApp(WidgetTester tester, AppDatabase db) async {
+Future<void> pumpApp(
+  WidgetTester tester,
+  AppDatabase db, {
+  Map<String, Object> initialPrefs = const {},
+}) async {
+  SharedPreferences.setMockInitialValues(initialPrefs);
+  final prefs = await SharedPreferences.getInstance();
+
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         appDatabaseProvider.overrideWithValue(db),
+        sharedPreferencesProvider.overrideWith((ref) => Future.value(prefs)),
         syncOverviewProvider.overrideWith(
           (ref) => Stream<SyncOverview>.value(
             const SyncOverview(enabled: false, syncing: false),
@@ -137,6 +146,23 @@ void main() {
   });
 
   group('P2-6: 剪贴板智能嗅探横幅', () {
+    testWidgets('clipboard sniffing is disabled by default', (tester) async {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, (methodCall) async {
+        if (methodCall.method == 'Clipboard.getData') {
+          return {'text': '330102199003072345'};
+        }
+        return null;
+      });
+
+      await pumpApp(tester, db);
+
+      await tester.pump(const Duration(milliseconds: 600));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('clipboard_sniff_banner')), findsNothing);
+    });
+
     testWidgets('sniffs clipboard address and navigates to editor with prefilled content', (tester) async {
       // Set clipboard data
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
@@ -147,7 +173,11 @@ void main() {
         return null;
       });
 
-      await pumpApp(tester, db);
+      await pumpApp(
+        tester,
+        db,
+        initialPrefs: {'clipboard_sniff_enabled': true},
+      );
 
       // Wait 500ms debounce
       await tester.pump(const Duration(milliseconds: 600));
@@ -155,12 +185,12 @@ void main() {
 
       // Verify banner appears
       expect(find.byKey(const Key('clipboard_sniff_banner')), findsOneWidget);
-      expect(find.textContaining('检测到剪贴板地址'), findsOneWidget);
-      expect(find.text('一键存为地址'), findsOneWidget);
-      expect(find.text('忽略'), findsOneWidget);
+      expect(find.text('检测到地址'), findsOneWidget);
+      expect(find.text('存为地址'), findsOneWidget);
+      expect(find.byKey(const Key('clipboard_sniff_ignore_button')), findsOneWidget);
 
-      // Tap '一键存为地址'
-      await tester.tap(find.text('一键存为地址'));
+      // Tap '存为地址'
+      await tester.tap(find.text('存为地址'));
       await tester.pumpAndSettle();
 
       // Should open contact/address template view directly
@@ -178,18 +208,22 @@ void main() {
         return null;
       });
 
-      await pumpApp(tester, db);
+      await pumpApp(
+        tester,
+        db,
+        initialPrefs: {'clipboard_sniff_enabled': true},
+      );
 
       // Wait 500ms debounce
       await tester.pump(const Duration(milliseconds: 600));
       await tester.pumpAndSettle();
 
       expect(find.byKey(const Key('clipboard_sniff_banner')), findsOneWidget);
-      expect(find.textContaining('检测到剪贴板证件号'), findsOneWidget);
-      expect(find.text('一键存为证件'), findsOneWidget);
+      expect(find.text('检测到证件号'), findsOneWidget);
+      expect(find.text('存为证件'), findsOneWidget);
 
       // Tap ignore
-      await tester.tap(find.text('忽略'));
+      await tester.tap(find.byKey(const Key('clipboard_sniff_ignore_button')));
       await tester.pumpAndSettle();
 
       // Banner dismissed
