@@ -1,6 +1,8 @@
 // test/unit/sync/backfill_test.dart
 // Regression: records/categories/tags that exist BEFORE createVault must be
 // uploaded (backfilled) and recoverable by a fresh device joining the vault.
+// Also covers the joinVault backfill path (records created before sync was
+// configured on a device that joins an existing vault).
 
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -145,6 +147,67 @@ void main() {
     final tags = await b.tags.getAllTags();
     expect(tags, hasLength(1));
     expect(tags.single.name, 'Important');
+
+    await a.dispose();
+    await b.dispose();
+  });
+
+  // Regression test: records created with no vault session were silently
+  // skipped by SyncEnqueuer (no revision, no outbox entry). After the user
+  // joined an existing vault those records stayed stuck — the sync page showed
+  // "pending 0 / synced 0 / total 1" forever.
+  // Fix: joinVault now calls backfillLocalEntities() after _finishJoinV2.
+  test('joinVault backfills local records created before sync was configured',
+      () async {
+    final storage = <String, StoredObject>{};
+
+    // --- Device A creates the vault and is fully synced ------------------
+    final a = _Device(storage);
+    await a.engine.createVault(config, 'vault-pass');
+    await a.engine.syncNow();
+
+    // --- Device B has a local record created BEFORE joining --------------
+    SyncSessionHolder.current = null;
+    final b = _Device(storage);
+
+    // No session yet → SyncEnqueuer skips the hook; record gets no revision.
+    final pre = await b.records.createRecord(
+      title: 'Pre-join record',
+      body: 'Created before sync was enabled',
+    );
+
+    final objectsBefore = objectCount(storage);
+
+    // Now join the existing vault. The fix adds backfillLocalEntities() here.
+    await b.engine.joinVault(config, password: 'vault-pass');
+    await b.engine.syncNow();
+
+    // The pre-existing record must have been uploaded.
+    expect(
+      objectCount(storage),
+      greaterThan(objectsBefore),
+      reason:
+          'joinVault must backfill records created before the session existed',
+    );
+
+    // Overview must show the record as synced, not stuck as pending.
+    final overview = await b.engine.getOverview();
+    expect(
+      overview.pendingCount,
+      0,
+      reason: 'No records should be left pending after backfill+sync',
+    );
+    expect(
+      overview.syncedRecords,
+      greaterThanOrEqualTo(1),
+      reason: 'The pre-join record must appear as synced',
+    );
+
+    // The record itself must still exist locally with correct content.
+    final recs = await b.records.searchRecords();
+    final found = recs.where((r) => r.id == pre.id);
+    expect(found, isNotEmpty, reason: 'Pre-join record must still exist locally');
+    expect(found.single.title, 'Pre-join record');
 
     await a.dispose();
     await b.dispose();
