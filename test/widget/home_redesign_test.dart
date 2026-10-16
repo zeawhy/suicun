@@ -17,6 +17,7 @@ import 'package:suicun/features/records/data/record_repository.dart';
 import 'package:suicun/features/settings/presentation/settings_page.dart';
 import 'package:suicun/features/sync/sync_contract.dart';
 import 'package:suicun/main.dart';
+import 'package:suicun/shared/widgets/record_card.dart';
 
 Future<void> pumpApp(WidgetTester tester, AppDatabase db) async {
   await tester.pumpWidget(
@@ -111,23 +112,34 @@ void main() {
     expect(find.text('Favorited Record'), findsOneWidget);
 
     // Each card has a star button: star_rounded for favorited, star_outline for unfavorited
-    expect(find.byIcon(Icons.star_rounded), findsOneWidget);
-    expect(find.byIcon(Icons.star_outline), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(RecordCard),
+        matching: find.byIcon(Icons.star_rounded),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byType(RecordCard),
+        matching: find.byIcon(Icons.star_outline),
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets(
-      'd. bottom-left settings button opens push sidebar, closes, and navigates to sub-items',
+      'd. top-left menu button opens push sidebar, closes, and navigates to sub-items',
       (tester) async {
     await pumpApp(tester, db);
 
-    expect(find.byIcon(Icons.settings_outlined), findsOneWidget);
-    expect(find.text('Settings'), findsOneWidget);
+    expect(find.byIcon(Icons.menu_rounded), findsOneWidget);
 
     // Settings content is not visible before sidebar is opened
     expect(find.text('Theme'), findsNothing);
 
-    // Tap settings button to open sidebar
-    await tester.tap(find.text('Settings'));
+    // Tap menu button to open sidebar
+    await tester.tap(find.byIcon(Icons.menu_rounded));
     await tester.pumpAndSettle();
 
     // Push sidebar is now open with settings options
@@ -143,7 +155,7 @@ void main() {
     expect(find.byType(SettingsView), findsNothing);
 
     // Reopen sidebar
-    await tester.tap(find.text('Settings'));
+    await tester.tap(find.byIcon(Icons.menu_rounded));
     await tester.pumpAndSettle();
     expect(find.byType(SettingsView), findsOneWidget);
 
@@ -153,7 +165,7 @@ void main() {
     expect(find.byType(SettingsView), findsNothing);
 
     // Reopen sidebar and test Android back button closes sidebar
-    await tester.tap(find.text('Settings'));
+    await tester.tap(find.byIcon(Icons.menu_rounded));
     await tester.pumpAndSettle();
     expect(find.byType(SettingsView), findsOneWidget);
     await tester.binding.handlePopRoute();
@@ -161,7 +173,7 @@ void main() {
     expect(find.byType(SettingsView), findsNothing);
 
     // Reopen sidebar and navigate to Categories
-    await tester.tap(find.text('Settings'));
+    await tester.tap(find.byIcon(Icons.menu_rounded));
     await tester.pumpAndSettle();
     expect(find.byType(SettingsView), findsOneWidget);
 

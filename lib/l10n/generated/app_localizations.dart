@@ -1199,7 +1199,7 @@ abstract class AppLocalizations {
   /// No description provided for @searchHint.
   ///
   /// In zh, this message translates to:
-  /// **'搜索信息'**
+  /// **'搜索标题、内容，支持拼音首字母'**
   String get searchHint;
 
   /// No description provided for @security.
@@ -2311,6 +2311,60 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'常用最多只能添加 6 个'**
   String get quickAccessLimitReached;
+
+  /// No description provided for @searchPromptEmpty.
+  ///
+  /// In zh, this message translates to:
+  /// **'输入关键词搜索全部记录'**
+  String get searchPromptEmpty;
+
+  /// No description provided for @manageCategories.
+  ///
+  /// In zh, this message translates to:
+  /// **'管理分类'**
+  String get manageCategories;
+
+  /// No description provided for @quickAdd.
+  ///
+  /// In zh, this message translates to:
+  /// **'快速添加'**
+  String get quickAdd;
+
+  /// No description provided for @backupAndSync.
+  ///
+  /// In zh, this message translates to:
+  /// **'备份与同步'**
+  String get backupAndSync;
+
+  /// No description provided for @backupAndExport.
+  ///
+  /// In zh, this message translates to:
+  /// **'备份与导出'**
+  String get backupAndExport;
+
+  /// No description provided for @securityAndPrivacy.
+  ///
+  /// In zh, this message translates to:
+  /// **'安全与隐私'**
+  String get securityAndPrivacy;
+
+  /// No description provided for @appLockStatusEnabled.
+  ///
+  /// In zh, this message translates to:
+  /// **'已开启'**
+  String get appLockStatusEnabled;
+
+  /// No description provided for @appLockStatusDisabled.
+  ///
+  /// In zh, this message translates to:
+  /// **'未开启'**
+  String get appLockStatusDisabled;
+
+  /// No description provided for @dangerousOperations.
+  ///
+  /// In zh, this message translates to:
+  /// **'危险操作'**
+  String get dangerousOperations;
 }
 
 class _AppLocalizationsDelegate

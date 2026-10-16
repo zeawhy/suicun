@@ -13,7 +13,6 @@ import 'package:suicun/core/database/providers.dart';
 import 'package:suicun/features/records/presentation/template_views/password_template_view.dart';
 import 'package:suicun/features/sync/sync_contract.dart';
 import 'package:suicun/main.dart';
-import 'package:suicun/shared/theme/theme_providers.dart';
 import 'package:suicun/shared/widgets/record_card.dart';
 
 /// Pumps the full app with the database provider overridden to use
@@ -134,8 +133,8 @@ void main() {
     expect(find.text('Alpha note'), findsOneWidget);
     expect(find.text('Beta note'), findsNothing);
 
-    // Clear filter
-    await tester.enterText(find.byType(TextField), '');
+    // Clear filter by cancelling search
+    await tester.tap(find.text('Cancel'));
     await tester.pumpAndSettle();
     expect(find.text('Beta note'), findsOneWidget);
   });
@@ -150,12 +149,24 @@ void main() {
     await tester.pageBack();
     await tester.pumpAndSettle();
 
-    // Not favorited yet: no star_rounded icon shown
-    expect(find.byIcon(Icons.star_rounded), findsNothing);
+    // Not favorited yet: no star_rounded icon shown on card
+    expect(
+      find.descendant(
+        of: find.byType(RecordCard),
+        matching: find.byIcon(Icons.star_rounded),
+      ),
+      findsNothing,
+    );
 
     await tester.tap(find.byIcon(Icons.star_outline));
     await tester.pumpAndSettle();
-    expect(find.byIcon(Icons.star_rounded), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(RecordCard),
+        matching: find.byIcon(Icons.star_rounded),
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('delete -> trash -> restore', (tester) async {
@@ -180,7 +191,7 @@ void main() {
     expect(find.text('Moved to trash'), findsOneWidget);
 
     // Open trash via settings
-    await tester.tap(find.byIcon(Icons.settings_outlined));
+    await tester.tap(find.byIcon(Icons.menu_rounded));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Trash'));
     await tester.pumpAndSettle();
@@ -252,15 +263,13 @@ void main() {
   testWidgets('theme switch persists in settings', (tester) async {
     await pumpApp(tester, db);
 
-    await tester.tap(find.byIcon(Icons.settings_outlined));
+    await tester.tap(find.byIcon(Icons.menu_rounded));
     await tester.pumpAndSettle();
     expect(find.text('Theme'), findsOneWidget);
 
-    await tester.tap(find.byWidgetPredicate(
-      (w) => w is DropdownButton<AppThemeMode>,
-    ));
+    await tester.tap(find.text('Theme'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Dark').last);
+    await tester.tap(find.text('Dark'));
     await tester.pumpAndSettle();
 
     // App still builds fine in dark mode

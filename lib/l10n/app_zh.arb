@@ -365,7 +365,7 @@
   "search": "搜索",
   "searchEmpty": "没有找到相关信息",
   "searchEmptyHint": "试试其他关键词，或清除搜索条件",
-  "searchHint": "搜索信息",
+  "searchHint": "搜索标题、内容，支持拼音首字母",
   "security": "安全",
   "securityNotImplemented": "安全功能将在后续版本推出",
   "securityPageTitle": "安全",
@@ -550,5 +550,15 @@
   "unsetQuickAccess": "取消常用",
   "quickAccessAdded": "已设为常用",
   "quickAccessRemoved": "已取消常用",
-  "quickAccessLimitReached": "常用最多只能添加 6 个"
+  "quickAccessLimitReached": "常用最多只能添加 6 个",
+  "searchPromptEmpty": "输入关键词搜索全部记录",
+  "manageCategories": "管理分类",
+  "quickAdd": "快速添加",
+  "backupAndSync": "备份与同步",
+  "backupAndExport": "备份与导出",
+  "securityAndPrivacy": "安全与隐私",
+  "appLock": "应用锁",
+  "appLockStatusEnabled": "已开启",
+  "appLockStatusDisabled": "未开启",
+  "dangerousOperations": "危险操作"
 }

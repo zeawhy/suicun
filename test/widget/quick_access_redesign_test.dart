@@ -19,6 +19,7 @@ Future<void> pumpApp(
   WidgetTester tester,
   AppDatabase db, {
   Map<String, Object> initialPrefs = const {},
+  Locale? locale,
 }) async {
   SharedPreferences.setMockInitialValues(initialPrefs);
   final prefs = await SharedPreferences.getInstance();
@@ -34,7 +35,7 @@ Future<void> pumpApp(
           ),
         ),
       ],
-      child: const SuicunApp(),
+      child: SuicunApp(locale: locale),
     ),
   );
   await tester.pumpAndSettle();
@@ -162,14 +163,14 @@ void main() {
   });
 
   group('任务 3：拼音首字母搜索与最近搜索', () {
-    testWidgets('搜索框 placeholder 为「搜索，也可以输入拼音首字母」', (tester) async {
-      await pumpApp(tester, db);
+    testWidgets('搜索框 placeholder 为「搜索标题、内容，支持拼音首字母」', (tester) async {
+      await pumpApp(tester, db, locale: const Locale('zh'));
 
       // Expand search
       await tester.tap(find.byIcon(Icons.search_rounded));
       await tester.pumpAndSettle();
 
-      expect(find.text('搜索，也可以输入拼音首字母'), findsOneWidget);
+      expect(find.text('搜索标题、内容，支持拼音首字母'), findsOneWidget);
     });
 
     testWidgets('拼音首字母匹配：输入 sfz 搜到身份证，输入 dz 搜到地址', (tester) async {

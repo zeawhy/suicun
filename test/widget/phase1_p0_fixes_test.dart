@@ -149,7 +149,7 @@ void main() {
       await pumpApp(tester, db);
 
       // Open settings sidebar
-      await tester.tap(find.text('Settings'));
+      await tester.tap(find.byIcon(Icons.menu_rounded));
       await tester.pumpAndSettle();
 
       // Check switch list tile in settings
