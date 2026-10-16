@@ -1,6 +1,7 @@
 // lib/shared/widgets/record_card.dart
 
 import 'dart:io';
+import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -36,7 +37,10 @@ class RecordCard extends StatelessWidget {
     required this.onTap,
     required this.onLongPress,
     required this.onFavoriteToggle,
-    required this.onPinToggle,
+    required this.isQuickAccess,
+    required this.onQuickAccessToggle,
+    this.onAnySlideAction,
+    this.showSwipeHint = false,
     required this.onEdit,
     required this.onChangeCategory,
     required this.onDelete,
@@ -53,10 +57,18 @@ class RecordCard extends StatelessWidget {
   final VoidCallback onLongPress;
   final VoidCallback onFavoriteToggle;
 
-  /// Callback when pinning/unpinning is toggled via slide action.
-  /// Note: The data model has no dedicated pinned field, so pinning is mapped
-  /// to toggling [isFavorite] without DB schema changes.
-  final VoidCallback onPinToggle;
+  /// Whether this record is pinned in the top quick access section.
+  final bool isQuickAccess;
+
+  /// Callback when quick-access status is toggled via slide action.
+  final VoidCallback onQuickAccessToggle;
+
+  /// Callback triggered whenever any slidable action is tapped.
+  final VoidCallback? onAnySlideAction;
+
+  /// Whether to show the left-swipe indicator arrow hint.
+  final bool showSwipeHint;
+
   final VoidCallback onEdit;
 
   /// 保留该回调以维持调用方 API 稳定；卡片右上角菜单已移除，
@@ -191,19 +203,25 @@ class RecordCard extends StatelessWidget {
           motion: const DrawerMotion(),
           children: [
             SlidableAction(
-              onPressed: (_) => onPinToggle(),
+              onPressed: (_) {
+                onAnySlideAction?.call();
+                onQuickAccessToggle();
+              },
               backgroundColor: colorScheme.primary,
               foregroundColor: colorScheme.onPrimary,
-              icon: record.isFavorite
+              icon: isQuickAccess
                   ? Icons.push_pin
                   : Icons.push_pin_outlined,
-              label: record.isFavorite
-                  ? l10n.unpinRecord
-                  : l10n.pinRecord,
+              label: isQuickAccess
+                  ? l10n.unsetQuickAccess
+                  : l10n.setQuickAccess,
               borderRadius: BorderRadius.circular(14),
             ),
             SlidableAction(
-              onPressed: (_) => onEdit(),
+              onPressed: (_) {
+                onAnySlideAction?.call();
+                onEdit();
+              },
               backgroundColor: colorScheme.secondary,
               foregroundColor: colorScheme.onSecondary,
               icon: Icons.edit_outlined,
@@ -211,8 +229,10 @@ class RecordCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(14),
             ),
             SlidableAction(
-              onPressed: (actionCtx) =>
-                  _confirmDelete(context, l10n),
+              onPressed: (actionCtx) {
+                onAnySlideAction?.call();
+                _confirmDelete(context, l10n);
+              },
               backgroundColor: colorScheme.error,
               foregroundColor: colorScheme.onError,
               icon: Icons.delete_outline,
@@ -253,7 +273,7 @@ class RecordCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // ── 第一层（头部行）：模板类型图标 + 标题 + 置顶图标 + 右侧一键复制按钮 ──
+                        // ── 第一层（头部行）：模板类型图标 + 标题（+常用图标）+ 复制按钮 + 收藏星标 ──
                         Row(
                           children: [
                             Icon(
@@ -263,39 +283,72 @@ class RecordCard extends StatelessWidget {
                             ),
                             const SizedBox(width: 6),
                             Expanded(
-                              child: searchQuery != null && searchQuery!.isNotEmpty
-                                  ? Text.rich(
-                                      TextSpan(
-                                        children: buildHighlightedSpans(
-                                          text: displayTitle,
-                                          query: searchQuery!,
-                                          baseStyle: theme.textTheme.titleMedium?.copyWith(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w600,
-                                            color: titleColor,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Flexible(
+                                    child: searchQuery != null && searchQuery!.isNotEmpty
+                                        ? Text.rich(
+                                            TextSpan(
+                                              children: buildHighlightedSpans(
+                                                text: displayTitle,
+                                                query: searchQuery!,
+                                                baseStyle: theme.textTheme.titleMedium?.copyWith(
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: titleColor,
+                                                ),
+                                                highlightStyle: theme.textTheme.titleMedium?.copyWith(
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: colorScheme.primary,
+                                                  backgroundColor: colorScheme.primary.withValues(alpha: 0.15),
+                                                ),
+                                              ),
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          )
+                                        : Text(
+                                            displayTitle,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: theme.textTheme.titleMedium?.copyWith(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w600,
+                                              color: titleColor,
+                                            ),
                                           ),
-                                          highlightStyle: theme.textTheme.titleMedium?.copyWith(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.bold,
-                                            color: colorScheme.primary,
-                                            backgroundColor: colorScheme.primary.withValues(alpha: 0.15),
-                                          ),
-                                        ),
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    )
-                                  : Text(
-                                      displayTitle,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: theme.textTheme.titleMedium?.copyWith(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w600,
-                                        color: titleColor,
-                                      ),
+                                  ),
+                                  if (isQuickAccess) ...[
+                                    const SizedBox(width: 4),
+                                    Icon(
+                                      Icons.push_pin,
+                                      size: 12,
+                                      color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
                                     ),
+                                  ],
+                                ],
+                              ),
                             ),
+                            if (copyableText != null && copyableText.isNotEmpty) ...[
+                              const SizedBox(width: 4),
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.copy_rounded,
+                                  size: 16,
+                                ),
+                                color: colorScheme.onSurfaceVariant,
+                                tooltip: l10n.copied,
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints.tightFor(
+                                  width: 32,
+                                  height: 32,
+                                ),
+                                onPressed: () =>
+                                    _handleCopy(context, copyableText, l10n),
+                              ),
+                            ],
                             const SizedBox(width: 4),
                             IconButton(
                               icon: Icon(
@@ -311,30 +364,12 @@ class RecordCard extends StatelessWidget {
                                   ? l10n.unfavorite
                                   : l10n.favorite,
                               padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(
-                                minWidth: 28,
-                                minHeight: 28,
+                              constraints: const BoxConstraints.tightFor(
+                                width: 32,
+                                height: 32,
                               ),
                               onPressed: onFavoriteToggle,
                             ),
-                            if (copyableText != null && copyableText.isNotEmpty) ...[
-                              const SizedBox(width: 2),
-                              IconButton(
-                                icon: const Icon(
-                                  Icons.copy_rounded,
-                                  size: 16,
-                                ),
-                                color: colorScheme.onSurfaceVariant,
-                                tooltip: l10n.copied,
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(
-                                  minWidth: 28,
-                                  minHeight: 28,
-                                ),
-                                onPressed: () =>
-                                    _handleCopy(context, copyableText, l10n),
-                              ),
-                            ],
                           ],
                         ),
 
@@ -426,15 +461,16 @@ class RecordCard extends StatelessWidget {
                   ),
                 ),
               ),
-              // 左滑提示：纯视觉指示符，不可点击
-              Padding(
-                padding: const EdgeInsets.only(left: 4),
-                child: Icon(
-                  Icons.keyboard_double_arrow_left,
-                  size: 18,
-                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+              // 左滑提示：纯视觉指示符，仅在首次未引导时显示
+              if (showSwipeHint)
+                Padding(
+                  padding: const EdgeInsets.only(left: 4),
+                  child: Icon(
+                    Icons.keyboard_double_arrow_left,
+                    size: 18,
+                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                  ),
                 ),
-              ),
             ],
           ),
         ),
@@ -663,12 +699,25 @@ class RecordCard extends StatelessWidget {
           padding: const EdgeInsets.only(right: 10),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(6),
-            child: Image.file(
-              file,
-              width: 44,
-              height: 44,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                ImageFiltered(
+                  imageFilter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                  child: Image.file(
+                    file,
+                    width: 44,
+                    height: 44,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                  ),
+                ),
+                const Icon(
+                  Icons.visibility_off_outlined,
+                  size: 18,
+                  color: Colors.white70,
+                ),
+              ],
             ),
           ),
         );

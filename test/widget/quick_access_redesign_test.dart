@@ -108,9 +108,12 @@ void main() {
       await tester.longPress(find.text('工作便签'));
       await tester.pumpAndSettle();
 
-      // Bottom sheet appears with "设为常用"
-      expect(find.text('设为常用'), findsOneWidget);
-      await tester.tap(find.text('设为常用'));
+      // Bottom sheet appears with "设为常用" (or "Set as quick access" in en locale)
+      final setQuickAccessFinder = find.byWidgetPredicate(
+        (w) => w is Text && (w.data == '设为常用' || w.data == 'Set as quick access'),
+      );
+      expect(setQuickAccessFinder, findsOneWidget);
+      await tester.tap(setQuickAccessFinder);
       await tester.pumpAndSettle();
 
       // Now "常用" section appears with the item and "查看" action

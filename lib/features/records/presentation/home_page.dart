@@ -250,6 +250,32 @@ class _HomePageState extends ConsumerState<HomePage>
     context.push('/edit/${r.id}');
   }
 
+  Future<void> _toggleQuickAccess(RecordDetail r) async {
+    final l10n = AppLocalizations.of(context);
+    try {
+      final res = await ref
+          .read(quickAccessIdsProvider.notifier)
+          .toggle(r.id);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(res ? l10n.quickAccessAdded : l10n.quickAccessRemoved),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.quickAccessLimitReached),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
   Future<void> _showRecordActionSheet(RecordDetail r) async {
     final quickIds = ref.read(quickAccessIdsProvider).value ?? [];
     final isQuick = quickIds.contains(r.id);
@@ -289,36 +315,15 @@ class _HomePageState extends ConsumerState<HomePage>
                 const Divider(height: 1),
                 ListTile(
                   leading: Icon(
-                    isQuick ? Icons.star_rounded : Icons.star_outline_rounded,
+                    isQuick ? Icons.push_pin : Icons.push_pin_outlined,
                     color: isQuick
                         ? Theme.of(context).colorScheme.primary
                         : null,
                   ),
-                  title: Text(isQuick ? '取消常用' : '设为常用'),
-                  onTap: () async {
+                  title: Text(isQuick ? l10n.unsetQuickAccess : l10n.setQuickAccess),
+                  onTap: () {
                     Navigator.of(ctx).pop();
-                    try {
-                      final res = await ref
-                          .read(quickAccessIdsProvider.notifier)
-                          .toggle(r.id);
-                      if (!mounted) return;
-                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(res ? '已设为常用' : '已取消常用'),
-                          duration: const Duration(seconds: 2),
-                        ),
-                      );
-                    } catch (_) {
-                      if (!mounted) return;
-                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('常用最多只能添加 6 个'),
-                          duration: Duration(seconds: 2),
-                        ),
-                      );
-                    }
+                    _toggleQuickAccess(r);
                   },
                 ),
                 ListTile(
@@ -549,6 +554,8 @@ class _HomePageState extends ConsumerState<HomePage>
     final quickIds = ref.watch(quickAccessIdsProvider).value ?? const [];
     final recentOpenedIds =
         ref.watch(recentOpenedIdsProvider).value ?? const [];
+    final swipeHintSeen =
+        ref.watch(swipeHintSeenProvider).value ?? false;
 
     final recordMap = {for (final r in records) r.id: r};
     final quickRecords = quickIds
@@ -759,7 +766,13 @@ class _HomePageState extends ConsumerState<HomePage>
                             }
                           },
                           onFavoriteToggle: () => _toggleFavorite(r),
-                          onPinToggle: () => _toggleFavorite(r),
+                          isQuickAccess: quickIds.contains(r.id),
+                          onQuickAccessToggle: () => _toggleQuickAccess(r),
+                          onAnySlideAction: () {
+                            ref.read(swipeHintSeenProvider.notifier).markSeen();
+                          },
+                          showSwipeHint:
+                              index == 0 && !swipeHintSeen && !_isMultiSelect,
                           onEdit: () => _openRecord(r),
                           onChangeCategory: () =>
                               _showChangeCategoryDialog(r),

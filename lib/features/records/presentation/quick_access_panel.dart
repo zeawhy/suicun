@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:suicun/features/records/domain/record_model.dart';
 import 'package:suicun/features/records/presentation/id_presentation_page.dart';
 import 'package:suicun/features/records/presentation/template_views/template_detector.dart';
+import 'package:suicun/shared/theme/app_theme.dart';
 
 enum QuickRecordType {
   idDocument,
@@ -624,6 +625,9 @@ class _RecentItemChip extends StatelessWidget {
     final type = getQuickRecordType(record);
     final style = getQuickTypeStyle(type, isDark);
     final title = record.title.isNotEmpty ? record.title : '未命名记录';
+    final categoryColor = record.category != null
+        ? theme.suiColors.colorForCategory(record.category!.name, record.category!.color)
+        : theme.colorScheme.outline;
 
     return Material(
       color: theme.colorScheme.surfaceContainerLowest,
@@ -643,13 +647,10 @@ class _RecentItemChip extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: style.accentColor,
-                ),
+              Icon(
+                style.icon,
+                size: 14,
+                color: categoryColor,
               ),
               const SizedBox(width: 6),
               ConstrainedBox(
