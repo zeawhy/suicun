@@ -1,5 +1,5 @@
 // test/widget/id_card_view_test.dart
-// Widget tests for IdCardView (spec §2.11):
+// Widget tests for IdCardView (spec §2.11, Round 5 updated):
 // - zh/en locales: localized type name, masked number, flip hint
 // - eye toggle shows full number; long-press copies raw number
 // - no back photo: tap does not flip, hint is idCardHintNoFlip
@@ -7,29 +7,30 @@
 // - no mixed-language UI text
 
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:suicun/features/records/presentation/id_doc_types.dart';
 import 'package:suicun/features/records/presentation/template_views/id_card_view.dart';
-import 'package:suicun/features/records/presentation/template_views/id_doc_type.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
 
 // 1x1 transparent PNG.
 const _pngBase64 =
     'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
 
+Uint8List makePhotoBytes() => base64Decode(_pngBase64);
+
 Widget buildTestCard({
-  required IdDocTypeKey docTypeKey,
+  required IdDocType docType,
   required String docTypeLabel,
   String? name,
   String? docNumber,
   String? validUntil,
-  File? frontPhoto,
-  File? backPhoto,
+  Uint8List? frontPhoto,
+  Uint8List? backPhoto,
   Locale locale = const Locale('zh'),
 }) {
   return MaterialApp(
@@ -44,7 +45,7 @@ Widget buildTestCard({
     home: Scaffold(
       body: SingleChildScrollView(
         child: IdCardView(
-          docTypeKey: docTypeKey,
+          docType: docType,
           docTypeLabel: docTypeLabel,
           name: name,
           docNumber: docNumber,
@@ -53,17 +54,10 @@ Widget buildTestCard({
           backPhoto: backPhoto,
           onPresent: () {},
           onSharePhoto: (_, __) async {},
-          onSavePhoto: (_, __) async {},
         ),
       ),
     ),
   );
-}
-
-File makePhotoFile(String name) {
-  final file = File('${Directory.systemTemp.path}/$name.png');
-  file.writeAsBytesSync(base64Decode(_pngBase64));
-  return file;
 }
 
 String? _mockClipboardText;
@@ -98,12 +92,12 @@ void main() {
     testWidgets(
       'renders ID card with photos: localized type, masked number, flip hint',
       (tester) async {
-        final front = makePhotoFile('idcard_front');
-        final back = makePhotoFile('idcard_back');
+        final front = makePhotoBytes();
+        final back = makePhotoBytes();
 
         await tester.pumpWidget(
           buildTestCard(
-            docTypeKey: IdDocTypeKey.idCard,
+            docType: IdDocType.cnResidentId,
             docTypeLabel: '身份证',
             name: '张三',
             docNumber: '110101199003072345',
@@ -135,7 +129,7 @@ void main() {
         _mockClipboardText = null;
         await tester.pumpWidget(
           buildTestCard(
-            docTypeKey: IdDocTypeKey.idCard,
+            docType: IdDocType.cnResidentId,
             docTypeLabel: '身份证',
             name: '张三',
             docNumber: '110101199003072345',
@@ -161,11 +155,11 @@ void main() {
     testWidgets(
       'no back photo: tap does not flip, hint is idCardHintNoFlip',
       (tester) async {
-        final front = makePhotoFile('idcard_front_only');
+        final front = makePhotoBytes();
 
         await tester.pumpWidget(
           buildTestCard(
-            docTypeKey: IdDocTypeKey.passport,
+            docType: IdDocType.passport,
             docTypeLabel: '护照',
             name: 'John',
             docNumber: 'E12345678',
@@ -189,12 +183,12 @@ void main() {
     testWidgets(
       'tap card flips to back when a back photo exists',
       (tester) async {
-        final front = makePhotoFile('idcard_front2');
-        final back = makePhotoFile('idcard_back2');
+        final front = makePhotoBytes();
+        final back = makePhotoBytes();
 
         await tester.pumpWidget(
           buildTestCard(
-            docTypeKey: IdDocTypeKey.idCard,
+            docType: IdDocType.cnResidentId,
             docTypeLabel: '身份证',
             name: '张三',
             docNumber: '110101199003072345',
@@ -217,7 +211,7 @@ void main() {
       (tester) async {
         await tester.pumpWidget(
           buildTestCard(
-            docTypeKey: IdDocTypeKey.other,
+            docType: IdDocType.other,
             docTypeLabel: '学生卡',
             name: '李四',
             docNumber: '123456',
@@ -236,13 +230,13 @@ void main() {
     testWidgets(
       'renders english labels with no chinese UI text',
       (tester) async {
-        final front = makePhotoFile('idcard_front_en');
-        final back = makePhotoFile('idcard_back_en');
+        final front = makePhotoBytes();
+        final back = makePhotoBytes();
 
         await tester.pumpWidget(
           buildTestCard(
-            docTypeKey: IdDocTypeKey.idCard,
-            docTypeLabel: 'ID Card',
+            docType: IdDocType.cnResidentId,
+            docTypeLabel: 'China Resident ID',
             name: 'John Doe',
             docNumber: '110101199003072345',
             validUntil: '2035-12-31',
@@ -253,7 +247,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.text('ID Card'), findsOneWidget);
+        expect(find.text('China Resident ID'), findsOneWidget);
         expect(find.text('1101 **** **** **** 2345'), findsOneWidget);
         expect(
           find.text('Tap to flip · Long-press to copy number'),
@@ -272,8 +266,8 @@ void main() {
     testWidgets(
       'renders without overflow in dark mode',
       (tester) async {
-        final front = makePhotoFile('idcard_front_dark');
-        final back = makePhotoFile('idcard_back_dark');
+        final front = makePhotoBytes();
+        final back = makePhotoBytes();
 
         await tester.pumpWidget(
           MaterialApp(
@@ -289,7 +283,7 @@ void main() {
             home: Scaffold(
               body: SingleChildScrollView(
                 child: IdCardView(
-                  docTypeKey: IdDocTypeKey.passport,
+                  docType: IdDocType.passport,
                   docTypeLabel: '护照',
                   name: '王五',
                   docNumber: 'E12345678',
@@ -298,7 +292,6 @@ void main() {
                   backPhoto: back,
                   onPresent: () {},
                   onSharePhoto: (_, __) async {},
-                  onSavePhoto: (_, __) async {},
                 ),
               ),
             ),
@@ -313,7 +306,7 @@ void main() {
     );
   });
 
-  group('localizedDocType', () {
+  group('IdDocType.localizedName', () {
     testWidgets(
       'known types follow locale; custom other shown as-is',
       (tester) async {
@@ -331,10 +324,11 @@ void main() {
             supportedLocales: AppLocalizations.supportedLocales,
             home: Builder(
               builder: (ctx) {
+                final l10n = AppLocalizations.of(ctx);
                 zhPassport =
-                    localizedDocType(ctx, IdDocTypeKey.passport, '护照');
-                zhCustom =
-                    localizedDocType(ctx, IdDocTypeKey.other, '学生卡');
+                    IdDocTypeStorage.fromStorageKey('passport').localizedName(l10n);
+                // "other" shows the custom name as-is.
+                zhCustom = '学生卡';
                 return const SizedBox();
               },
             ),
@@ -357,16 +351,16 @@ void main() {
             supportedLocales: AppLocalizations.supportedLocales,
             home: Builder(
               builder: (ctx) {
+                final l10n = AppLocalizations.of(ctx);
                 enPassport =
-                    localizedDocType(ctx, IdDocTypeKey.passport, '护照');
-                enOther = localizedDocType(ctx, IdDocTypeKey.other, '其他');
+                    IdDocTypeStorage.fromStorageKey('passport').localizedName(l10n);
+                enOther =
+                    IdDocTypeStorage.fromStorageKey('other').localizedName(l10n);
                 return const SizedBox();
               },
             ),
           ),
         );
-        // Stored chinese name is re-localized to english; the stored body
-        // itself is never rewritten.
         expect(enPassport, 'Passport');
         expect(enOther, 'Other');
       },

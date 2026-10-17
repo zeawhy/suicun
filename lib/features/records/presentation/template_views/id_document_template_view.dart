@@ -8,10 +8,11 @@
 
 
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:gal/gal.dart';
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:suicun/features/records/domain/id_doc_data.dart';
 import 'package:suicun/features/records/domain/record_model.dart';
@@ -50,9 +51,9 @@ class IdDocumentTemplateView extends StatefulWidget {
 class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
   bool _obscureNumber = true;
 
-  /// Resolved photo files for the read-mode card view (null = no photo).
-  File? _cardFrontFile;
-  File? _cardBackFile;
+  /// Resolved photo bytes for the read-mode card view (null = no photo).
+  Uint8List? _cardFrontBytes;
+  Uint8List? _cardBackBytes;
 
   @override
   void initState() {
@@ -62,14 +63,14 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
     _resolveCardPhotos();
   }
 
-  /// Resolves the stored relative photo paths to files for [IdCardView].
+  /// Resolves the stored relative photo paths to bytes for [IdCardView].
   Future<void> _resolveCardPhotos() async {
-    final front = await resolveIdPhoto(widget.data.photoFront ?? '');
-    final back = await resolveIdPhoto(widget.data.photoBack ?? '');
+    final front = await loadIdPhotoBytes(widget.data.photoFront ?? '');
+    final back = await loadIdPhotoBytes(widget.data.photoBack ?? '');
     if (!mounted) return;
     setState(() {
-      _cardFrontFile = front;
-      _cardBackFile = back;
+      _cardFrontBytes = front;
+      _cardBackBytes = back;
     });
   }
 
@@ -116,35 +117,31 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
   }
 
   /// Shares the ID photo via the system share sheet.
-  Future<void> _sharePhoto(BuildContext context, File file) async {
+  ///
+  /// Decrypted bytes are written to a temporary file, shared, then deleted
+  /// (spec §2.3: no plaintext photo files linger on disk).
+  Future<void> _sharePhoto(BuildContext context, Uint8List bytes) async {
     final shareText = AppLocalizations.of(context).sharePhoto;
+    File? tmp;
     try {
+      final dir = await getTemporaryDirectory();
+      tmp = File(
+          '${dir.path}/id_photo_share_${DateTime.now().millisecondsSinceEpoch}.jpg');
+      await tmp.writeAsBytes(bytes, flush: true);
       await SharePlus.instance.share(
         ShareParams(
-          files: [XFile(file.path)],
+          files: [XFile(tmp.path)],
           text: shareText,
         ),
       );
     } catch (_) {
       // Ignore share cancellation/failure
-    }
-  }
-
-  /// Saves the ID photo to the system gallery.
-  Future<void> _savePhotoToGallery(BuildContext context, File file) async {
-    final l10n = AppLocalizations.of(context);
-    final messenger = ScaffoldMessenger.of(context);
-    try {
-      await Gal.putImage(file.path, album: l10n.appName);
-      messenger.hideCurrentSnackBar();
-      messenger.showSnackBar(
-        SnackBar(content: Text(l10n.savedToGallery)),
-      );
-    } catch (_) {
-      messenger.hideCurrentSnackBar();
-      messenger.showSnackBar(
-        SnackBar(content: Text(l10n.savePhotoFailed)),
-      );
+    } finally {
+      try {
+        await tmp?.delete();
+      } catch (_) {
+        // Best effort
+      }
     }
   }
 
@@ -191,8 +188,8 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
           name: data.name,
           docNumber: data.number,
           validUntil: _formatValidUntil(l10n),
-          frontPhoto: _cardFrontFile,
-          backPhoto: _cardBackFile,
+          frontPhoto: _cardFrontBytes,
+          backPhoto: _cardBackBytes,
           issuingCountry: data.issuingCountry,
           expiryDate: data.expiryDate,
           noExpiry: data.noExpiry,
@@ -201,7 +198,6 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
             if (rec != null) IdPresentationPage.show(context, rec);
           },
           onSharePhoto: _sharePhoto,
-          onSavePhoto: _savePhotoToGallery,
         ),
         const SizedBox(height: 16),
 

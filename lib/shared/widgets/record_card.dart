@@ -1,6 +1,7 @@
 // lib/shared/widgets/record_card.dart
 
 import 'dart:io';
+import 'dart:typed_data';
 import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/gestures.dart';
@@ -705,11 +706,11 @@ class RecordCard extends StatelessWidget {
         : (idData?.photoBack?.isNotEmpty == true ? idData!.photoBack : null);
     if (photoPath == null) return const SizedBox.shrink();
 
-    return FutureBuilder<File?>(
-      future: resolveIdPhoto(photoPath),
+    return FutureBuilder<Uint8List?>(
+      future: loadIdPhotoBytes(photoPath),
       builder: (context, snapshot) {
-        final file = snapshot.data;
-        if (file == null) {
+        final bytes = snapshot.data;
+        if (bytes == null) {
           return const SizedBox.shrink();
         }
         return Padding(
@@ -721,8 +722,8 @@ class RecordCard extends StatelessWidget {
               children: [
                 ImageFiltered(
                   imageFilter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                  child: Image.file(
-                    file,
+                  child: Image.memory(
+                    bytes,
                     width: 44,
                     height: 44,
                     fit: BoxFit.cover,

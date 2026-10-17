@@ -37,7 +37,6 @@ class IdCardView extends StatefulWidget {
     this.noExpiry = false,
     required this.onPresent,
     required this.onSharePhoto,
-    required this.onSavePhoto,
   });
 
   /// Parsed document type key (drives gradient + icon).
@@ -50,8 +49,8 @@ class IdCardView extends StatefulWidget {
   final String? validUntil;
 
   /// Resolved photo files (null when the record has no photo on that side).
-  final File? frontPhoto;
-  final File? backPhoto;
+  final Uint8List? frontPhoto;
+  final Uint8List? backPhoto;
 
   /// ISO 3166-1 alpha-2 country code (e.g. 'US'). Shown top-right when set.
   final String? issuingCountry;
@@ -67,8 +66,7 @@ class IdCardView extends StatefulWidget {
   final VoidCallback onPresent;
 
   /// Reused share/save logic from the template view.
-  final Future<void> Function(BuildContext context, File file) onSharePhoto;
-  final Future<void> Function(BuildContext context, File file) onSavePhoto;
+  final Future<void> Function(BuildContext context, Uint8List bytes) onSharePhoto;
 
   @override
   State<IdCardView> createState() => _IdCardViewState();
@@ -186,10 +184,10 @@ class _IdCardViewState extends State<IdCardView>
     if (front == null && back == null) return;
     final l10n = AppLocalizations.of(context);
 
-    File? target = front ?? back;
+    Uint8List? target = front ?? back;
     if (front != null && back != null) {
       if (!mounted) return;
-      target = await showModalBottomSheet<File>(
+      target = await showModalBottomSheet<Uint8List>(
         context: context,
         builder: (sheetCtx) => SafeArea(
           child: Column(
@@ -232,22 +230,13 @@ class _IdCardViewState extends State<IdCardView>
               title: Text(l10n.sharePhoto),
               onTap: () => Navigator.of(sheetCtx).pop(0),
             ),
-            ListTile(
-              leading: const Icon(Icons.save_alt_outlined),
-              title: Text(l10n.saveToGallery),
-              onTap: () => Navigator.of(sheetCtx).pop(1),
-            ),
             const SizedBox(height: 8),
           ],
         ),
       ),
     );
     if (action == null || !mounted) return;
-    if (action == 0) {
-      await widget.onSharePhoto(context, target!);
-    } else {
-      await widget.onSavePhoto(context, target!);
-    }
+    await widget.onSharePhoto(context, target!);
   }
 
   @override
@@ -493,7 +482,7 @@ class _IdCardViewState extends State<IdCardView>
           right: 18,
           top: 46,
           child: _buildPhotoThumb(
-            file: widget.frontPhoto!,
+            bytes: widget.frontPhoto!,
             revealed: _frontRevealed,
             onTap: () => _togglePhotoReveal(true),
             l10n: l10n,
@@ -666,7 +655,7 @@ class _IdCardViewState extends State<IdCardView>
   }
 
   Widget _buildPhotoThumb({
-    required File file,
+    required Uint8List bytes,
     required bool revealed,
     required VoidCallback onTap,
     required AppLocalizations l10n,
@@ -690,7 +679,7 @@ class _IdCardViewState extends State<IdCardView>
           child: Stack(
             fit: StackFit.expand,
             children: [
-              _buildPhotoImage(file, blurred: !revealed),
+              _buildPhotoImage(bytes, blurred: !revealed),
               if (!revealed)
                 const Center(
                   child: Icon(
@@ -706,9 +695,9 @@ class _IdCardViewState extends State<IdCardView>
     );
   }
 
-  Widget _buildPhotoImage(File file, {required bool blurred}) {
-    final image = Image.file(
-      file,
+  Widget _buildPhotoImage(Uint8List bytes, {required bool blurred}) {
+    final image = Image.memory(
+      bytes,
       fit: BoxFit.cover,
       errorBuilder: (_, __, ___) => Container(
         color: Colors.white.withValues(alpha: 0.1),

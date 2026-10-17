@@ -1,16 +1,17 @@
 // test/widget/id_document_template_view_test.dart
-// Widget tests for ID Document Template View:
+// Widget tests for ID Document Template View (Round 5: read-only view backed
+// by IdDocData — editing moved to IdDocForm):
 // 1) Field labels render correctly.
 // 2) Document number is masked by default with ••••••.
 // 3) Eye icon toggles document number visibility.
-// 4) Edit mode renders dropdown, text fields, and photo picker buttons.
+// 4) Localized type name shown on the ID card; read mode has no edit widgets.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:suicun/features/records/domain/id_doc_data.dart';
 import 'package:suicun/features/records/presentation/template_views/id_document_template_view.dart';
-import 'package:suicun/features/records/presentation/template_views/template_detector.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
 
 Widget createTestWidget({
@@ -43,12 +44,12 @@ void main() {
     testWidgets(
       'renders field labels, masks document number by default, and toggles eye visibility',
       (tester) async {
-        const testData = IdDocumentTemplateData(
-          docType: '身份证',
+        final testData = IdDocData(
+          type: 'cn_resident_id',
           name: '张三',
-          docNumber: '110101199003072345',
-          validUntil: '2035-12-31',
-          notes: '个人证件备注',
+          number: '110101199003072345',
+          noExpiry: true,
+          note: '个人证件备注',
         );
 
         await tester.pumpWidget(
@@ -64,27 +65,22 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        // 1. Verify field labels (doc-type row removed in read mode)
-        expect(find.text('证件类型'), findsNothing);
+        // 1. Verify field labels.
         expect(find.text('姓名'), findsOneWidget);
         expect(find.text('证件号码'), findsOneWidget);
         expect(find.text('有效期至'), findsOneWidget);
         expect(find.text('备注'), findsOneWidget);
 
-        // 2. Verify non-sensitive text values rendered. The localized type
-        // name now lives on the ID card (not in the fields card); the name
-        // appears both on the card and in the fields card.
-        expect(find.text('身份证'), findsOneWidget);
+        // 2. Verify values rendered. Localized type name lives on the ID
+        // card; the name appears both on the card and in the fields card.
+        expect(find.text('中国居民身份证'), findsOneWidget);
         expect(find.text('张三'), findsNWidgets(2));
-        expect(find.text('2035-12-31'), findsOneWidget);
+        expect(find.text('长期'), findsWidgets);
         expect(find.text('个人证件备注'), findsOneWidget);
 
-        // 2b. Read mode shows the ID card view with hint + present button,
-        // and no longer shows the photo card.
+        // 2b. Read mode shows the ID card view with hint + present button.
         expect(find.text('长按卡片复制号码'), findsOneWidget);
         expect(find.text('出示证件'), findsOneWidget);
-        expect(find.text('证件照片正面'), findsNothing);
-        expect(find.text('证件照片反面'), findsNothing);
 
         // 3. Document number masked by default
         expect(find.byKey(const Key('id_doc_number_masked_text')), findsOneWidget);
@@ -112,19 +108,20 @@ void main() {
     );
 
     testWidgets(
-      'editing mode renders dropdown, input fields, and photo picker buttons',
+      'read mode has no editing widgets',
       (tester) async {
-        String lastBody = '';
+        final testData = IdDocData(
+          type: 'passport',
+          name: '李四',
+          number: 'E12345678',
+        );
 
         await tester.pumpWidget(
           createTestWidget(
             child: IdDocumentTemplateView(
-              data: const IdDocumentTemplateData(),
+              data: testData,
               record: null,
-              isEditing: true,
-              rawBody: '证件类型：\n姓名：\n证件号码：\n有效期至：\n证件照片正面：\n证件照片反面：\n备注：',
               onEdit: () {},
-              onBodyChanged: (b) => lastBody = b,
               categoryRow: const Text('CategoryRow'),
               tagRow: const Text('TagRow'),
             ),
@@ -132,41 +129,29 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        // 1. Verify editor widgets are present
-        expect(find.byKey(const Key('id_doc_type_dropdown')), findsOneWidget);
-        expect(find.byKey(const Key('id_doc_name_field')), findsOneWidget);
-        expect(find.byKey(const Key('id_doc_number_field')), findsOneWidget);
-        expect(find.byKey(const Key('id_doc_valid_until_field')), findsOneWidget);
-        expect(find.byKey(const Key('id_doc_notes_field')), findsOneWidget);
+        // No edit-mode widgets exist anymore (editing moved to IdDocForm).
+        expect(find.byKey(const Key('id_doc_type_dropdown')), findsNothing);
+        expect(find.byKey(const Key('id_doc_name_field')), findsNothing);
+        expect(find.byKey(const Key('id_doc_number_field')), findsNothing);
+        expect(find.byKey(const Key('id_doc_valid_until_field')), findsNothing);
+        expect(find.byKey(const Key('id_doc_notes_field')), findsNothing);
+        expect(find.byKey(const Key('id_photo_front_camera_button')), findsNothing);
 
-        // 2. Photo buttons
-        expect(find.byKey(const Key('id_photo_front_camera_button')), findsOneWidget);
-        expect(find.byKey(const Key('id_photo_front_gallery_button')), findsOneWidget);
-        expect(find.byKey(const Key('id_photo_back_camera_button')), findsOneWidget);
-        expect(find.byKey(const Key('id_photo_back_gallery_button')), findsOneWidget);
-
-        // 3. Enter values and verify _syncBody updates
-        await tester.enterText(find.byKey(const Key('id_doc_name_field')), '李四');
-        await tester.enterText(
-          find.byKey(const Key('id_doc_number_field')),
-          '440301199201011234',
-        );
-        await tester.pumpAndSettle();
-
-        expect(lastBody.contains('姓名：李四'), isTrue);
-        expect(lastBody.contains('证件号码：440301199201011234'), isTrue);
+        // Read-mode content is present.
+        expect(find.text('护照'), findsOneWidget);
+        expect(find.text('李四'), findsNWidgets(2));
       },
     );
 
     testWidgets(
       'english locale renders english labels and obscures document number',
       (tester) async {
-        const testData = IdDocumentTemplateData(
-          docType: 'Passport',
+        final testData = IdDocData(
+          type: 'passport',
           name: 'John Doe',
-          docNumber: 'E12345678',
-          validUntil: '2030-01-01',
-          notes: 'Travel document',
+          number: 'E12345678',
+          noExpiry: true,
+          note: 'Travel document',
         );
 
         await tester.pumpWidget(
@@ -183,7 +168,6 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.text('Document type'), findsNothing);
         expect(find.text('Name'), findsOneWidget);
         expect(find.text('Document number'), findsOneWidget);
         expect(find.text('Valid until'), findsOneWidget);
@@ -191,6 +175,7 @@ void main() {
 
         // Localized type name is shown on the ID card.
         expect(find.text('Passport'), findsOneWidget);
+        expect(find.text('No expiry'), findsWidgets);
 
         expect(find.text('••••••'), findsOneWidget);
         expect(find.text('E12345678'), findsNothing);

@@ -1,7 +1,6 @@
 // lib/features/records/presentation/id_doc_form.dart
 // Round 4 §3: ID document edit form.
 
-import 'dart:io';
 
 import 'package:country_picker/country_picker.dart';
 import 'package:flutter/material.dart';
@@ -46,8 +45,8 @@ class _IdDocFormState extends State<IdDocForm> {
   DateTime? _expiryDate;
   bool _noExpiry = false;
 
-  File? _photoFrontFile;
-  File? _photoBackFile;
+  Uint8List? _photoFrontBytes;
+  Uint8List? _photoBackBytes;
   String? _photoFrontRel;
   String? _photoBackRel;
 
@@ -84,12 +83,12 @@ class _IdDocFormState extends State<IdDocForm> {
   }
 
   Future<void> _resolvePhotos() async {
-    final front = await resolveIdPhoto(_photoFrontRel ?? '');
-    final back = await resolveIdPhoto(_photoBackRel ?? '');
+    final front = await loadIdPhotoBytes(_photoFrontRel ?? '');
+    final back = await loadIdPhotoBytes(_photoBackRel ?? '');
     if (!mounted) return;
     setState(() {
-      _photoFrontFile = front;
-      _photoBackFile = back;
+      _photoFrontBytes = front;
+      _photoBackBytes = back;
     });
   }
 
@@ -467,7 +466,7 @@ class _IdDocFormState extends State<IdDocForm> {
 
   Widget _buildPhotoRow(BuildContext context, AppLocalizations l10n,
       ThemeData theme, {required bool isFront}) {
-    final file = isFront ? _photoFrontFile : _photoBackFile;
+    final bytes = isFront ? _photoFrontBytes : _photoBackBytes;
     final label = isFront ? l10n.idPhotoFront : l10n.idPhotoBack;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -485,8 +484,8 @@ class _IdDocFormState extends State<IdDocForm> {
                   border: Border.all(color: theme.colorScheme.outline),
                   borderRadius: BorderRadius.circular(8)),
               clipBehavior: Clip.antiAlias,
-              child: file != null
-                  ? Image.file(file, fit: BoxFit.cover)
+              child: bytes != null
+                  ? Image.memory(bytes, fit: BoxFit.cover)
                   : InkWell(
                       onTap: () => _pickPhoto(context, l10n, isFront: isFront),
                       child: Column(
@@ -500,7 +499,7 @@ class _IdDocFormState extends State<IdDocForm> {
                       ),
                     ),
             ),
-            if (file != null) ...[
+            if (bytes != null) ...[
               const SizedBox(width: 12),
               TextButton.icon(
                   onPressed: () => _pickPhoto(context, l10n, isFront: isFront),
@@ -541,20 +540,25 @@ class _IdDocFormState extends State<IdDocForm> {
     );
     if (source == null) return;
     final picker = ImagePicker();
-    final picked = await picker.pickImage(source: source, imageQuality: 85);
+    final picked = await picker.pickImage(
+      source: source,
+      maxWidth: 2000,
+      maxHeight: 2000,
+      imageQuality: 85,
+    );
     if (picked == null) return;
     final rel = await saveIdPhoto(picked,
         recordId: widget.recordId, isFront: isFront);
     if (rel == null) return;
-    final file = await resolveIdPhoto(rel);
+    final bytes = await loadIdPhotoBytes(rel);
     if (!mounted) return;
     setState(() {
       if (isFront) {
         _photoFrontRel = rel;
-        _photoFrontFile = file;
+        _photoFrontBytes = bytes;
       } else {
         _photoBackRel = rel;
-        _photoBackFile = file;
+        _photoBackBytes = bytes;
       }
     });
     _onFieldChanged();
@@ -564,10 +568,10 @@ class _IdDocFormState extends State<IdDocForm> {
     setState(() {
       if (isFront) {
         _photoFrontRel = null;
-        _photoFrontFile = null;
+        _photoFrontBytes = null;
       } else {
         _photoBackRel = null;
-        _photoBackFile = null;
+        _photoBackBytes = null;
       }
     });
     _onFieldChanged();

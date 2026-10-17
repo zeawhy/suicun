@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SuiVault opts out of Android system backup entirely (spec §2.2).
+     The encrypted database key lives in the Android Keystore and cannot be
+     restored to another device; allowing system backup would either leak
+     plaintext ID photos (id_photos/) or produce an unrunnable database.
+     Users move devices via encrypted backup export or WebDAV sync. -->
+<data-extraction-rules>
+  <cloud-backup>
+    <exclude domain="root" path="." />
+    <exclude domain="file" path="." />
+    <exclude domain="database" path="." />
+    <exclude domain="sharedpref" path="." />
+    <exclude domain="external" path="." />
+  </cloud-backup>
+  <device-transfer>
+    <exclude domain="root" path="." />
+    <exclude domain="file" path="." />
+    <exclude domain="database" path="." />
+    <exclude domain="sharedpref" path="." />
+    <exclude domain="external" path="." />
+  </device-transfer>
+</data-extraction-rules>
