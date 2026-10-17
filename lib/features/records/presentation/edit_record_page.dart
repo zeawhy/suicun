@@ -585,8 +585,9 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
   Future<void> _showRecordMenu(
       AppLocalizations l10n, RecordDetail? record) async {
     final recordId = widget.recordId;
+    // 等 provider 加载完成，避免 loading 时误判为未满。
     final quickIds =
-        ref.read(quickAccessIdsProvider).value ?? const <String>[];
+        await ref.read(quickAccessIdsProvider.future);
     final isPinned = recordId != null && quickIds.contains(recordId);
     final isFull = !isPinned &&
         quickIds.length >= QuickAccessService.maxQuickAccessCount;
