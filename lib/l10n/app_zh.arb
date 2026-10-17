@@ -1,20 +1,223 @@
 {
   "@@locale": "zh",
+  "@conflictCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@connectionFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@exportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@idCardValidUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@idNumberLastDigits": {
+    "placeholders": {
+      "digits": {
+        "type": "String"
+      }
+    }
+  },
+  "@importFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@importPreview": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@importSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@infoCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@keywordCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@lastSuccess": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@lastSyncTime": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@lastSyncToday": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@lockedKeysNotice": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@lockoutTryLater": {
+    "placeholders": {
+      "seconds": {}
+    }
+  },
+  "@modified": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@pendingCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@recordCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@recoverFailedObjects": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@recoverPartial": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@recoverProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@recoverRecordsRestored": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@selectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@syncedRecordCount": {
+    "placeholders": {
+      "synced": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@timeToday": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@todoProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@updatedAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@wizardMergeCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "about": "关于",
   "accountPasswordLabel": "账号密码",
   "addCategory": "新增分类",
   "addKeyword": "添加关键词",
-  "addressInfoLabel": "地址信息",
   "addTag": "新增标签",
   "addTags": "添加标签",
+  "addressInfoLabel": "地址信息",
   "all": "全部",
-  "appearance": "外观",
   "appLock": "应用锁",
-  "appLocked": "随存已锁定",
   "appLockStatusDisabled": "未开启",
   "appLockStatusEnabled": "已开启",
+  "appLocked": "随存已锁定",
   "appName": "随存",
   "appTagline": "保存以后还要找的信息",
+  "appearance": "外观",
   "autoSaveHint": "自动保存，无需手动点击保存。",
   "backSide": "背面",
   "backToSync": "返回同步设置",
@@ -39,6 +242,7 @@
   "changeCategory": "修改分类",
   "changePin": "修改 PIN",
   "chooseFromGallery": "从相册选择",
+  "choosePhotoSide": "选择照片",
   "clearAllData": "清除全部数据",
   "clearAllDataConfirmContent": "此操作无法撤销，所有本地记录及证件照片将被彻底删除。",
   "clearAllDataConfirmTitle": "最终确认",
@@ -56,28 +260,14 @@
   "confirmPassword": "确认密码",
   "confirmVaultPassword": "确认加密密码",
   "conflictCount": "冲突：{count}",
-  "@conflictCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "conflictHistoryNote": "被弃用的版本会保留到历史记录，不会被删除。",
-  "conflictsEmpty": "没有未解决的冲突",
-  "conflictsTitle": "同步冲突",
   "conflictTypeCategory": "分类",
   "conflictTypeRecord": "记录",
   "conflictTypeTag": "标签",
+  "conflictsEmpty": "没有未解决的冲突",
+  "conflictsTitle": "同步冲突",
   "connectAndSync": "连接并同步",
   "connectionFailed": "连接失败：{error}",
-  "@connectionFailed": {
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
   "connectionSuccess": "连接成功",
   "continueAction": "继续",
   "copied": "已复制",
@@ -85,8 +275,8 @@
   "copy": "复制",
   "copyNumberAction": "复制号码",
   "copyRecoveryKey": "复制",
-  "createdAtPrefix": "创建于",
   "createNewVault": "创建新库",
+  "createdAtPrefix": "创建于",
   "dangerousOperations": "危险操作",
   "data": "数据",
   "defaultCategoryIdeas": "灵感",
@@ -133,13 +323,6 @@
   "exportEncryptedBackupRecommended": "导出加密备份（推荐）",
   "exportEncryptedBackupSubtitle": "需设置密码，换设备恢复时使用",
   "exportFailed": "导出失败：{error}",
-  "@exportFailed": {
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
   "exportJson": "导出 JSON 备份",
   "exportJsonSubtitle": "明文，任何人可读取",
   "exportJsonUnencrypted": "导出 JSON（未加密）",
@@ -180,115 +363,49 @@
   "goToWebdavSettings": "前往 WebDAV 设置",
   "hideNumberAction": "隐藏号码",
   "hidePassword": "隐藏密码",
+  "iHaveSavedPassword": "我已妥善保存加密密码",
+  "idCardBackPhoto": "背面照片",
+  "idCardFlipBack": "翻回正面",
+  "idCardFrontPhoto": "正面照片",
+  "idCardHintFlip": "点击卡片翻面 · 长按复制号码",
+  "idCardHintNoFlip": "长按卡片复制号码",
+  "idCardMoreActions": "更多操作",
+  "idCardTapToReveal": "点击查看",
+  "idCardValidUntil": "有效期至 {date}",
   "idDocumentInfo": "证件信息",
+  "idNumberCopied": "证件号码已复制",
   "idNumberCopiedMsg": "证件号码已复制到剪贴板",
   "idNumberLastDigits": "尾号 {digits}",
-  "@idNumberLastDigits": {
-    "placeholders": {
-      "digits": {
-        "type": "String"
-      }
-    }
-  },
-  "iHaveSavedPassword": "我已妥善保存加密密码",
   "importData": "导入",
   "importEncryptedBackup": "导入加密备份",
   "importFailed": "导入失败：{error}",
-  "@importFailed": {
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
   "importJson": "从 JSON 恢复",
   "importMarkdown": "导入 Markdown/TXT",
   "importMarkdownOrTxt": "导入 Markdown / TXT",
   "importPreview": "即将导入 {count} 条记录",
-  "@importPreview": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "importSectionTitle": "导入",
   "importSuccess": "成功导入 {count} 条记录",
-  "@importSuccess": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "infoCount": "{count} 条信息",
-  "@infoCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "joinExistingVault": "加入已有库",
   "keepBoth": "分别保留",
   "keepLocal": "保留本机版本",
   "keepPasswordSafe": "请妥善保管加密密码：丢失后无法找回，WebDAV 账号密码不能恢复笔记内容。",
   "keepRemote": "保留另一版本",
   "keywordCount": "{count} 个关键词",
-  "@keywordCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "keywordHint": "输入关键词，回车添加",
   "keywords": "关键词",
   "keywordsEmpty": "暂无关键词，添加后可自动推荐分类",
   "landscapeAction": "横屏",
   "lastSuccess": "上次成功：{time}",
-  "@lastSuccess": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
   "lastSuccessNever": "从未成功同步",
   "lastSync": "上次同步",
   "lastSyncTime": "上次同步时间：{time}",
-  "@lastSyncTime": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
   "lastSyncToday": "今天 {time}",
-  "@lastSyncToday": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
   "linkCopied": "已复制链接",
   "localVersion": "本机版本",
-  "lockedKeysNotice": "有 {count} 把密钥未解锁，部分内容暂时无法显示",
-  "@lockedKeysNotice": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "lockoutTryLater": "尝试次数过多，请 {seconds} 秒后再试",
-  "@lockoutTryLater": {
-    "placeholders": {
-      "seconds": {}
-    }
-  },
   "lockTimeout": "后台锁定超时",
+  "lockedKeysNotice": "有 {count} 把密钥未解锁，部分内容暂时无法显示",
+  "lockoutTryLater": "尝试次数过多，请 {seconds} 秒后再试",
   "manage": "管理",
   "manageCategories": "管理分类",
   "manageKeywords": "管理关键词",
@@ -302,13 +419,6 @@
   "migrationBody": "旧目录原样保留作备份，迁移为一次性拷贝。迁移后可使用新协议进行无冲突追加同步。",
   "migrationTitle": "发现旧协议同步库",
   "modified": "修改于 {time}",
-  "@modified": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
   "multiSelectActions": "多选操作",
   "myRecords": "我的信息",
   "newInfo": "新建信息",
@@ -334,13 +444,6 @@
   "passwordStrengthWeak": "密码强度：弱（建议 12 位以上，混合字母、数字和符号）",
   "passwordTooShort": "密码至少 8 位",
   "pendingCount": "待上传：{count}",
-  "@pendingCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "pendingUpload": "待上传",
   "permanentDelete": "彻底删除",
   "permanentDeleteConfirm": "彻底删除后无法恢复。确认吗？",
@@ -355,6 +458,7 @@
   "presentAutoBrightnessSubtitle": "方便他人查看或扫码",
   "presentAutoBrightnessTitle": "出示时调高亮度",
   "presentBrightness": "亮度",
+  "presentDocument": "出示证件",
   "presentIdDocument": "出示证件",
   "privacyPolicy": "隐私政策",
   "probeInvalidConfig": "配置不完整",
@@ -376,40 +480,19 @@
   "quickPasswordCopied": "已复制密码到剪贴板",
   "recentlyUsed": "最近使用",
   "recordCount": "{count} 条记录",
-  "@recordCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "recordDeleted": "已移至回收站",
-  "recordsEmpty": "还没有保存的信息",
-  "recordsEmptyHint": "点击下方「＋ 新建信息」开始保存",
   "recordTitleContact": "联系人记录",
   "recordTitleIdDocument": "证件记录",
   "recordTitleIdea": "灵感记录",
   "recordTitleNote": "备忘记录",
   "recordTitlePassword": "密码记录",
   "recordTitleTodo": "待办记录",
+  "recordsEmpty": "还没有保存的信息",
+  "recordsEmptyHint": "点击下方「＋ 新建信息」开始保存",
   "recoverDesc": "在新设备上从 WebDAV 下载已上传的数据，重建本地库。只能恢复已成功上传的数据；尚未上传的离线编辑无法找回。",
   "recoverFailedObjects": "失败对象：{count}",
-  "@recoverFailedObjects": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "recoverFromWebdav": "从 WebDAV 恢复",
   "recoverPartial": "部分完成，有 {count} 个对象失败，可重试继续。",
-  "@recoverPartial": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "recoverPhaseConnecting": "正在连接…",
   "recoverPhaseDone": "恢复完成",
   "recoverPhaseDownloading": "正在下载对象…",
@@ -417,24 +500,7 @@
   "recoverPhaseListing": "正在列出远端对象…",
   "recoverPhaseRebuilding": "正在重建本地库…",
   "recoverProgress": "已完成 {done} / 共 {total}",
-  "@recoverProgress": {
-    "placeholders": {
-      "done": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
   "recoverRecordsRestored": "已恢复记录：{count}",
-  "@recoverRecordsRestored": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "recoveryKeyCopied": "恢复密钥已复制",
   "recoveryKeyTitle": "恢复密钥",
   "recoveryKeyWarning": "这是恢复密钥唯一的展示机会，请立即抄写或保存到安全的地方，关闭后无法再次查看。",
@@ -451,11 +517,11 @@
   "restoreBackupSubtitle": "支持加密备份与 JSON 备份",
   "retry": "重试",
   "save": "保存",
-  "saved": "已保存",
-  "savedToGallery": "已保存到相册",
   "saveFailed": "保存失败，点击重试",
   "savePhotoFailed": "保存失败，请重试",
   "saveToGallery": "保存到相册",
+  "saved": "已保存",
+  "savedToGallery": "已保存到相册",
   "saving": "保存中…",
   "search": "搜索",
   "searchEmpty": "没有找到相关信息",
@@ -468,15 +534,8 @@
   "securityPageTitle": "安全",
   "selectAll": "全选",
   "selectCategory": "选择分类",
-  "selectedCount": "已选 {count} 条",
-  "@selectedCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "selectTags": "选择标签",
+  "selectedCount": "已选 {count} 条",
   "setPin": "设置 PIN",
   "setQuickAccess": "设为常用",
   "settings": "设置",
@@ -501,18 +560,6 @@
   "sync": "同步",
   "syncCompleted": "同步已完成",
   "syncDirectory": "同步目录",
-  "synced": "已同步",
-  "syncedRecordCount": "已同步 {synced} / 共 {total} 条记录",
-  "@syncedRecordCount": {
-    "placeholders": {
-      "synced": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
   "syncEngineWip": "同步引擎开发中（阶段 C）",
   "syncNever": "未同步",
   "syncNotConfigured": "尚未配置同步",
@@ -523,6 +570,8 @@
   "syncStatusSyncing": "正在同步…",
   "syncStatusUnavailable": "同步状态不可用",
   "syncStatusUnavailableDesc": "同步引擎正在接入，稍后再试。",
+  "synced": "已同步",
+  "syncedRecordCount": "已同步 {synced} / 共 {total} 条记录",
   "tagName": "标签名称",
   "tags": "标签",
   "tagsEmpty": "还没有标签",
@@ -545,31 +594,14 @@
   "themeDark": "深色",
   "themeLight": "浅色",
   "themeSystem": "跟随系统",
+  "timeToday": "今天 {time}",
+  "timeYesterday": "昨天",
   "timeout1Min": "1 分钟",
   "timeout5Min": "5 分钟",
   "timeoutImmediately": "立即",
-  "timeToday": "今天 {time}",
-  "@timeToday": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "timeYesterday": "昨天",
   "titleHint": "标题（可选）",
   "today": "今天",
   "todoProgress": "已完成 {done} / {total}",
-  "@todoProgress": {
-    "placeholders": {
-      "done": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
   "trash": "回收站",
   "trashEmpty": "回收站为空",
   "uncategorized": "未分类",
@@ -582,13 +614,6 @@
   "unsetQuickAccess": "取消常用",
   "untitledRecord": "未命名记录",
   "updatedAt": "更新于 {time}",
-  "@updatedAt": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
   "useBiometric": "生物识别解锁",
   "usePassword": "使用加密密码",
   "useRecoveryKey": "使用恢复密钥",
@@ -612,13 +637,6 @@
   "wizardHasVaultDesc": "该目录下已存在同步库，请输入加密密码或恢复密钥加入。",
   "wizardJoining": "正在加入同步库…",
   "wizardMergeCount": "待同步内容：{count} 条",
-  "@wizardMergeCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "wizardMergeInfo": "本地已有内容不会被远端直接替换；同步将合并两端数据，出现的冲突可稍后手动解决。",
   "wizardNoVaultDesc": "该目录下没有同步库，可以创建一个新加密库。",
   "wizardStepConnection": "连接测试",

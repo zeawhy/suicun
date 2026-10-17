@@ -1,20 +1,223 @@
 {
   "@@locale": "en",
+  "@conflictCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@connectionFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@exportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@idCardValidUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@idNumberLastDigits": {
+    "placeholders": {
+      "digits": {
+        "type": "String"
+      }
+    }
+  },
+  "@importFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@importPreview": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@importSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@infoCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@keywordCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@lastSuccess": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@lastSyncTime": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@lastSyncToday": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@lockedKeysNotice": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@lockoutTryLater": {
+    "placeholders": {
+      "seconds": {}
+    }
+  },
+  "@modified": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@pendingCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@recordCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@recoverFailedObjects": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@recoverPartial": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@recoverProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@recoverRecordsRestored": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@selectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@syncedRecordCount": {
+    "placeholders": {
+      "synced": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@timeToday": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@todoProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@updatedAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@wizardMergeCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "about": "About",
   "accountPasswordLabel": "Account & password",
   "addCategory": "Add Category",
   "addKeyword": "Add keyword",
-  "addressInfoLabel": "Address information",
   "addTag": "Add Tag",
   "addTags": "Add tags",
+  "addressInfoLabel": "Address information",
   "all": "All",
-  "appearance": "Appearance",
   "appLock": "App lock",
-  "appLocked": "SuiVault is locked",
   "appLockStatusDisabled": "Disabled",
   "appLockStatusEnabled": "Enabled",
+  "appLocked": "SuiVault is locked",
   "appName": "SuiVault",
   "appTagline": "Save it now, find it later",
+  "appearance": "Appearance",
   "autoSaveHint": "Auto-saved, no need to tap save.",
   "backSide": "Back",
   "backToSync": "Back to sync settings",
@@ -39,6 +242,7 @@
   "changeCategory": "Change category",
   "changePin": "Change PIN",
   "chooseFromGallery": "Choose from gallery",
+  "choosePhotoSide": "Choose photo",
   "clearAllData": "Clear all data",
   "clearAllDataConfirmContent": "This action cannot be undone. All local records and ID photos will be permanently deleted.",
   "clearAllDataConfirmTitle": "Final confirmation",
@@ -56,28 +260,14 @@
   "confirmPassword": "Confirm password",
   "confirmVaultPassword": "Confirm encryption password",
   "conflictCount": "Conflicts: {count}",
-  "@conflictCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "conflictHistoryNote": "The discarded version is kept in history and will not be deleted.",
-  "conflictsEmpty": "No unresolved conflicts",
-  "conflictsTitle": "Sync conflicts",
   "conflictTypeCategory": "Category",
   "conflictTypeRecord": "Record",
   "conflictTypeTag": "Tag",
+  "conflictsEmpty": "No unresolved conflicts",
+  "conflictsTitle": "Sync conflicts",
   "connectAndSync": "Connect & sync",
   "connectionFailed": "Connection failed: {error}",
-  "@connectionFailed": {
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
   "connectionSuccess": "Connection successful",
   "continueAction": "Continue",
   "copied": "Copied",
@@ -85,8 +275,8 @@
   "copy": "Copy",
   "copyNumberAction": "Copy number",
   "copyRecoveryKey": "Copy",
-  "createdAtPrefix": "Created",
   "createNewVault": "Create new vault",
+  "createdAtPrefix": "Created",
   "dangerousOperations": "Dangerous operations",
   "data": "Data",
   "defaultCategoryIdeas": "Ideas",
@@ -133,13 +323,6 @@
   "exportEncryptedBackupRecommended": "Export Encrypted Backup (Recommended)",
   "exportEncryptedBackupSubtitle": "Password required; use when restoring on another device",
   "exportFailed": "Export failed: {error}",
-  "@exportFailed": {
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
   "exportJson": "Export JSON Backup",
   "exportJsonSubtitle": "Plaintext, readable by anyone",
   "exportJsonUnencrypted": "Export JSON (Unencrypted)",
@@ -180,115 +363,49 @@
   "goToWebdavSettings": "Open WebDAV settings",
   "hideNumberAction": "Hide number",
   "hidePassword": "Hide password",
+  "iHaveSavedPassword": "I have saved the encryption password",
+  "idCardBackPhoto": "Back photo",
+  "idCardFlipBack": "Flip back",
+  "idCardFrontPhoto": "Front photo",
+  "idCardHintFlip": "Tap to flip · Long-press to copy number",
+  "idCardHintNoFlip": "Long-press to copy number",
+  "idCardMoreActions": "More actions",
+  "idCardTapToReveal": "Tap to reveal",
+  "idCardValidUntil": "Valid until {date}",
   "idDocumentInfo": "ID information",
+  "idNumberCopied": "Document number copied",
   "idNumberCopiedMsg": "ID number copied to clipboard",
   "idNumberLastDigits": "Last {digits} digits",
-  "@idNumberLastDigits": {
-    "placeholders": {
-      "digits": {
-        "type": "String"
-      }
-    }
-  },
-  "iHaveSavedPassword": "I have saved the encryption password",
   "importData": "Import",
   "importEncryptedBackup": "Import encrypted backup",
   "importFailed": "Import failed: {error}",
-  "@importFailed": {
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
   "importJson": "Restore from JSON",
   "importMarkdown": "Import Markdown/TXT",
   "importMarkdownOrTxt": "Import Markdown / TXT",
   "importPreview": "About to import {count} records",
-  "@importPreview": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "importSectionTitle": "Import",
   "importSuccess": "Imported {count} records",
-  "@importSuccess": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "infoCount": "{count} items",
-  "@infoCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "joinExistingVault": "Join existing vault",
   "keepBoth": "Keep both",
   "keepLocal": "Keep this version",
   "keepPasswordSafe": "Keep your encryption password safe: it cannot be recovered if lost. Your WebDAV login cannot restore note contents.",
   "keepRemote": "Keep other version",
   "keywordCount": "{count} keywords",
-  "@keywordCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "keywordHint": "Type a keyword, Enter to add",
   "keywords": "Keywords",
   "keywordsEmpty": "No keywords yet — add some to enable smart suggestions",
   "landscapeAction": "Landscape",
   "lastSuccess": "Last success: {time}",
-  "@lastSuccess": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
   "lastSuccessNever": "Never synced successfully",
   "lastSync": "Last sync",
   "lastSyncTime": "Last sync: {time}",
-  "@lastSyncTime": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
   "lastSyncToday": "Today {time}",
-  "@lastSyncToday": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
   "linkCopied": "Link copied",
   "localVersion": "This device",
-  "lockedKeysNotice": "{count} keys are still locked; some content is temporarily unavailable",
-  "@lockedKeysNotice": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "lockoutTryLater": "Too many attempts, try again in {seconds}s",
-  "@lockoutTryLater": {
-    "placeholders": {
-      "seconds": {}
-    }
-  },
   "lockTimeout": "Lock after background",
+  "lockedKeysNotice": "{count} keys are still locked; some content is temporarily unavailable",
+  "lockoutTryLater": "Too many attempts, try again in {seconds}s",
   "manage": "Manage",
   "manageCategories": "Manage categories",
   "manageKeywords": "Manage keywords",
@@ -302,13 +419,6 @@
   "migrationBody": "The legacy directory will be kept as a backup; migration is a one-time copy. After migrating, append-only sync with protocol v2 will be used.",
   "migrationTitle": "Old protocol vault found",
   "modified": "Modified {time}",
-  "@modified": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
   "multiSelectActions": "Multi-select",
   "myRecords": "My Info",
   "newInfo": "New Info",
@@ -334,13 +444,6 @@
   "passwordStrengthWeak": "Weak (12+ characters with letters, numbers and symbols recommended)",
   "passwordTooShort": "Password must be at least 8 characters",
   "pendingCount": "Pending upload: {count}",
-  "@pendingCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "pendingUpload": "Pending upload",
   "permanentDelete": "Delete Permanently",
   "permanentDeleteConfirm": "This cannot be undone. Delete permanently?",
@@ -355,6 +458,7 @@
   "presentAutoBrightnessSubtitle": "Easier to read or scan",
   "presentAutoBrightnessTitle": "Boost brightness",
   "presentBrightness": "Brightness",
+  "presentDocument": "Show document",
   "presentIdDocument": "Present ID",
   "privacyPolicy": "Privacy Policy",
   "probeInvalidConfig": "Configuration incomplete",
@@ -376,40 +480,19 @@
   "quickPasswordCopied": "Password copied to clipboard",
   "recentlyUsed": "Recently used",
   "recordCount": "{count} records",
-  "@recordCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "recordDeleted": "Moved to trash",
-  "recordsEmpty": "No info saved yet",
-  "recordsEmptyHint": "Tap \"+ New Info\" below to start saving",
   "recordTitleContact": "Contact record",
   "recordTitleIdDocument": "ID Document",
   "recordTitleIdea": "Idea record",
   "recordTitleNote": "Note record",
   "recordTitlePassword": "Password record",
   "recordTitleTodo": "To-do record",
+  "recordsEmpty": "No info saved yet",
+  "recordsEmptyHint": "Tap \"+ New Info\" below to start saving",
   "recoverDesc": "On a new device, download previously uploaded data from WebDAV and rebuild the local library. Only successfully uploaded data can be restored; offline edits that were never uploaded cannot be recovered.",
   "recoverFailedObjects": "Failed objects: {count}",
-  "@recoverFailedObjects": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "recoverFromWebdav": "Restore from WebDAV",
   "recoverPartial": "Partially complete: {count} objects failed. You can retry.",
-  "@recoverPartial": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "recoverPhaseConnecting": "Connecting…",
   "recoverPhaseDone": "Recovery complete",
   "recoverPhaseDownloading": "Downloading objects…",
@@ -417,24 +500,7 @@
   "recoverPhaseListing": "Listing remote objects…",
   "recoverPhaseRebuilding": "Rebuilding local library…",
   "recoverProgress": "{done} of {total}",
-  "@recoverProgress": {
-    "placeholders": {
-      "done": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
   "recoverRecordsRestored": "Records restored: {count}",
-  "@recoverRecordsRestored": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "recoveryKeyCopied": "Recovery key copied",
   "recoveryKeyTitle": "Recovery key",
   "recoveryKeyWarning": "This is the only time the recovery key will be shown. Write it down or save it somewhere safe now — it cannot be shown again.",
@@ -451,11 +517,11 @@
   "restoreBackupSubtitle": "Supports encrypted and JSON backups",
   "retry": "Retry",
   "save": "Save",
-  "saved": "Saved",
-  "savedToGallery": "Saved to gallery",
   "saveFailed": "Save failed, tap to retry",
   "savePhotoFailed": "Save failed, please try again",
   "saveToGallery": "Save to gallery",
+  "saved": "Saved",
+  "savedToGallery": "Saved to gallery",
   "saving": "Saving…",
   "search": "Search",
   "searchEmpty": "No matching info found",
@@ -468,15 +534,8 @@
   "securityPageTitle": "Security",
   "selectAll": "Select All",
   "selectCategory": "Select Category",
-  "selectedCount": "{count} selected",
-  "@selectedCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "selectTags": "Select Tags",
+  "selectedCount": "{count} selected",
   "setPin": "Set PIN",
   "setQuickAccess": "Set as quick access",
   "settings": "Settings",
@@ -501,18 +560,6 @@
   "sync": "Sync",
   "syncCompleted": "Sync completed",
   "syncDirectory": "Sync directory",
-  "synced": "Synced",
-  "syncedRecordCount": "Synced {synced} / {total} records",
-  "@syncedRecordCount": {
-    "placeholders": {
-      "synced": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
   "syncEngineWip": "Sync engine in development (Stage C)",
   "syncNever": "Never synced",
   "syncNotConfigured": "Sync not configured",
@@ -523,6 +570,8 @@
   "syncStatusSyncing": "Syncing…",
   "syncStatusUnavailable": "Sync status unavailable",
   "syncStatusUnavailableDesc": "The sync engine is still being wired up. Please try again later.",
+  "synced": "Synced",
+  "syncedRecordCount": "Synced {synced} / {total} records",
   "tagName": "Tag Name",
   "tags": "Tags",
   "tagsEmpty": "No tags yet",
@@ -545,31 +594,14 @@
   "themeDark": "Dark",
   "themeLight": "Light",
   "themeSystem": "System",
+  "timeToday": "Today {time}",
+  "timeYesterday": "Yesterday",
   "timeout1Min": "1 minute",
   "timeout5Min": "5 minutes",
   "timeoutImmediately": "Immediately",
-  "timeToday": "Today {time}",
-  "@timeToday": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "timeYesterday": "Yesterday",
   "titleHint": "Title (optional)",
   "today": "Today",
   "todoProgress": "{done} of {total} done",
-  "@todoProgress": {
-    "placeholders": {
-      "done": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
   "trash": "Trash",
   "trashEmpty": "Trash is empty",
   "uncategorized": "Uncategorized",
@@ -582,13 +614,6 @@
   "unsetQuickAccess": "Remove from quick access",
   "untitledRecord": "Untitled",
   "updatedAt": "Updated {time}",
-  "@updatedAt": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
   "useBiometric": "Unlock with biometrics",
   "usePassword": "Use encryption password",
   "useRecoveryKey": "Use recovery key",
@@ -612,13 +637,6 @@
   "wizardHasVaultDesc": "A vault already exists in this directory. Enter the encryption password or recovery key to join.",
   "wizardJoining": "Joining vault…",
   "wizardMergeCount": "Items pending sync: {count}",
-  "@wizardMergeCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "wizardMergeInfo": "Your local data will never be directly replaced by the remote copy. Sync merges both sides; any conflicts can be resolved manually later.",
   "wizardNoVaultDesc": "No vault found in this directory. You can create a new encrypted vault.",
   "wizardStepConnection": "Connection test",
