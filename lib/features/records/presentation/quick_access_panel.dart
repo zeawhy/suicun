@@ -24,7 +24,6 @@ class QuickTypeStyle {
     required this.borderColor,
     required this.accentColor,
     required this.icon,
-    required this.actionLabel,
     required this.actionIcon,
   });
 
@@ -32,8 +31,20 @@ class QuickTypeStyle {
   final Color borderColor;
   final Color accentColor;
   final IconData icon;
-  final String actionLabel;
   final IconData actionIcon;
+}
+
+/// Returns the localized action label for [type] (UI layer resolves via l10n).
+String getQuickActionLabel(QuickRecordType type, AppLocalizations l10n) {
+  switch (type) {
+    case QuickRecordType.idDocument:
+      return l10n.presentIdDocument;
+    case QuickRecordType.password:
+    case QuickRecordType.address:
+      return l10n.copy;
+    case QuickRecordType.memo:
+      return l10n.viewAction;
+  }
 }
 
 /// Returns the quick-access categorization for [record].
@@ -41,33 +52,41 @@ QuickRecordType getQuickRecordType(RecordDetail record) {
   final catName = record.category?.name ?? '';
   final body = record.body;
   final title = record.title;
+  final catLower = catName.toLowerCase();
+  final titleLower = title.toLowerCase();
+  final bodyLower = body.toLowerCase();
 
   if (isIdDocumentTemplate(body) ||
       catName.contains('证件') ||
-      catName.toLowerCase().contains('id') ||
+      catLower.contains('id') ||
       title.contains('证件') ||
       title.contains('身份证') ||
       title.contains('护照') ||
       title.contains('驾驶证') ||
+      titleLower.contains('id card') ||
+      titleLower.contains('passport') ||
+      titleLower.contains('driver') ||
       body.contains('证件号码') ||
       body.contains('证件照片') ||
-      body.contains('Document number')) {
+      bodyLower.contains('document number')) {
     return QuickRecordType.idDocument;
   }
 
   if (isPasswordTemplate(body) ||
       catName.contains('密码') ||
-      catName.toLowerCase().contains('password') ||
+      catLower.contains('password') ||
       catName.contains('账号') ||
       title.contains('密码') ||
+      titleLower.contains('password') ||
       body.contains('密码：') ||
-      body.contains('Password:')) {
+      bodyLower.contains('password:')) {
     return QuickRecordType.password;
   }
 
   if (catName.contains('地址') ||
+      catLower.contains('address') ||
       title.contains('地址') ||
-      title.toLowerCase().contains('address') ||
+      titleLower.contains('address') ||
       (isContactTemplate(body) &&
           (parseContactTemplate(body)?.address?.trim().isNotEmpty ?? false))) {
     return QuickRecordType.address;
@@ -86,7 +105,6 @@ QuickTypeStyle getQuickTypeStyle(QuickRecordType type, bool isDark) {
           borderColor: Color(0xFF2C394A),
           accentColor: Color(0xFF90B8DE),
           icon: Icons.badge_outlined,
-          actionLabel: '出示证件',
           actionIcon: Icons.slideshow_outlined,
         );
       case QuickRecordType.password:
@@ -95,7 +113,6 @@ QuickTypeStyle getQuickTypeStyle(QuickRecordType type, bool isDark) {
           borderColor: Color(0xFF264032),
           accentColor: Color(0xFF81C784),
           icon: Icons.lock_outline,
-          actionLabel: '复制',
           actionIcon: Icons.copy_rounded,
         );
       case QuickRecordType.address:
@@ -104,7 +121,6 @@ QuickTypeStyle getQuickTypeStyle(QuickRecordType type, bool isDark) {
           borderColor: Color(0xFF453423),
           accentColor: Color(0xFFFFB74D),
           icon: Icons.location_on_outlined,
-          actionLabel: '复制',
           actionIcon: Icons.copy_rounded,
         );
       case QuickRecordType.memo:
@@ -113,7 +129,6 @@ QuickTypeStyle getQuickTypeStyle(QuickRecordType type, bool isDark) {
           borderColor: Color(0xFF3B392B),
           accentColor: Color(0xFFE6C875),
           icon: Icons.edit_note_outlined,
-          actionLabel: '查看',
           actionIcon: Icons.arrow_forward_rounded,
         );
     }
@@ -126,7 +141,6 @@ QuickTypeStyle getQuickTypeStyle(QuickRecordType type, bool isDark) {
         borderColor: Color(0xFFCBD5E1),
         accentColor: Color(0xFF334155),
         icon: Icons.badge_outlined,
-        actionLabel: '出示证件',
         actionIcon: Icons.slideshow_outlined,
       );
     case QuickRecordType.password:
@@ -135,7 +149,6 @@ QuickTypeStyle getQuickTypeStyle(QuickRecordType type, bool isDark) {
         borderColor: Color(0xFFC7E6D5),
         accentColor: Color(0xFF1B5E20),
         icon: Icons.lock_outline,
-        actionLabel: '复制',
         actionIcon: Icons.copy_rounded,
       );
     case QuickRecordType.address:
@@ -144,7 +157,6 @@ QuickTypeStyle getQuickTypeStyle(QuickRecordType type, bool isDark) {
         borderColor: Color(0xFFFFE3D1),
         accentColor: Color(0xFFC2410C),
         icon: Icons.location_on_outlined,
-        actionLabel: '复制',
         actionIcon: Icons.copy_rounded,
       );
     case QuickRecordType.memo:
@@ -153,26 +165,26 @@ QuickTypeStyle getQuickTypeStyle(QuickRecordType type, bool isDark) {
         borderColor: Color(0xFFEFE6CC),
         accentColor: Color(0xFF785700),
         icon: Icons.edit_note_outlined,
-        actionLabel: '查看',
         actionIcon: Icons.arrow_forward_rounded,
       );
   }
 }
 
 /// Extracts a concise subtitle for [record] based on its type.
-String getQuickSubtitle(RecordDetail record, QuickRecordType type) {
+String getQuickSubtitle(
+    RecordDetail record, QuickRecordType type, AppLocalizations l10n) {
   switch (type) {
     case QuickRecordType.idDocument:
       final idData = parseIdDocumentTemplate(record.body);
       if (idData?.docNumber != null && idData!.docNumber!.trim().isNotEmpty) {
         final raw = idData.docNumber!.trim();
         if (raw.length <= 6) return '******';
-        return '尾号 ${raw.substring(raw.length - 4)}';
+        return l10n.idNumberLastDigits(raw.substring(raw.length - 4));
       }
       if (idData?.docType != null && idData!.docType!.trim().isNotEmpty) {
         return idData.docType!.trim();
       }
-      return '证件信息';
+      return l10n.idDocumentInfo;
 
     case QuickRecordType.password:
       final pwdData = parsePasswordTemplate(record.body);
@@ -182,7 +194,7 @@ String getQuickSubtitle(RecordDetail record, QuickRecordType type) {
       if (pwdData?.website != null && pwdData!.website!.trim().isNotEmpty) {
         return pwdData.website!.trim();
       }
-      return '账号密码';
+      return l10n.accountPasswordLabel;
 
     case QuickRecordType.address:
       final contactData = parseContactTemplate(record.body);
@@ -196,14 +208,14 @@ String getQuickSubtitle(RecordDetail record, QuickRecordType type) {
           return trimmed.replaceAll(RegExp(r'^地址[:：]\s*'), '');
         }
       }
-      return '地址信息';
+      return l10n.addressInfoLabel;
 
     case QuickRecordType.memo:
       for (final line in record.body.split('\n')) {
         final trimmed = line.trim();
         if (trimmed.isNotEmpty) return trimmed;
       }
-      return '备忘笔记';
+      return l10n.memoNoteLabel;
   }
 }
 
@@ -228,11 +240,12 @@ Future<void> executeQuickAction({
           : record.body;
       await Clipboard.setData(ClipboardData(text: textToCopy));
       if (!context.mounted) return;
+      final l10nPwd = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('已复制密码到剪贴板'),
-          duration: Duration(seconds: 2),
+        SnackBar(
+          content: Text(l10nPwd.quickPasswordCopied),
+          duration: const Duration(seconds: 2),
         ),
       );
       break;
@@ -245,11 +258,12 @@ Future<void> executeQuickAction({
           : (record.body.isNotEmpty ? record.body : record.title);
       await Clipboard.setData(ClipboardData(text: textToCopy));
       if (!context.mounted) return;
+      final l10nAddr = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('已复制地址到剪贴板'),
-          duration: Duration(seconds: 2),
+        SnackBar(
+          content: Text(l10nAddr.quickAddressCopied),
+          duration: const Duration(seconds: 2),
         ),
       );
       break;
@@ -318,7 +332,7 @@ class QuickAccessGrid extends ConsumerWidget {
             ),
             const SizedBox(width: 8),
             Text(
-              '长按任意记录可设为常用',
+              AppLocalizations.of(context).quickAccessHint,
               style: TextStyle(
                 fontSize: 13,
                 color: theme.colorScheme.onSurfaceVariant,
@@ -355,7 +369,7 @@ class QuickAccessGrid extends ConsumerWidget {
           Row(
             children: [
               Text(
-                '常用',
+                AppLocalizations.of(context).quickAccessTitle,
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
@@ -456,10 +470,10 @@ class _QuickAccessCapsule extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final type = getQuickRecordType(record);
     final style = getQuickTypeStyle(type, isDark);
-    final subtitle = getQuickSubtitle(record, type);
-    final l10n = AppLocalizations.of(context);
+    final subtitle = getQuickSubtitle(record, type, l10n);
     final title = displayTitleFor(
       record,
       untitled: l10n.untitledRecord,
@@ -534,10 +548,10 @@ class _QuickAccessCapsule extends StatelessWidget {
                   ),
                   const SizedBox(width: 6),
                   Semantics(
-                    label: style.actionLabel,
+                    label: getQuickActionLabel(type, l10n),
                     button: true,
                     child: Tooltip(
-                      message: style.actionLabel,
+                      message: getQuickActionLabel(type, l10n),
                       child: Container(
                         width: 28,
                         height: 28,
@@ -587,7 +601,7 @@ class RecentOpenedBar extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '最近使用',
+            AppLocalizations.of(context).recentlyUsed,
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
@@ -742,7 +756,7 @@ class RecentSearchChips extends StatelessWidget {
           ),
           IconButton(
             icon: const Icon(Icons.delete_sweep_outlined, size: 18),
-            tooltip: '清空最近搜索',
+            tooltip: AppLocalizations.of(context).clearRecentSearches,
             onPressed: onClear,
             visualDensity: VisualDensity.compact,
           ),

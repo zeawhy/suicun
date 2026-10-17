@@ -35,6 +35,35 @@ class HomePage extends ConsumerStatefulWidget {
   ConsumerState<HomePage> createState() => _HomePageState();
 }
 
+/// Returns the localized action label for a sniffed clipboard type.
+/// (UI layer resolves via l10n; clipboard_sniffer.dart stays pure.)
+String _sniffActionLabel(SniffedType type, AppLocalizations l10n) {
+  switch (type) {
+    case SniffedType.idDocument:
+      return l10n.sniffSaveId;
+    case SniffedType.address:
+      return l10n.sniffSaveAddress;
+    case SniffedType.link:
+      return l10n.sniffSaveAccount;
+  }
+}
+
+/// Returns the localized label for a speed-dial template item by id.
+String _speedDialLabel(String id, AppLocalizations l10n) {
+  switch (id) {
+    case 'blank':
+      return l10n.speedDialBlank;
+    case 'id_document':
+      return l10n.speedDialId;
+    case 'password':
+      return l10n.speedDialPassword;
+    case 'address':
+      return l10n.speedDialAddress;
+    default:
+      return id;
+  }
+}
+
 class _HomePageState extends ConsumerState<HomePage>
     with TickerProviderStateMixin, WidgetsBindingObserver {
   final TextEditingController _searchController = TextEditingController();
@@ -245,7 +274,9 @@ class _HomePageState extends ConsumerState<HomePage>
         }
         return;
       }
-      final sniffed = sniffClipboardText(text);
+      final isEnglish =
+          Localizations.localeOf(context).languageCode != 'zh';
+      final sniffed = sniffClipboardText(text, isEnglish: isEnglish);
       if (mounted) {
         setState(() {
           _sniffedClipboardData = sniffed;
@@ -473,7 +504,7 @@ class _HomePageState extends ConsumerState<HomePage>
                 ),
                 ListTile(
                   leading: const Icon(Icons.checklist_rounded),
-                  title: const Text('多选操作'),
+                  title: Text(l10n.multiSelectActions),
                   onTap: () {
                     Navigator.of(ctx).pop();
                     setState(() {
@@ -1013,7 +1044,7 @@ class _HomePageState extends ConsumerState<HomePage>
                                         ),
                                         const SizedBox(height: 6),
                                         Text(
-                                          item.label,
+                                          _speedDialLabel(item.id, l10n),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                           style: TextStyle(
@@ -1291,28 +1322,24 @@ class _HomePageState extends ConsumerState<HomePage>
     return [
       _SpeedDialItemData(
         id: 'blank',
-        label: '空白速记',
         icon: Icons.edit_note_outlined,
         accentColor: isDark ? const Color(0xFFE6C875) : const Color(0xFF785700),
         route: '/edit?template=blank&autofocus=true',
       ),
       _SpeedDialItemData(
         id: 'id_document',
-        label: '证件',
         icon: Icons.badge_outlined,
         accentColor: isDark ? const Color(0xFF90B8DE) : const Color(0xFF334155),
         route: '/edit?template=id_document&autofocus=true',
       ),
       _SpeedDialItemData(
         id: 'password',
-        label: '密码',
         icon: Icons.lock_outline,
         accentColor: isDark ? const Color(0xFF81C784) : const Color(0xFF1B5E20),
         route: '/edit?template=password&autofocus=true',
       ),
       _SpeedDialItemData(
         id: 'address',
-        label: '地址',
         icon: Icons.location_on_outlined,
         accentColor: isDark ? const Color(0xFFFFB74D) : const Color(0xFFC2410C),
         route: '/edit?template=address&autofocus=true',
@@ -1365,6 +1392,7 @@ class _HomePageState extends ConsumerState<HomePage>
     required bool isDark,
     required ColorScheme colorScheme,
   }) {
+    final l10n = AppLocalizations.of(context);
     final scaleAnim = CurvedAnimation(
       parent: _speedDialController,
       curve: const Interval(0.0, 0.4, curve: Curves.easeOutBack),
@@ -1418,7 +1446,7 @@ class _HomePageState extends ConsumerState<HomePage>
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    '${data.actionLabel}：${data.previewText}',
+                    '${_sniffActionLabel(data.type, l10n)}：${data.previewText}',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
@@ -1631,14 +1659,12 @@ class _HomePageState extends ConsumerState<HomePage>
 class _SpeedDialItemData {
   const _SpeedDialItemData({
     required this.id,
-    required this.label,
     required this.icon,
     required this.accentColor,
     required this.route,
   });
 
   final String id;
-  final String label;
   final IconData icon;
   final Color accentColor;
   final String route;
@@ -1663,6 +1689,7 @@ class _TemplateChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Material(
       color: isDark ? const Color(0xFF242C36) : Colors.white,
       elevation: elevation,
@@ -1692,7 +1719,7 @@ class _TemplateChip extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                item.label,
+                _speedDialLabel(item.id, l10n),
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -1960,8 +1987,8 @@ class _SyncBadge extends ConsumerWidget {
                                   crossAxisAlignment:
                                       CrossAxisAlignment.start,
                                   children: [
-                                    const Text(
-                                      'WebDAV 同步',
+                                    Text(
+                                      l10n.webdavSync,
                                       style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w600,
@@ -1969,7 +1996,7 @@ class _SyncBadge extends ConsumerWidget {
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
-                                      '上次同步时间：$formattedTime',
+                                      l10n.lastSyncTime(formattedTime),
                                       style: TextStyle(
                                         fontSize: 13,
                                         color: theme
@@ -1989,7 +2016,7 @@ class _SyncBadge extends ConsumerWidget {
                                 Navigator.pop(sheetContext);
                                 context.push('/settings/webdav');
                               },
-                              child: const Text('前往 WebDAV 设置'),
+                              child: Text(l10n.goToWebdavSettings),
                             ),
                           ),
                         ],
