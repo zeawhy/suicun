@@ -53,6 +53,18 @@ Future<File?> resolveIdPhoto(String relativePath) async {
   }
 }
 
+/// Deletes a single ID photo file by its relative path (e.g. `id_photos/xxx.jpg`).
+Future<void> deleteIdPhotoFile(String relativePath) async {
+  try {
+    final file = await resolveIdPhoto(relativePath);
+    if (file != null) {
+      await file.delete();
+    }
+  } catch (_) {
+    // Ignore errors during cleanup
+  }
+}
+
 /// Deletes all ID photo files associated with [recordId].
 Future<void> deleteIdPhotosForRecord(String recordId) async {
   try {

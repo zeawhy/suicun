@@ -12,6 +12,7 @@ import 'package:suicun/features/records/presentation/template_views/template_det
 import 'package:suicun/features/settings/data/privacy_prefs.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
 import 'package:suicun/shared/utils/display_title.dart';
+import 'package:suicun/shared/utils/secure_flag.dart';
 
 class _IdPhotoItem {
   const _IdPhotoItem({
@@ -55,10 +56,9 @@ class IdPresentationPage extends StatefulWidget {
 
 class _IdPresentationPageState extends State<IdPresentationPage>
     with WidgetsBindingObserver {
-  // Native FLAG_SECURE toggle via MainActivity MethodChannel
+  // Native FLAG_SECURE toggle via SecureFlag helper
   // (com.suivault.app/secure). Replaces the unmaintained
   // flutter_windowmanager plugin, which breaks the release build on AGP 9+.
-  static const _secureChannel = MethodChannel('com.suivault.app/secure');
 
   final PageController _pageController = PageController();
   final List<TransformationController> _transformControllers = [];
@@ -120,12 +120,8 @@ class _IdPresentationPageState extends State<IdPresentationPage>
       }
     } catch (_) {}
 
-    // Disable screenshots (FLAG_SECURE on Android)
-    if (Platform.isAndroid) {
-      try {
-        await _secureChannel.invokeMethod('enableSecure');
-      } catch (_) {}
-    }
+    // Disable screenshots (FLAG_SECURE on Android), unless user allowed in settings.
+    await SecureFlag.enableIfNeeded();
   }
 
   Future<void> _toggleBrightness() async {
@@ -201,11 +197,7 @@ class _IdPresentationPageState extends State<IdPresentationPage>
     } catch (_) {}
 
     // Restore FLAG_SECURE
-    if (Platform.isAndroid) {
-      try {
-        await _secureChannel.invokeMethod('disableSecure');
-      } catch (_) {}
-    }
+    await SecureFlag.disable();
 
     // Restore orientation
     try {

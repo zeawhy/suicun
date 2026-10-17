@@ -1,6 +1,5 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
-
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -32,6 +31,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get all => '全部';
+
+  @override
+  String get allowIdScreenshots => '允许截屏证件页面';
 
   @override
   String get appLock => '应用锁';
@@ -92,6 +94,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get bodyLimit => '正文较长（超过 1 MiB），建议拆分';
+
+  @override
+  String get cameraPermissionDenied => '需要相机权限才能拍照';
 
   @override
   String get cameraRationaleMessage => '拍照用于拍摄证件照片，仅保存到本应用私有目录';
@@ -534,7 +539,28 @@ class AppLocalizationsZh extends AppLocalizations {
   String get idExpiringSoon => '即将到期';
 
   @override
-  String get idNoExpiry => '长期有效';
+  String get idFieldExpiryDate => '有效期至';
+
+  @override
+  String get idFieldIssueDate => '签发日期';
+
+  @override
+  String get idFieldIssuingCountry => '签发国家';
+
+  @override
+  String get idFieldName => '姓名';
+
+  @override
+  String get idFieldNote => '备注';
+
+  @override
+  String get idFieldNumber => '证件号码';
+
+  @override
+  String get idFieldType => '证件类型';
+
+  @override
+  String get idNoExpiry => '长期';
 
   @override
   String get idNumberCopied => '证件号码已复制';
@@ -548,10 +574,37 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get idNumberMaybeInvalid => '号码格式可能有误';
+
+  @override
+  String get idPhotoAdd => '添加照片';
+
+  @override
+  String get idPhotoBack => '反面照片';
+
+  @override
+  String get idPhotoFront => '正面照片';
+
+  @override
+  String get idPhotoPick => '从相册选择';
+
+  @override
+  String get idPhotoRemove => '删除';
+
+  @override
+  String get idPhotoReplace => '更换';
+
+  @override
+  String get idPhotoTake => '拍照';
+
+  @override
   String get idTypeCnResidentId => '中国居民身份证';
 
   @override
   String get idTypeDriverLicense => '驾驶证';
+
+  @override
+  String get idTypeGroupChina => '中国证件';
 
   @override
   String get idTypeHealthInsurance => '医保卡';
@@ -776,6 +829,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get onboardingClipboardTitle => '开启剪贴板识别？';
+
+  @override
+  String get openSettings => '去设置';
 
   @override
   String get password => '密码';
@@ -1444,88 +1500,4 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get zoomInAction => '放大';
-
-  @override
-  String get idTypePassport => '护照';
-
-  @override
-  String get idTypeDriverLicense => '驾驶证';
-
-  @override
-  String get idTypeNationalId => '身份证';
-
-  @override
-  String get idTypeResidencePermit => '居留卡';
-
-  @override
-  String get idTypeSocialSecurity => '社保卡';
-
-  @override
-  String get idTypeHealthInsurance => '医保卡';
-
-  @override
-  String get idTypeStudentId => '学生证';
-
-  @override
-  String get idTypeCnResidentId => '中国居民身份证';
-
-  @override
-  String get idTypeHkMoPermit => '港澳通行证';
-
-  @override
-  String get idTypeTwPermit => '台湾通行证';
-
-  @override
-  String get idTypeOther => '其他证件';
-
-  @override
-  String get idTypeGroupChina => '中国证件';
-
-  @override
-  String get idFieldType => '证件类型';
-
-  @override
-  String get idFieldName => '姓名';
-
-  @override
-  String get idFieldNumber => '证件号码';
-
-  @override
-  String get idFieldIssuingCountry => '签发国家';
-
-  @override
-  String get idFieldIssueDate => '签发日期';
-
-  @override
-  String get idFieldExpiryDate => '有效期至';
-
-  @override
-  String get idNoExpiry => '长期';
-
-  @override
-  String get idPhotoFront => '正面照片';
-
-  @override
-  String get idPhotoBack => '反面照片';
-
-  @override
-  String get idPhotoAdd => '添加照片';
-
-  @override
-  String get idPhotoReplace => '更换';
-
-  @override
-  String get idPhotoRemove => '删除';
-
-  @override
-  String get idPhotoTake => '拍照';
-
-  @override
-  String get idPhotoPick => '从相册选择';
-
-  @override
-  String get idFieldNote => '备注';
-
-  @override
-  String get idNumberMaybeInvalid => '号码格式可能有误';
 }

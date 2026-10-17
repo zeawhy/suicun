@@ -299,6 +299,15 @@ class SettingsView extends ConsumerWidget {
                       .setEnabled(val);
                 },
               ),
+              const Divider(height: 1, indent: 56, endIndent: 16),
+              SwitchListTile(
+                secondary: const Icon(Icons.screenshot_monitor_outlined),
+                title: Text(l10n.allowIdScreenshots),
+                value: ref.watch(allowIdScreenshotsProvider).value ?? false,
+                onChanged: (val) {
+                  ref.read(allowIdScreenshotsProvider.notifier).setEnabled(val);
+                },
+              ),
             ],
           ),
         ),

@@ -5,8 +5,9 @@
     <uses-permission android:name="android.permission.USE_BIOMETRIC"/>
     <!-- 仅用于拍摄证件照片（保存到应用私有目录） -->
     <uses-permission android:name="android.permission.CAMERA"/>
-    <!-- 保存证件照片到系统相册（Android 13+ 分区存储规范） -->
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+    <!-- 注意：不声明任何存储权限。
+         - 选择照片走系统 Photo Picker（Android 13+），无需权限。
+         - 保存到相册走 MediaStore 写入（Android 10+），无需权限。 -->
     <application
         android:label="@string/app_name"
         android:name="${applicationName}"

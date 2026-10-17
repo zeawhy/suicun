@@ -59,7 +59,7 @@ final class EditRecordNotifierProvider
 }
 
 String _$editRecordNotifierHash() =>
-    r'fdb5a55c7935e3e00e7fa2319801a3e75f3398de';
+    r'ff3535ba35618ffacd45d926cae9d81f0401e16e';
 
 final class EditRecordNotifierFamily extends $Family
     with

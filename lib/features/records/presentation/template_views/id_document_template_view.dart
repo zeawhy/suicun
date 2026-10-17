@@ -20,6 +20,7 @@ import 'package:suicun/features/records/presentation/template_views/template_hea
 import 'package:suicun/features/records/presentation/template_views/updated_at_text.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
 import 'package:suicun/shared/utils/display_title.dart';
+import 'package:suicun/shared/utils/secure_flag.dart';
 
 class IdDocumentTemplateView extends StatefulWidget {
   const IdDocumentTemplateView({
@@ -72,6 +73,8 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
   @override
   void initState() {
     super.initState();
+    // Block screenshots on ID detail/edit pages (unless user allowed in settings).
+    SecureFlag.enableIfNeeded();
     _selectedDocTypeKey = parseDocTypeKey(widget.data.docType);
     final isCustomOther = _selectedDocTypeKey == IdDocTypeKey.other;
     final customInitialText = isCustomOther &&
@@ -148,6 +151,8 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
 
   @override
   void dispose() {
+    // Restore screenshot ability when leaving the ID page.
+    SecureFlag.disable();
     _customDocTypeController.dispose();
     _nameController.dispose();
     _numberController.dispose();
@@ -263,6 +268,36 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
         if (agreed != true) return;
         await prefs.setBool('id_camera_rationale_shown', true);
       }
+
+      // Request camera permission only when user taps "take photo".
+      // If denied, show explanation with a "go to settings" entry.
+      if (!mounted) return;
+      final cameraStatus = await Permission.camera.request();
+      if (!cameraStatus.isGranted) {
+        if (!mounted) return;
+        final l10n = AppLocalizations.of(context);
+        await showDialog<void>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: Text(l10n.cameraRationaleTitle),
+            content: Text(l10n.cameraPermissionDenied),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: Text(l10n.cancel),
+              ),
+              FilledButton(
+                onPressed: () {
+                  Navigator.of(ctx).pop();
+                  openAppSettings();
+                },
+                child: Text(l10n.openSettings),
+              ),
+            ],
+          ),
+        );
+        return;
+      }
     }
 
     try {
@@ -277,6 +312,11 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
         isFront: isFront,
       );
       if (relPath != null && mounted) {
+        // Delete the old photo file when replacing.
+        final oldRel = isFront ? _photoFrontRel : _photoBackRel;
+        if (oldRel != null && oldRel.isNotEmpty && oldRel != relPath) {
+          await deleteIdPhotoFile(oldRel);
+        }
         setState(() {
           if (isFront) {
             _photoFrontRel = relPath;
