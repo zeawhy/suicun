@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -853,6 +854,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noPhotoOrNumber => 'No photo or number available';
+
+  @override
+  String get photoNotOnDevice => 'Photo not on this device';
 
   @override
   String get notBackedUpYet => 'Not backed up yet';

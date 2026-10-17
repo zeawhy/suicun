@@ -483,6 +483,7 @@
   "newVaultPassword": "New vault password",
   "noIdNumberRecorded": "No ID number recorded",
   "noPhotoOrNumber": "No photo or number available",
+  "photoNotOnDevice": "Photo not on this device",
   "notBackedUpYet": "Not backed up yet",
   "notFilled": "Not set",
   "notYetInput": "Nothing entered yet",

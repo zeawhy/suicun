@@ -483,6 +483,7 @@
   "newVaultPassword": "新库加密密码",
   "noIdNumberRecorded": "未记录证件号码",
   "noPhotoOrNumber": "暂无证件照片与号码",
+  "photoNotOnDevice": "照片未保存在此设备",
   "notBackedUpYet": "尚未备份",
   "notFilled": "未填写",
   "notYetInput": "尚未输入",

@@ -58,7 +58,7 @@ QuickRecordType getQuickRecordType(RecordDetail record) {
   final titleLower = title.toLowerCase();
   final bodyLower = body.toLowerCase();
 
-  if (isIdDocumentTemplate(body) ||
+  if (isIdDocBody(body) ||
       catName.contains('证件') ||
       catLower.contains('id') ||
       title.contains('证件') ||

@@ -1,6 +1,5 @@
 // lib/features/records/presentation/id_presentation_page.dart
 
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -8,11 +7,12 @@ import 'package:flutter/services.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:suicun/features/records/domain/record_model.dart';
+import 'package:suicun/features/records/domain/id_doc_codec.dart';
 import 'package:suicun/features/records/presentation/template_views/id_photo_storage.dart';
-import 'package:suicun/features/records/presentation/template_views/template_detector.dart';
 import 'package:suicun/features/settings/data/privacy_prefs.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
 import 'package:suicun/shared/utils/display_title.dart';
+import 'package:suicun/shared/utils/mask_doc_number.dart';
 import 'package:suicun/shared/utils/secure_flag.dart';
 
 class _IdPhotoItem {
@@ -79,6 +79,9 @@ class _IdPresentationPageState extends State<IdPresentationPage>
   final List<_IdPhotoItem> _photoItems = [];
   String? _docNumber;
   String? _docName;
+  // Round 6 §6: true when a photo path was recorded but the file is missing
+  // on this device (e.g. synced from another device).
+  bool _photoMissing = false;
 
   @override
   void initState() {
@@ -219,8 +222,9 @@ class _IdPresentationPageState extends State<IdPresentationPage>
   }
 
   Future<void> _loadData() async {
-    final idData = parseIdDocumentTemplate(widget.record.body);
-    _docNumber = idData?.docNumber;
+    // Round 6 §6: decode via the new codec (structured JSON or legacy body).
+    final idData = decodeIdDocBody(widget.record.body);
+    _docNumber = idData?.number;
     _docName = idData?.name;
 
     final frontPath = idData?.photoFront;
@@ -231,6 +235,8 @@ class _IdPresentationPageState extends State<IdPresentationPage>
       if (frontBytes != null) {
         _photoItems.add(_IdPhotoItem(isFront: true, bytes: frontBytes));
         _transformControllers.add(TransformationController());
+      } else {
+        _photoMissing = true;
       }
     }
 
@@ -239,6 +245,8 @@ class _IdPresentationPageState extends State<IdPresentationPage>
       if (backBytes != null) {
         _photoItems.add(_IdPhotoItem(isFront: false, bytes: backBytes));
         _transformControllers.add(TransformationController());
+      } else {
+        _photoMissing = true;
       }
     }
 
@@ -321,11 +329,9 @@ class _IdPresentationPageState extends State<IdPresentationPage>
   }
 
   String _formatNumber(String raw) {
+    // Round 6 §6: use the global maskDocNumber, consistent with the card.
     if (!_obscureNumber) return raw;
-    if (raw.length <= 6) return '******';
-    final start = raw.substring(0, 4);
-    final end = raw.substring(raw.length - 4);
-    return '$start${'*' * (raw.length - 8).clamp(2, 8)}$end';
+    return maskDocNumber(raw);
   }
 
   @override
@@ -429,9 +435,14 @@ class _IdPresentationPageState extends State<IdPresentationPage>
                                           });
                                         },
                                           child: Text(
+                                          // Round 6 §6: a recorded-but-missing photo shows
+                                          // "photo not on this device"; noPhotoOrNumber
+                                          // only when neither photo nor number exists.
                                           _docNumber != null && _docNumber!.isNotEmpty
                                               ? _formatNumber(_docNumber!)
-                                              : l10n.noPhotoOrNumber,
+                                              : (_photoMissing
+                                                  ? l10n.photoNotOnDevice
+                                                  : l10n.noPhotoOrNumber),
                                           style: TextStyle(
                                             color: Colors.white,
                                             fontSize: _largeTextMode ? 24 : 16,

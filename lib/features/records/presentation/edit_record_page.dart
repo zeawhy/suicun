@@ -113,11 +113,13 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
       return currentTemplate.getTitle(l10n);
     }
     final body = _bodyController.text;
+    // Round 6 §8: ID document check comes first; isIdDocBody covers both
+    // the new JSON format and legacy label:value text.
+    if (isIdDocBody(body)) return l10n.templateIdDocument;
     if (parsePasswordTemplate(body) != null) return l10n.templatePassword;
     if (parseIdeaTemplate(body) != null) return l10n.templateIdea;
     if (parseTodoTemplate(body) != null) return l10n.templateTodo;
     if (parseContactTemplate(body) != null) return l10n.templateContact;
-    if (parseIdDocumentTemplate(body) != null) return l10n.templateIdDocument;
     return l10n.templateBlank;
   }
 
@@ -669,21 +671,21 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
     final showPageTitle = _isNew && record == null && isEmptyInput;
     // ID document detection comes first (Round 5 §1.2): isIdDocBody covers
     // both the new JSON format and legacy label:value text.
-    final isIdDocumentTemplateRecord =
+    final isIdDocRecord =
         isIdDocBody(_bodyController.text) && (_isNew || !_bodyEditing);
-    final isPasswordTemplateRecord = !isIdDocumentTemplateRecord &&
+    final isPasswordTemplateRecord = !isIdDocRecord &&
         parsePasswordTemplate(_bodyController.text) != null &&
             (_isNew || !_bodyEditing);
-    final isIdeaTemplateRecord = !isIdDocumentTemplateRecord &&
+    final isIdeaTemplateRecord = !isIdDocRecord &&
         !isPasswordTemplateRecord &&
         parseIdeaTemplate(_bodyController.text) != null &&
         (_isNew || !_bodyEditing);
-    final isTodoTemplateRecord = !isIdDocumentTemplateRecord &&
+    final isTodoTemplateRecord = !isIdDocRecord &&
         !isPasswordTemplateRecord &&
         !isIdeaTemplateRecord &&
         parseTodoTemplate(_bodyController.text) != null &&
         (_isNew || !_bodyEditing);
-    final isContactTemplateRecord = !isIdDocumentTemplateRecord &&
+    final isContactTemplateRecord = !isIdDocRecord &&
         !isPasswordTemplateRecord &&
         !isIdeaTemplateRecord &&
         !isTodoTemplateRecord &&
@@ -691,7 +693,7 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
         (_isNew || !_bodyEditing);
     final isBlankTemplateRecord = !_isNew &&
         !_bodyEditing &&
-        !isIdDocumentTemplateRecord &&
+        !isIdDocRecord &&
         !isPasswordTemplateRecord &&
         !isIdeaTemplateRecord &&
         !isTodoTemplateRecord &&
@@ -807,7 +809,7 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
           ),
         ],
       );
-    } else if (isIdDocumentTemplateRecord) {
+    } else if (isIdDocRecord) {
       appBarTitle = Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1016,7 +1018,7 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
                                 tagRow: _buildTagRow(l10n, theme, colorScheme, record),
                               ),
                             )
-                      : isIdDocumentTemplateRecord
+                      : isIdDocRecord
                           ? SingleChildScrollView(
                               padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
                               child: IdDocumentTemplateView(
