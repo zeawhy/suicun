@@ -1,16 +1,17 @@
 // lib/features/records/presentation/template_views/id_document_template_view.dart
+
 // Read-only view for ID document template notes (Round 5 §1.4).
 //
 // Data source is [IdDocData] (structured). Editing is done exclusively via
 // [IdDocForm]; this view has no editing mode, no TextFields, and never
 // writes back to the body.
 
-import 'dart:typed_data';
 
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:gal/gal.dart';
 import 'package:intl/intl.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:suicun/features/records/domain/id_doc_data.dart';
 import 'package:suicun/features/records/domain/record_model.dart';
@@ -23,7 +24,6 @@ import 'package:suicun/features/records/presentation/template_views/updated_at_t
 import 'package:suicun/l10n/generated/app_localizations.dart';
 import 'package:suicun/shared/utils/display_title.dart';
 import 'package:suicun/shared/utils/secure_flag.dart';
-import 'dart:io';
 
 class IdDocumentTemplateView extends StatefulWidget {
   const IdDocumentTemplateView({
@@ -50,9 +50,9 @@ class IdDocumentTemplateView extends StatefulWidget {
 class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
   bool _obscureNumber = true;
 
-  /// Resolved photo bytes for the read-mode card view (null = no photo).
-  Uint8List? _cardFrontBytes;
-  Uint8List? _cardBackBytes;
+  /// Resolved photo files for the read-mode card view (null = no photo).
+  File? _cardFrontFile;
+  File? _cardBackFile;
 
   @override
   void initState() {
@@ -62,14 +62,14 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
     _resolveCardPhotos();
   }
 
-  /// Loads the stored encrypted photo bytes for [IdCardView].
+  /// Resolves the stored relative photo paths to files for [IdCardView].
   Future<void> _resolveCardPhotos() async {
-    final front = await loadIdPhotoBytes(widget.data.photoFront ?? '');
-    final back = await loadIdPhotoBytes(widget.data.photoBack ?? '');
+    final front = await resolveIdPhoto(widget.data.photoFront ?? '');
+    final back = await resolveIdPhoto(widget.data.photoBack ?? '');
     if (!mounted) return;
     setState(() {
-      _cardFrontBytes = front;
-      _cardBackBytes = back;
+      _cardFrontFile = front;
+      _cardBackFile = back;
     });
   }
 
@@ -116,26 +116,35 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
   }
 
   /// Shares the ID photo via the system share sheet.
-  Future<void> _sharePhoto(BuildContext context, Uint8List bytes) async {
+  Future<void> _sharePhoto(BuildContext context, File file) async {
     final shareText = AppLocalizations.of(context).sharePhoto;
-    File? temp;
     try {
-      final dir = await getTemporaryDirectory();
-      temp = File(
-          '${dir.path}/suivault_share_${DateTime.now().millisecondsSinceEpoch}.jpg');
-      await temp.writeAsBytes(bytes, flush: true);
       await SharePlus.instance.share(
         ShareParams(
-          files: [XFile(temp.path)],
+          files: [XFile(file.path)],
           text: shareText,
         ),
       );
     } catch (_) {
       // Ignore share cancellation/failure
-    } finally {
-      try {
-        await temp?.delete();
-      } catch (_) {}
+    }
+  }
+
+  /// Saves the ID photo to the system gallery.
+  Future<void> _savePhotoToGallery(BuildContext context, File file) async {
+    final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await Gal.putImage(file.path, album: l10n.appName);
+      messenger.hideCurrentSnackBar();
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.savedToGallery)),
+      );
+    } catch (_) {
+      messenger.hideCurrentSnackBar();
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.savePhotoFailed)),
+      );
     }
   }
 
@@ -182,8 +191,8 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
           name: data.name,
           docNumber: data.number,
           validUntil: _formatValidUntil(l10n),
-          frontPhoto: _cardFrontBytes,
-          backPhoto: _cardBackBytes,
+          frontPhoto: _cardFrontFile,
+          backPhoto: _cardBackFile,
           issuingCountry: data.issuingCountry,
           expiryDate: data.expiryDate,
           noExpiry: data.noExpiry,
@@ -192,6 +201,7 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
             if (rec != null) IdPresentationPage.show(context, rec);
           },
           onSharePhoto: _sharePhoto,
+          onSavePhoto: _savePhotoToGallery,
         ),
         const SizedBox(height: 16),
 
