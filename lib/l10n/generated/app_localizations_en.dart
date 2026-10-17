@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -543,6 +544,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get idDocumentInfo => 'ID information';
 
   @override
+  String get idExpired => 'Expired';
+
+  @override
+  String get idExpiringSoon => 'Expires soon';
+
+  @override
+  String get idNoExpiry => 'No expiry';
+
+  @override
   String get idNumberCopied => 'Document number copied';
 
   @override
@@ -552,6 +562,39 @@ class AppLocalizationsEn extends AppLocalizations {
   String idNumberLastDigits(String digits) {
     return 'Last $digits digits';
   }
+
+  @override
+  String get idTypeCnResidentId => 'China Resident ID';
+
+  @override
+  String get idTypeDriverLicense => 'Driver\'s license';
+
+  @override
+  String get idTypeHealthInsurance => 'Health insurance card';
+
+  @override
+  String get idTypeHkMoPermit => 'HK/Macau Travel Permit';
+
+  @override
+  String get idTypeNationalId => 'ID card';
+
+  @override
+  String get idTypeOther => 'Other';
+
+  @override
+  String get idTypePassport => 'Passport';
+
+  @override
+  String get idTypeResidencePermit => 'Residence permit';
+
+  @override
+  String get idTypeSocialSecurity => 'Social security card';
+
+  @override
+  String get idTypeStudentId => 'Student ID';
+
+  @override
+  String get idTypeTwPermit => 'Taiwan Travel Permit';
 
   @override
   String get importData => 'Import';

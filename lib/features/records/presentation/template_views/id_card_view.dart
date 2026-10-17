@@ -14,7 +14,10 @@ import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:suicun/features/records/domain/id_doc_data.dart';
+import 'package:suicun/features/records/domain/id_doc_expiry.dart';
 import 'package:suicun/features/records/presentation/template_views/id_doc_type.dart';
+import 'package:suicun/features/records/presentation/template_views/id_expiry_pill.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
 import 'package:suicun/shared/utils/mask_doc_number.dart';
 
@@ -28,6 +31,9 @@ class IdCardView extends StatefulWidget {
     this.validUntil,
     this.frontPhoto,
     this.backPhoto,
+    this.issuingCountry,
+    this.expiryDate,
+    this.noExpiry = false,
     required this.onPresent,
     required this.onSharePhoto,
     required this.onSavePhoto,
@@ -45,6 +51,16 @@ class IdCardView extends StatefulWidget {
   /// Resolved photo files (null when the record has no photo on that side).
   final File? frontPhoto;
   final File? backPhoto;
+
+  /// ISO 3166-1 alpha-2 country code (e.g. 'US'). Shown top-right when set.
+  final String? issuingCountry;
+
+  /// Expiry date for the §5 status pill. When null and [noExpiry] is false,
+  /// no pill is shown.
+  final DateTime? expiryDate;
+
+  /// True when the document is marked as long-term valid.
+  final bool noExpiry;
 
   /// Called when the "present document" button is tapped.
   final VoidCallback onPresent;
@@ -396,16 +412,40 @@ class _IdCardViewState extends State<IdCardView>
           ],
         ),
       ),
-      // Top-right: ⋯ menu.
+      // Top-right: country code + ⋯ menu.
       Positioned(
         right: 8,
         top: 8,
-        child: IconButton(
-          key: const Key('id_card_more_button'),
-          icon: const Icon(Icons.more_horiz, size: 24),
-          color: Colors.white.withValues(alpha: 0.8),
-          tooltip: l10n.idCardMoreActions,
-          onPressed: _showMoreMenu,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (widget.issuingCountry?.trim().isNotEmpty ?? false)
+              Container(
+                margin: const EdgeInsets.only(right: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  widget.issuingCountry!.trim().toUpperCase(),
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.0,
+                    color: Colors.white.withValues(alpha: 0.95),
+                  ),
+                ),
+              ),
+            IconButton(
+              key: const Key('id_card_more_button'),
+              icon: const Icon(Icons.more_horiz, size: 24),
+              color: Colors.white.withValues(alpha: 0.8),
+              tooltip: l10n.idCardMoreActions,
+              onPressed: _showMoreMenu,
+            ),
+          ],
         ),
       ),
       // Left, 46 from top: name + valid-until subline.
@@ -458,55 +498,63 @@ class _IdCardViewState extends State<IdCardView>
             l10n: l10n,
           ),
         ),
-      // Bottom-left: document number + eye toggle.
+      // Bottom-left: document number + eye toggle + expiry pill.
       if (rawNumber.isNotEmpty)
         Positioned(
           left: 18,
           bottom: 16,
           right: 56,
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Flexible(
-                child: Semantics(
-                  // Screen readers only ever hear the masked value.
-                  label: maskDocNumber(rawNumber),
-                  excludeSemantics: true,
-                  child: Text(
-                    _showFullNumber
-                        ? formatDocNumber(rawNumber)
-                        : maskDocNumber(rawNumber),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      letterSpacing: 1.5,
-                      color: Colors.white,
-                      fontFeatures: [FontFeature.tabularFigures()],
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Flexible(
+                    child: Semantics(
+                      // Screen readers only ever hear the masked value.
+                      label: maskDocNumber(rawNumber),
+                      excludeSemantics: true,
+                      child: Text(
+                        _showFullNumber
+                            ? formatDocNumber(rawNumber)
+                            : maskDocNumber(rawNumber),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          letterSpacing: 1.5,
+                          color: Colors.white,
+                          fontFeatures: [FontFeature.tabularFigures()],
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                  const SizedBox(width: 4),
+                  IconButton(
+                    key: const Key('id_card_number_eye'),
+                    icon: Icon(
+                      _showFullNumber
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
+                      size: 16,
+                    ),
+                    color: Colors.white.withValues(alpha: 0.8),
+                    tooltip: _showFullNumber
+                        ? l10n.hidePassword
+                        : l10n.showPassword,
+                    padding: EdgeInsets.zero,
+                    visualDensity: VisualDensity.compact,
+                    constraints:
+                        const BoxConstraints(minWidth: 32, minHeight: 32),
+                    onPressed: () =>
+                        setState(() => _showFullNumber = !_showFullNumber),
+                  ),
+                ],
               ),
-              const SizedBox(width: 4),
-              IconButton(
-                key: const Key('id_card_number_eye'),
-                icon: Icon(
-                  _showFullNumber
-                      ? Icons.visibility_off_outlined
-                      : Icons.visibility_outlined,
-                  size: 16,
-                ),
-                color: Colors.white.withValues(alpha: 0.8),
-                tooltip: _showFullNumber
-                    ? l10n.hidePassword
-                    : l10n.showPassword,
-                padding: EdgeInsets.zero,
-                visualDensity: VisualDensity.compact,
-                constraints:
-                    const BoxConstraints(minWidth: 32, minHeight: 32),
-                onPressed: () =>
-                    setState(() => _showFullNumber = !_showFullNumber),
-              ),
+              // Expiry status pill (§5), shown below the number when relevant.
+              _buildExpiryPill(),
             ],
           ),
         ),
@@ -596,6 +644,24 @@ class _IdCardViewState extends State<IdCardView>
         ),
       ),
     ];
+  }
+
+  /// Builds the expiry status pill (§5) shown below the document number.
+  /// Returns an empty widget when there's no expiry info or the doc is valid.
+  Widget _buildExpiryPill() {
+    final doc = IdDocData(
+      type: 'other', // Type doesn't affect expiry calculation.
+      expiryDate: widget.expiryDate,
+      noExpiry: widget.noExpiry,
+    );
+    final status = expiryStatusOf(doc);
+    if (status == IdDocExpiryStatus.valid) {
+      return const SizedBox.shrink();
+    }
+    return Padding(
+      padding: const EdgeInsets.only(top: 6),
+      child: IdExpiryPill(status: status),
+    );
   }
 
   Widget _buildPhotoThumb({
