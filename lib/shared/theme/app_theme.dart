@@ -22,6 +22,49 @@ class AppTheme {
   static const Color warningColor = Color(0xFFA76A12);
   static const Color dangerColor = Color(0xFFC43D48);
 
+  // ─── Switch（独立于 outline，保证关闭态清晰可见） ───
+  static const Color _switchOffTrackLight = Color(0xFFE2E8F0); // 轨道
+  static const Color _switchOffOutlineLight = Color(0xFF94A3B8); // 描边
+  static const Color _switchOffThumbLight = Color(0xFF64748B); // 滑块
+
+  static const Color _switchOffTrackDark = Color(0xFF2D3647);
+  static const Color _switchOffOutlineDark = Color(0xFF6B7689);
+  static const Color _switchOffThumbDark = Color(0xFF96A0B2);
+
+  /// 浅色/深色共用的 Switch 主题：关闭态用独立配色（不依赖 outline），
+  /// 避免关闭的开关在白色卡片上"消失"。
+  static SwitchThemeData _switchTheme(
+    ColorScheme cs, {
+    required Color offTrack,
+    required Color offOutline,
+    required Color offThumb,
+  }) {
+    return SwitchThemeData(
+      thumbColor: WidgetStateProperty.resolveWith((s) {
+        if (s.contains(WidgetState.disabled)) {
+          return (s.contains(WidgetState.selected) ? cs.onPrimary : offThumb)
+              .withValues(alpha: 0.5);
+        }
+        return s.contains(WidgetState.selected) ? cs.onPrimary : offThumb;
+      }),
+      trackColor: WidgetStateProperty.resolveWith((s) {
+        if (s.contains(WidgetState.disabled)) {
+          return (s.contains(WidgetState.selected) ? cs.primary : offTrack)
+              .withValues(alpha: 0.4);
+        }
+        return s.contains(WidgetState.selected) ? cs.primary : offTrack;
+      }),
+      trackOutlineColor: WidgetStateProperty.resolveWith((s) {
+        if (s.contains(WidgetState.selected)) return Colors.transparent;
+        if (s.contains(WidgetState.disabled)) {
+          return offOutline.withValues(alpha: 0.4);
+        }
+        return offOutline;
+      }),
+      trackOutlineWidth: const WidgetStatePropertyAll(2.0),
+    );
+  }
+
   /// Unified category color mapping across all pages:
   /// 学习紫色 #805AD5, 工作蓝色 #3265E5, 待办红色 #D65C65, 灵感黄色 #D49A25, 生活绿色 #3C9567
   static const Map<String, Color> categoryColorMap = {
@@ -249,19 +292,11 @@ class AppTheme {
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
-      switchTheme: SwitchThemeData(
-        trackOutlineColor: WidgetStateProperty.resolveWith((s) =>
-            s.contains(WidgetState.selected)
-                ? Colors.transparent
-                : colorScheme.outline),
-        thumbColor: WidgetStateProperty.resolveWith((s) =>
-            s.contains(WidgetState.selected)
-                ? colorScheme.onPrimary
-                : colorScheme.outline),
-        trackColor: WidgetStateProperty.resolveWith((s) =>
-            s.contains(WidgetState.selected)
-                ? colorScheme.primary
-                : colorScheme.surfaceContainerHighest),
+      switchTheme: _switchTheme(
+        colorScheme,
+        offTrack: _switchOffTrackLight,
+        offOutline: _switchOffOutlineLight,
+        offThumb: _switchOffThumbLight,
       ),
       extensions: const [
         SuiVaultColors.light,
@@ -432,19 +467,11 @@ class AppTheme {
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
-      switchTheme: SwitchThemeData(
-        trackOutlineColor: WidgetStateProperty.resolveWith((s) =>
-            s.contains(WidgetState.selected)
-                ? Colors.transparent
-                : colorScheme.outline),
-        thumbColor: WidgetStateProperty.resolveWith((s) =>
-            s.contains(WidgetState.selected)
-                ? colorScheme.onPrimary
-                : colorScheme.outline),
-        trackColor: WidgetStateProperty.resolveWith((s) =>
-            s.contains(WidgetState.selected)
-                ? colorScheme.primary
-                : colorScheme.surfaceContainerHighest),
+      switchTheme: _switchTheme(
+        colorScheme,
+        offTrack: _switchOffTrackDark,
+        offOutline: _switchOffOutlineDark,
+        offThumb: _switchOffThumbDark,
       ),
       extensions: const [
         SuiVaultColors.dark,

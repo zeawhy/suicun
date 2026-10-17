@@ -1602,11 +1602,11 @@ class _HomePageState extends ConsumerState<HomePage>
         onPressed: _toggleSettings,
       ),
       titleSpacing: 4,
-      title: const Row(
+      title: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            '随存 SuiVault',
+            l10n.appName,
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,

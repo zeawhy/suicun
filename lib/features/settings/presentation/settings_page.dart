@@ -191,7 +191,11 @@ class SettingsView extends ConsumerWidget {
               SwitchListTile(
                 secondary: const Icon(Icons.brightness_high_outlined),
                 title: Text(l10n.presentAutoBrightnessTitle),
-                subtitle: Text(l10n.presentAutoBrightnessSubtitle),
+                subtitle: Text(
+                  l10n.presentAutoBrightnessSubtitle,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 value: ref.watch(presentAutoBrightnessProvider).value ?? false,
                 onChanged: (val) {
                   ref
@@ -283,7 +287,11 @@ class SettingsView extends ConsumerWidget {
               SwitchListTile(
                 secondary: const Icon(Icons.content_paste_search_outlined),
                 title: Text(l10n.clipboardSniffTitle),
-                subtitle: Text(l10n.clipboardSniffSubtitle),
+                subtitle: Text(
+                  l10n.clipboardSniffSubtitle,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 value: ref.watch(clipboardSniffEnabledProvider).value ?? false,
                 onChanged: (val) {
                   ref

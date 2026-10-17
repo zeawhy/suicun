@@ -232,10 +232,11 @@ class AppLockService {
 
   /// Prompts biometric / device credential. Returns true on success.
   /// Never throws; failures (no enrollment, user cancel) return false.
-  Future<bool> authenticateBiometric({String reason = ''}) async {
+  /// Callers must pass a localized [reason] (no hardcoded default).
+  Future<bool> authenticateBiometric({required String reason}) async {
     try {
       return await _auth.authenticate(
-        localizedReason: reason.isEmpty ? '解锁随存' : reason,
+        localizedReason: reason,
         // biometricOnly: false allows device PIN/pattern/password fallback.
         biometricOnly: false,
         // Don't cancel auth if the activity pauses while the system
