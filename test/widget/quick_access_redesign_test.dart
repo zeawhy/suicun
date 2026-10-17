@@ -102,8 +102,8 @@ void main() {
       expect(find.text('常用'), findsOneWidget);
       expect(find.text('2/6'), findsOneWidget);
 
-      // Verify quick action labels: 证件 -> 出示证件, 密码 -> 复制
-      expect(find.byTooltip('出示证件'), findsOneWidget);
+      // Verify quick action labels: 证件 -> 全屏查看, 密码 -> 复制
+      expect(find.byTooltip('全屏查看'), findsOneWidget);
       expect(find.byTooltip('复制'), findsOneWidget);
 
       // Verify titles inside blocks

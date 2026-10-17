@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -598,6 +599,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get idFieldType => 'Document type';
 
   @override
+  String get idFullScreenView => 'Full screen view';
+
+  @override
   String get idNoExpiry => 'No expiry';
 
   @override
@@ -966,12 +970,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get presentBrightness => 'Brightness';
-
-  @override
-  String get presentDocument => 'Show document';
-
-  @override
-  String get presentIdDocument => 'Present ID';
 
   @override
   String get privacyPolicy => 'Privacy Policy';

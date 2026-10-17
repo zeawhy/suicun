@@ -306,8 +306,8 @@ class _IdCardViewState extends State<IdCardView>
         FilledButton.icon(
           key: const Key('id_card_present_button'),
           onPressed: widget.onPresent,
-          icon: const Icon(Icons.slideshow_outlined),
-          label: Text(l10n.presentDocument),
+          icon: const Icon(Icons.fullscreen),
+          label: Text(l10n.idFullScreenView),
           style: FilledButton.styleFrom(
             minimumSize: const Size(double.infinity, 50),
             shape: RoundedRectangleBorder(

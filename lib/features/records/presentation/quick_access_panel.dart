@@ -40,7 +40,7 @@ class QuickTypeStyle {
 String getQuickActionLabel(QuickRecordType type, AppLocalizations l10n) {
   switch (type) {
     case QuickRecordType.idDocument:
-      return l10n.presentIdDocument;
+      return l10n.idFullScreenView;
     case QuickRecordType.password:
     case QuickRecordType.address:
       return l10n.copy;

@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -581,6 +582,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get idFieldType => '证件类型';
 
   @override
+  String get idFullScreenView => '全屏查看';
+
+  @override
   String get idNoExpiry => '长期';
 
   @override
@@ -937,16 +941,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get presentAutoBrightnessSubtitle => '方便他人查看或扫码';
 
   @override
-  String get presentAutoBrightnessTitle => '出示时调高亮度';
+  String get presentAutoBrightnessTitle => '全屏查看时调高亮度';
 
   @override
   String get presentBrightness => '亮度';
-
-  @override
-  String get presentDocument => '出示证件';
-
-  @override
-  String get presentIdDocument => '出示证件';
 
   @override
   String get privacyPolicy => '隐私政策';

@@ -116,7 +116,7 @@ void main() {
         // Flip hint below the card.
         expect(find.text('点击卡片翻面 · 长按复制号码'), findsOneWidget);
         // Present button.
-        expect(find.text('出示证件'), findsOneWidget);
+        expect(find.text('全屏查看'), findsOneWidget);
         // No mixed-language brand text.
         expect(find.textContaining('SuiVault'), findsNothing);
       },
@@ -253,7 +253,7 @@ void main() {
           find.text('Tap to flip · Long-press to copy number'),
           findsOneWidget,
         );
-        expect(find.text('Show document'), findsOneWidget);
+        expect(find.text('Full screen view'), findsOneWidget);
         expect(find.text('Valid until 2035-12-31'), findsOneWidget);
         // No chinese UI text.
         expect(find.textContaining('随存'), findsNothing);

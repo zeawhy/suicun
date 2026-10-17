@@ -63,7 +63,7 @@ import 'app_localizations_zh.dart';
 /// property.
 abstract class AppLocalizations {
   AppLocalizations(String locale)
-      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -86,16 +86,16 @@ abstract class AppLocalizations {
   /// of delegates is preferred or required.
   static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
       <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('zh'),
-    Locale('en')
+    Locale('en'),
   ];
 
   /// No description provided for @about.
@@ -1220,6 +1220,12 @@ abstract class AppLocalizations {
   /// **'证件类型'**
   String get idFieldType;
 
+  /// No description provided for @idFullScreenView.
+  ///
+  /// In zh, this message translates to:
+  /// **'全屏查看'**
+  String get idFullScreenView;
+
   /// No description provided for @idNoExpiry.
   ///
   /// In zh, this message translates to:
@@ -1877,7 +1883,7 @@ abstract class AppLocalizations {
   /// No description provided for @presentAutoBrightnessTitle.
   ///
   /// In zh, this message translates to:
-  /// **'出示时调高亮度'**
+  /// **'全屏查看时调高亮度'**
   String get presentAutoBrightnessTitle;
 
   /// No description provided for @presentBrightness.
@@ -1885,18 +1891,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'亮度'**
   String get presentBrightness;
-
-  /// No description provided for @presentDocument.
-  ///
-  /// In zh, this message translates to:
-  /// **'出示证件'**
-  String get presentDocument;
-
-  /// No description provided for @presentIdDocument.
-  ///
-  /// In zh, this message translates to:
-  /// **'出示证件'**
-  String get presentIdDocument;
 
   /// No description provided for @privacyPolicy.
   ///
@@ -3090,8 +3084,9 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   }
 
   throw FlutterError(
-      'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-      'an issue with the localizations generation tool. Please file an issue '
-      'on GitHub with a reproducible sample app and the gen-l10n configuration '
-      'that was used.');
+    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+    'an issue with the localizations generation tool. Please file an issue '
+    'on GitHub with a reproducible sample app and the gen-l10n configuration '
+    'that was used.',
+  );
 }
