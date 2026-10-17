@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -25,6 +26,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get addTags => '添加标签';
+
+  @override
+  String get addToQuickAccess => '加入常用';
 
   @override
   String get addressInfoLabel => '地址信息';
@@ -289,7 +293,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get deleteCategoryConfirm => '删除后，该分类下的记录将转为未分类。确认删除吗？';
 
   @override
-  String get deleteRecordConfirm => '删除后可在回收站找回。';
+  String get deleteRecordConfirm => '删除后可以在回收站中恢复。';
 
   @override
   String get deleteRecordTitle => '删除这条记录？';
@@ -982,6 +986,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get quickAccessAdded => '已设为常用';
 
   @override
+  String get quickAccessFull => '常用已满（最多 6 个）';
+
+  @override
   String get quickAccessHint => '长按任意记录可设为常用';
 
   @override
@@ -1011,7 +1018,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get recordDeleted => '已移至回收站';
+  String get recordDeleted => '已移到回收站';
 
   @override
   String get recordTitleContact => '联系人记录';
@@ -1100,6 +1107,9 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get removeCredentialsConfirm =>
       '移除凭据将关闭同步并删除已保存的 WebDAV 账号密码，本地数据保留。确认吗？';
+
+  @override
+  String get removeFromQuickAccess => '移出常用';
 
   @override
   String get rename => '改名';

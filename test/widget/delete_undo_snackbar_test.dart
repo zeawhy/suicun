@@ -82,7 +82,7 @@ void main() {
 
     // Record is removed, snackbar with undo is shown
     expect(find.text('Record A'), findsNothing);
-    expect(find.text('Moved to trash'), findsOneWidget);
+    expect(find.text('Moved to Trash'), findsOneWidget);
     expect(find.text('Undo'), findsOneWidget);
 
     // Advance clock past the 4-second snackbar duration
@@ -90,7 +90,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Verify snackbar is automatically dismissed
-    expect(find.text('Moved to trash'), findsNothing);
+    expect(find.text('Moved to Trash'), findsNothing);
     expect(find.text('Undo'), findsNothing);
   });
 
@@ -116,7 +116,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Record B'), findsNothing);
-    expect(find.text('Moved to trash'), findsOneWidget);
+    expect(find.text('Moved to Trash'), findsOneWidget);
 
     // Tap Undo
     await tester.tap(find.text('Undo'));
@@ -124,7 +124,7 @@ void main() {
 
     // Record is restored and snackbar is dismissed
     expect(find.text('Record B'), findsOneWidget);
-    expect(find.text('Moved to trash'), findsNothing);
+    expect(find.text('Moved to Trash'), findsNothing);
   });
 
   testWidgets('delete from edit page: pops to home and snackbar auto-dismisses after 4s',
@@ -145,13 +145,13 @@ void main() {
     await tester.pumpAndSettle();
 
     // Confirm dialog
-    expect(find.text('Confirm'), findsOneWidget);
-    await tester.tap(find.text('Confirm'));
+    expect(find.text('Delete'), findsOneWidget);
+    await tester.tap(find.text('Delete'));
     await tester.pumpAndSettle();
 
     // Returned to home page, snackbar is visible
     expect(find.text('Record C'), findsNothing);
-    expect(find.text('Moved to trash'), findsOneWidget);
+    expect(find.text('Moved to Trash'), findsOneWidget);
     expect(find.text('Undo'), findsOneWidget);
 
     // Advance 4s
@@ -159,6 +159,6 @@ void main() {
     await tester.pumpAndSettle();
 
     // Snackbar dismissed
-    expect(find.text('Moved to trash'), findsNothing);
+    expect(find.text('Moved to Trash'), findsNothing);
   });
 }

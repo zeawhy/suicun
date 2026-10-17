@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -25,6 +26,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get addTags => 'Add tags';
+
+  @override
+  String get addToQuickAccess => 'Add to quick access';
 
   @override
   String get addressInfoLabel => 'Address information';
@@ -297,8 +301,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Records in this category will become uncategorized. Delete?';
 
   @override
-  String get deleteRecordConfirm =>
-      'You can restore it from Trash after deletion.';
+  String get deleteRecordConfirm => 'You can restore it from Trash.';
 
   @override
   String get deleteRecordTitle => 'Delete this record?';
@@ -1007,6 +1010,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get quickAccessAdded => 'Added to quick access';
 
   @override
+  String get quickAccessFull => 'Quick access is full (max 6)';
+
+  @override
   String get quickAccessHint => 'Long-press any record to set as quick access';
 
   @override
@@ -1036,7 +1042,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get recordDeleted => 'Moved to trash';
+  String get recordDeleted => 'Moved to Trash';
 
   @override
   String get recordTitleContact => 'Contact record';
@@ -1126,6 +1132,9 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get removeCredentialsConfirm =>
       'Removing credentials disables sync and deletes the saved WebDAV login; local data is kept. Confirm?';
+
+  @override
+  String get removeFromQuickAccess => 'Remove from quick access';
 
   @override
   String get rename => 'Rename';
