@@ -15,6 +15,7 @@ import 'package:suicun/features/records/presentation/template_views/template_det
 import 'package:suicun/l10n/generated/app_localizations.dart';
 import 'package:suicun/shared/theme/app_theme.dart';
 import 'package:suicun/shared/utils/date_formatter.dart';
+import 'package:suicun/shared/utils/display_title.dart';
 
 /// Normalized template types for card rendering and core action dispatch.
 enum RecordCardTemplateType {
@@ -38,6 +39,7 @@ class RecordCard extends StatelessWidget {
     required this.onLongPress,
     required this.onFavoriteToggle,
     required this.isQuickAccess,
+    this.showQuickAccessMark = true,
     required this.onQuickAccessToggle,
     this.onAnySlideAction,
     this.showSwipeHint = false,
@@ -59,6 +61,9 @@ class RecordCard extends StatelessWidget {
 
   /// Whether this record is pinned in the top quick access section.
   final bool isQuickAccess;
+
+  /// Whether to show the pinned icon next to the title when [isQuickAccess] is true.
+  final bool showQuickAccessMark;
 
   /// Callback when quick-access status is toggled via slide action.
   final VoidCallback onQuickAccessToggle;
@@ -171,9 +176,12 @@ class RecordCard extends StatelessWidget {
     final suiColors = theme.suiColors;
     final l10n = AppLocalizations.of(context);
 
-    final displayTitle =
-        record.title.isNotEmpty ? record.title : untitledLabel;
-    final titleColor = record.title.isNotEmpty
+    final displayTitle = displayTitleFor(
+      record,
+      untitled: untitledLabel,
+      defaultDocType: l10n.templateIdDocument,
+    );
+    final titleColor = displayTitle != untitledLabel
         ? colorScheme.onSurface
         : colorScheme.onSurfaceVariant;
 
@@ -241,7 +249,9 @@ class RecordCard extends StatelessWidget {
             ),
           ],
         ),
-        child: Container(
+        child: Stack(
+          children: [
+            Container(
           decoration: BoxDecoration(
             color: colorScheme.surfaceContainerLowest,
             borderRadius: BorderRadius.circular(14),
@@ -320,7 +330,7 @@ class RecordCard extends StatelessWidget {
                                             ),
                                           ),
                                   ),
-                                  if (isQuickAccess) ...[
+                                  if (isQuickAccess && showQuickAccessMark) ...[
                                     const SizedBox(width: 4),
                                     Icon(
                                       Icons.push_pin,
@@ -461,21 +471,28 @@ class RecordCard extends StatelessWidget {
                   ),
                 ),
               ),
-              // 左滑提示：纯视觉指示符，仅在首次未引导时显示
-              if (showSwipeHint)
-                Padding(
-                  padding: const EdgeInsets.only(left: 4),
-                  child: Icon(
-                    Icons.keyboard_double_arrow_left,
-                    size: 18,
-                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
-                  ),
-                ),
             ],
           ),
         ),
-      ),
-    );
+        if (showSwipeHint)
+          Positioned(
+            right: 6,
+            top: 0,
+            bottom: 0,
+            child: IgnorePointer(
+              child: Center(
+                child: Icon(
+                  Icons.keyboard_double_arrow_left,
+                  size: 16,
+                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                ),
+              ),
+            ),
+          ),
+      ],
+    ),
+  ),
+);
   }
 
   Widget _buildContent(

@@ -6,7 +6,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:suicun/features/records/domain/record_model.dart';
 import 'package:suicun/features/records/presentation/id_presentation_page.dart';
 import 'package:suicun/features/records/presentation/template_views/template_detector.dart';
+import 'package:suicun/l10n/generated/app_localizations.dart';
 import 'package:suicun/shared/theme/app_theme.dart';
+import 'package:suicun/shared/utils/display_title.dart';
 
 enum QuickRecordType {
   idDocument,
@@ -457,7 +459,12 @@ class _QuickAccessCapsule extends StatelessWidget {
     final type = getQuickRecordType(record);
     final style = getQuickTypeStyle(type, isDark);
     final subtitle = getQuickSubtitle(record, type);
-    final title = record.title.isNotEmpty ? record.title : '未命名记录';
+    final l10n = AppLocalizations.of(context);
+    final title = displayTitleFor(
+      record,
+      untitled: l10n.untitledRecord,
+      defaultDocType: l10n.templateIdDocument,
+    );
 
     return SizedBox(
       width: width,
@@ -624,7 +631,12 @@ class _RecentItemChip extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
     final type = getQuickRecordType(record);
     final style = getQuickTypeStyle(type, isDark);
-    final title = record.title.isNotEmpty ? record.title : '未命名记录';
+    final l10n = AppLocalizations.of(context);
+    final title = displayTitleFor(
+      record,
+      untitled: l10n.untitledRecord,
+      defaultDocType: l10n.templateIdDocument,
+    );
     final categoryColor = record.category != null
         ? theme.suiColors.colorForCategory(record.category!.name, record.category!.color)
         : theme.colorScheme.outline;

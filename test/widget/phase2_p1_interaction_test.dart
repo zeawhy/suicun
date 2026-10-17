@@ -258,6 +258,8 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.lightTheme(),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: RecentOpenedBar(
               records: [record],

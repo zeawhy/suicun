@@ -557,7 +557,6 @@
   "backupAndSync": "Backup & sync",
   "backupAndExport": "Backup and export",
   "securityAndPrivacy": "Security & privacy",
-  "appLock": "App lock",
   "appLockStatusEnabled": "Enabled",
   "appLockStatusDisabled": "Disabled",
   "dangerousOperations": "Dangerous operations",

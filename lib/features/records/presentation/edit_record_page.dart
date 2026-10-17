@@ -31,6 +31,7 @@ import 'package:suicun/features/records/presentation/template_sheet.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
 import 'package:suicun/services/auto_category_service.dart';
 import 'package:suicun/shared/theme/app_theme.dart';
+import 'package:suicun/shared/utils/display_title.dart';
 
 class EditRecordPage extends ConsumerStatefulWidget {
   const EditRecordPage({
@@ -135,6 +136,24 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
     _bodyController.dispose();
     _bodyFocusNode.dispose();
     super.dispose();
+  }
+
+  void _autoFillIdTitleIfEmpty() {
+    if (_titleController.text.trim().isEmpty &&
+        isIdDocumentTemplate(_bodyController.text)) {
+      final autoTitle = displayTitleFrom(
+        title: '',
+        body: _bodyController.text,
+        untitled: '',
+      );
+      if (autoTitle.isNotEmpty) {
+        _titleController.text = autoTitle;
+        ref.read(editRecordProvider(widget.recordId).notifier).onInputChanged(
+              autoTitle,
+              _bodyController.text,
+            );
+      }
+    }
   }
 
   void _onChanged() {
@@ -734,6 +753,7 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
 
     return PopScope(
       onPopInvokedWithResult: (_, __) async {
+        _autoFillIdTitleIfEmpty();
         await ref.read(editRecordProvider(widget.recordId).notifier).flush();
       },
       child: Scaffold(
