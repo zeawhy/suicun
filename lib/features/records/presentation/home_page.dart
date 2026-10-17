@@ -65,8 +65,9 @@ class _HomePageState extends ConsumerState<HomePage>
 
   void _toggleSpeedDial() {
     if (_isSpeedDialOpen) {
-      _speedDialController.reverse();
+      _closeSpeedDial();
     } else {
+      _checkClipboardOnSpeedDial();
       _speedDialController.forward();
     }
     setState(() {});
@@ -88,7 +89,120 @@ class _HomePageState extends ConsumerState<HomePage>
       duration: const Duration(milliseconds: 240),
     );
     _loadLastHandledClipboardHash();
-    _checkClipboardWithDebounce();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkOnboardingClipboard();
+    });
+  }
+
+  Future<void> _checkOnboardingClipboard() async {
+    if (!mounted) return;
+    try {
+      final prefs = await ref.read(sharedPreferencesProvider.future);
+      final asked =
+          prefs.getBool(PrivacyPrefsKeys.onboardingClipboardAsked) ?? false;
+      if (!asked && mounted) {
+        _showOnboardingClipboardSheet();
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _showOnboardingClipboardSheet() async {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isDismissible: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.content_paste_search_rounded,
+                  size: 48,
+                  color: colorScheme.primary,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  l10n.onboardingClipboardTitle,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  l10n.onboardingClipboardBody,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: colorScheme.onSurfaceVariant,
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () async {
+                          Navigator.of(ctx).pop();
+                          final prefs =
+                              await ref.read(sharedPreferencesProvider.future);
+                          await prefs.setBool(
+                            PrivacyPrefsKeys.onboardingClipboardAsked,
+                            true,
+                          );
+                        },
+                        child: Text(l10n.onboardingClipboardNotNow),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: FilledButton(
+                        onPressed: () async {
+                          Navigator.of(ctx).pop();
+                          final prefs =
+                              await ref.read(sharedPreferencesProvider.future);
+                          await prefs.setBool(
+                            PrivacyPrefsKeys.onboardingClipboardAsked,
+                            true,
+                          );
+                          await ref
+                              .read(clipboardSniffEnabledProvider.notifier)
+                              .setEnabled(true);
+                        },
+                        child: Text(l10n.onboardingClipboardEnable),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  l10n.onboardingClipboardFooter,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    try {
+      final prefs = await ref.read(sharedPreferencesProvider.future);
+      await prefs.setBool(PrivacyPrefsKeys.onboardingClipboardAsked, true);
+    } catch (_) {}
   }
 
   Future<void> _loadLastHandledClipboardHash() async {
@@ -108,32 +222,38 @@ class _HomePageState extends ConsumerState<HomePage>
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      _checkClipboardWithDebounce();
-    }
-  }
+  void didChangeAppLifecycleState(AppLifecycleState state) {}
 
-  void _checkClipboardWithDebounce() {
-    _clipboardTimer?.cancel();
-    _clipboardTimer = Timer(const Duration(milliseconds: 500), () async {
-      if (!mounted) return;
-      try {
-        final enabled = await ref.read(clipboardSniffEnabledProvider.future);
-        if (!enabled) return;
-        final data = await Clipboard.getData(Clipboard.kTextPlain);
-        final text = data?.text?.trim() ?? '';
-        if (text.isEmpty || text.hashCode.toString() == _lastHandledHash) return;
-        final sniffed = sniffClipboardText(text);
-        if (mounted) {
+  Future<void> _checkClipboardOnSpeedDial() async {
+    try {
+      final enabled = await ref.read(clipboardSniffEnabledProvider.future);
+      if (!enabled) {
+        if (mounted && _sniffedClipboardData != null) {
           setState(() {
-            _sniffedClipboardData = sniffed;
+            _sniffedClipboardData = null;
           });
         }
-      } catch (_) {
-        // Ignore clipboard access errors
+        return;
       }
-    });
+      final data = await Clipboard.getData(Clipboard.kTextPlain);
+      final text = data?.text?.trim() ?? '';
+      if (text.isEmpty || text.hashCode.toString() == _lastHandledHash) {
+        if (mounted && _sniffedClipboardData != null) {
+          setState(() {
+            _sniffedClipboardData = null;
+          });
+        }
+        return;
+      }
+      final sniffed = sniffClipboardText(text);
+      if (mounted) {
+        setState(() {
+          _sniffedClipboardData = sniffed;
+        });
+      }
+    } catch (_) {
+      // Ignore clipboard access errors
+    }
   }
 
   void _openSettings() {
@@ -180,11 +300,25 @@ class _HomePageState extends ConsumerState<HomePage>
     final notifier = ref.read(recordsFilterProvider.notifier);
     notifier.setCategory(null);
     notifier.setFavoritesOnly(false);
+    HapticFeedback.selectionClick();
     setState(() {
       _searchExpanded = true;
     });
     if (requestFocus) {
-      _searchFocus.requestFocus();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _searchFocus.requestFocus();
+        }
+      });
+    }
+  }
+
+  void _onSearchBlankTap() {
+    if (!_searchExpanded) return;
+    if (_searchController.text.trim().isEmpty) {
+      _cancelSearch(); // 没输入内容：直接退出搜索
+    } else {
+      _searchFocus.unfocus(); // 有内容：只收起键盘，保留结果
     }
   }
 
@@ -593,116 +727,122 @@ class _HomePageState extends ConsumerState<HomePage>
         records.length < 3;
 
     final scaffoldContent = Scaffold(
-      floatingActionButton:
-          _isMultiSelect ? null : _buildSpeedDialFab(context),
+      floatingActionButton: (_isMultiSelect || _searchExpanded)
+          ? null
+          : _buildSpeedDialFab(context),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       body: SafeArea(
-        child: SlidableAutoCloseBehavior(
-          child: NotificationListener<OverscrollNotification>(
-            onNotification: (notification) {
-              if (notification.overscroll < 0 &&
-                  _scrollController.hasClients &&
-                  _scrollController.offset <= 0 &&
-                  !_searchExpanded) {
-                if (mounted) {
-                  _openSearch(requestFocus: false);
+        child: GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: _onSearchBlankTap,
+          child: SlidableAutoCloseBehavior(
+            child: NotificationListener<OverscrollNotification>(
+              onNotification: (notification) {
+                if (notification.overscroll < 0 &&
+                    _scrollController.hasClients &&
+                    _scrollController.offset <= 0 &&
+                    !_searchExpanded) {
+                  if (mounted) {
+                    _openSearch(requestFocus: true);
+                  }
                 }
-              }
-              return false;
-            },
-            child: CustomScrollView(
-              controller: _scrollController,
-              physics: const AlwaysScrollableScrollPhysics(),
-              slivers: [
-                _buildSliverAppBar(l10n, colorScheme),
-                if (_sniffedClipboardData != null)
-                  SliverToBoxAdapter(
-                    child: _buildClipboardSnifferBanner(context, colorScheme),
-                  ),
-                if (showQuickAndRecent)
-                  SliverToBoxAdapter(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        QuickAccessGrid(
-                          records: quickRecords,
-                          onRecordAction: (r) => executeQuickAction(
-                            context: context,
-                            record: r,
-                            onOpenRecord: _openRecord,
-                          ),
-                          onLongPress: (r) => _showRecordActionSheet(r),
-                        ),
-                        if (showRecentBar)
-                          RecentOpenedBar(
-                            records: recentRecords,
-                            onTap: (r) => executeQuickAction(
+                return false;
+              },
+              child: CustomScrollView(
+                controller: _scrollController,
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  _buildSliverAppBar(l10n, colorScheme),
+                  if (showQuickAndRecent)
+                    SliverToBoxAdapter(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          QuickAccessGrid(
+                            records: quickRecords,
+                            onRecordAction: (r) => executeQuickAction(
                               context: context,
                               record: r,
                               onOpenRecord: _openRecord,
                             ),
+                            onLongPress: (r) => _showRecordActionSheet(r),
                           ),
-                      ],
-                    ),
-                  ),
-                if (!_isMultiSelect && !_searchExpanded)
-                  SliverPersistentHeader(
-                    pinned: true,
-                    delegate: _CategoryFilterHeaderDelegate(
-                      height: 46,
-                      backgroundColor: colorScheme.surface,
-                      child: categoriesAsync.maybeWhen(
-                        data: (categories) => _CategoryFilterBar(
-                          filter: filter,
-                          categories: categories,
-                          onAll: () {
-                            final notifier =
-                                ref.read(recordsFilterProvider.notifier);
-                            notifier.setCategory(null);
-                            notifier.setFavoritesOnly(false);
-                          },
-                          onFavorites: () {
-                            final notifier =
-                                ref.read(recordsFilterProvider.notifier);
-                            notifier.setFavoritesOnly(true);
-                            notifier.setCategory(null);
-                          },
-                          onCategory: (id) {
-                            final notifier =
-                                ref.read(recordsFilterProvider.notifier);
-                            notifier.setCategory(id);
-                            notifier.setFavoritesOnly(false);
-                          },
-                        ),
-                        orElse: () => const SizedBox(height: 46),
-                      ),
-                    ),
-                  ),
-                if (_searchExpanded && filter.query.trim().isEmpty)
-                  SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.search,
-                            size: 32,
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            l10n.searchPromptEmpty,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: colorScheme.onSurfaceVariant,
+                          if (showRecentBar)
+                            RecentOpenedBar(
+                              records: recentRecords,
+                              onTap: (r) => executeQuickAction(
+                                context: context,
+                                record: r,
+                                onOpenRecord: _openRecord,
+                              ),
                             ),
-                          ),
                         ],
                       ),
                     ),
-                  )
+                  if (!_isMultiSelect && !_searchExpanded)
+                    SliverPersistentHeader(
+                      pinned: true,
+                      delegate: _CategoryFilterHeaderDelegate(
+                        height: 46,
+                        backgroundColor: colorScheme.surface,
+                        child: categoriesAsync.maybeWhen(
+                          data: (categories) => _CategoryFilterBar(
+                            filter: filter,
+                            categories: categories,
+                            onAll: () {
+                              final notifier =
+                                  ref.read(recordsFilterProvider.notifier);
+                              notifier.setCategory(null);
+                              notifier.setFavoritesOnly(false);
+                            },
+                            onFavorites: () {
+                              final notifier =
+                                  ref.read(recordsFilterProvider.notifier);
+                              notifier.setFavoritesOnly(true);
+                              notifier.setCategory(null);
+                            },
+                            onCategory: (id) {
+                              final notifier =
+                                  ref.read(recordsFilterProvider.notifier);
+                              notifier.setCategory(id);
+                              notifier.setFavoritesOnly(false);
+                            },
+                          ),
+                          orElse: () => const SizedBox(height: 46),
+                        ),
+                      ),
+                    ),
+                  if (_searchExpanded && filter.query.trim().isEmpty)
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.translucent,
+                        onTap: _onSearchBlankTap,
+                        child: Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.search,
+                                size: 32,
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                l10n.searchPromptEmpty,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    )
                 else if (recordsAsync.isLoading && !recordsAsync.hasValue)
                   const SliverFillRemaining(
                     hasScrollBody: false,
@@ -858,7 +998,8 @@ class _HomePageState extends ConsumerState<HomePage>
           ),
         ),
       ),
-    );
+    ),
+  );
 
     final mainContent = Stack(
       children: [
@@ -868,8 +1009,11 @@ class _HomePageState extends ConsumerState<HomePage>
     );
 
     return PopScope(
-      canPop: !_settingsOpen && !_isSpeedDialOpen,
-      onPopInvokedWithResult: (didPop, result) {
+      canPop: !_settingsOpen &&
+          !_isSpeedDialOpen &&
+          !_searchExpanded &&
+          !_isMultiSelect,
+      onPopInvokedWithResult: (didPop, _) {
         if (didPop) return;
         if (_isSpeedDialOpen) {
           _closeSpeedDial();
@@ -877,6 +1021,15 @@ class _HomePageState extends ConsumerState<HomePage>
         }
         if (_settingsOpen) {
           _closeSettings();
+          return;
+        }
+        if (_searchExpanded) {
+          _cancelSearch();
+          return;
+        }
+        if (_isMultiSelect) {
+          _exitMultiSelect();
+          return;
         }
       },
       child: Material(
@@ -1001,6 +1154,7 @@ class _HomePageState extends ConsumerState<HomePage>
   Widget _buildSpeedDialFab(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return FloatingActionButton(
+      key: const Key('home_speed_dial_fab'),
       heroTag: 'speedDialMainFab',
       elevation: 2,
       shape: const CircleBorder(),
@@ -1047,6 +1201,15 @@ class _HomePageState extends ConsumerState<HomePage>
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
+                    if (_sniffedClipboardData != null) ...[
+                      _buildSniffedSpeedDialItem(
+                        context,
+                        data: _sniffedClipboardData!,
+                        isDark: isDark,
+                        colorScheme: theme.colorScheme,
+                      ),
+                      const SizedBox(height: 12),
+                    ],
                     for (int i = 0; i < items.length; i++) ...[
                       if (i > 0) const SizedBox(height: 12),
                       _buildSpeedDialItem(
@@ -1064,6 +1227,7 @@ class _HomePageState extends ConsumerState<HomePage>
                 right: 16,
                 bottom: bottomPadding,
                 child: FloatingActionButton(
+                  key: const Key('speedDialOverlayFab'),
                   heroTag: 'speedDialOverlayFab',
                   elevation: 2,
                   shape: const CircleBorder(),
@@ -1156,84 +1320,46 @@ class _HomePageState extends ConsumerState<HomePage>
     );
   }
 
-  Widget _buildClipboardSnifferBanner(
-    BuildContext context,
-    ColorScheme colorScheme,
-  ) {
-    final data = _sniffedClipboardData;
-    if (data == null) return const SizedBox.shrink();
+  Widget _buildSniffedSpeedDialItem(
+    BuildContext context, {
+    required SniffedClipboardData data,
+    required bool isDark,
+    required ColorScheme colorScheme,
+  }) {
+    final scaleAnim = CurvedAnimation(
+      parent: _speedDialController,
+      curve: const Interval(0.0, 0.4, curve: Curves.easeOutBack),
+    );
+    final fadeAnim = CurvedAnimation(
+      parent: _speedDialController,
+      curve: const Interval(0.0, 0.4, curve: Curves.easeIn),
+    );
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final icon = switch (data.type) {
-      SniffedType.idDocument => Icons.badge_outlined,
-      SniffedType.address => Icons.location_on_outlined,
-      SniffedType.link => Icons.link_rounded,
-    };
-
-    return Container(
-      key: const Key('clipboard_sniff_banner'),
-      margin: const EdgeInsets.fromLTRB(16, 6, 16, 6),
-      padding: const EdgeInsets.fromLTRB(12, 10, 4, 10),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: colorScheme.primary.withValues(alpha: 0.25),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            icon,
-            size: 18,
-            color: colorScheme.primary,
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  data.bannerLabel,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: colorScheme.onSurface,
-                  ),
-                  maxLines: 1,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  data.previewText,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+    return ScaleTransition(
+      scale: scaleAnim,
+      alignment: Alignment.bottomRight,
+      child: FadeTransition(
+        opacity: fadeAnim,
+        child: Material(
+          key: const Key('clipboard_sniff_banner'),
+          color: isDark ? const Color(0xFF1E293B) : const Color(0xFFEFF6FF),
+          elevation: 3,
+          shadowColor: Colors.black26,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+            side: BorderSide(
+              color: colorScheme.primary.withValues(alpha: 0.5),
+              width: 1.5,
             ),
           ),
-          const SizedBox(width: 6),
-          TextButton(
-            key: const Key('clipboard_sniff_save_button'),
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              minimumSize: const Size(0, 32),
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              backgroundColor: colorScheme.primary.withValues(alpha: 0.12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            onPressed: () {
+          child: InkWell(
+            borderRadius: BorderRadius.circular(24),
+            onTap: () {
               final text = data.rawText;
               final templateId = data.templateId;
               final initialBody = data.initialBody;
               _markClipboardHandled(text);
+              _closeSpeedDial();
               setState(() {
                 _sniffedClipboardData = null;
               });
@@ -1242,31 +1368,47 @@ class _HomePageState extends ConsumerState<HomePage>
                 extra: initialBody,
               );
             },
-            child: Text(
-              data.actionLabel,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: colorScheme.primary,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    '📋',
+                    style: TextStyle(fontSize: 15),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    '${data.actionLabel}：${data.previewText}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.primary,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  GestureDetector(
+                    key: const Key('clipboard_sniff_ignore_button'),
+                    onTap: () {
+                      _markClipboardHandled(data.rawText);
+                      setState(() {
+                        _sniffedClipboardData = null;
+                      });
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(2),
+                      child: Icon(
+                        Icons.close,
+                        size: 16,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
-          const SizedBox(width: 4),
-          IconButton(
-            key: const Key('clipboard_sniff_ignore_button'),
-            icon: const Icon(Icons.close, size: 18),
-            tooltip: '忽略',
-            color: colorScheme.onSurfaceVariant,
-            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-            padding: const EdgeInsets.all(4),
-            onPressed: () {
-              _markClipboardHandled(data.rawText);
-              setState(() {
-                _sniffedClipboardData = null;
-              });
-            },
-          ),
-        ],
+        ),
       ),
     );
   }

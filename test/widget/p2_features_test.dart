@@ -22,7 +22,11 @@ Future<void> pumpApp(
   AppDatabase db, {
   Map<String, Object> initialPrefs = const {},
 }) async {
-  SharedPreferences.setMockInitialValues(initialPrefs);
+  final merged = {
+    'onboarding_clipboard_asked': true,
+    ...initialPrefs,
+  };
+  SharedPreferences.setMockInitialValues(merged);
   final prefs = await SharedPreferences.getInstance();
 
   await tester.pumpWidget(
@@ -47,7 +51,7 @@ void main() {
   late AppDatabase db;
 
   setUp(() async {
-    SharedPreferences.setMockInitialValues({});
+    SharedPreferences.setMockInitialValues({'onboarding_clipboard_asked': true});
     db = AppDatabase(NativeDatabase.memory());
   });
 
@@ -159,7 +163,7 @@ void main() {
 
       await pumpApp(tester, db);
 
-      await tester.pump(const Duration(milliseconds: 600));
+      await tester.tap(find.byKey(const Key('home_speed_dial_fab')));
       await tester.pumpAndSettle();
 
       expect(find.byKey(const Key('clipboard_sniff_banner')), findsNothing);
@@ -181,18 +185,17 @@ void main() {
         initialPrefs: {'clipboard_sniff_enabled': true},
       );
 
-      // Wait 500ms debounce
-      await tester.pump(const Duration(milliseconds: 600));
+      // Open speed dial to trigger sniff
+      await tester.tap(find.byKey(const Key('home_speed_dial_fab')));
       await tester.pumpAndSettle();
 
-      // Verify banner appears
+      // Verify speed dial item appears
       expect(find.byKey(const Key('clipboard_sniff_banner')), findsOneWidget);
-      expect(find.text('检测到地址'), findsOneWidget);
-      expect(find.text('存为地址'), findsOneWidget);
+      expect(find.textContaining('存为地址'), findsOneWidget);
       expect(find.byKey(const Key('clipboard_sniff_ignore_button')), findsOneWidget);
 
       // Tap '存为地址'
-      await tester.tap(find.text('存为地址'));
+      await tester.tap(find.byKey(const Key('clipboard_sniff_banner')));
       await tester.pumpAndSettle();
 
       // Should open contact/address template view directly
@@ -216,13 +219,12 @@ void main() {
         initialPrefs: {'clipboard_sniff_enabled': true},
       );
 
-      // Wait 500ms debounce
-      await tester.pump(const Duration(milliseconds: 600));
+      // Open speed dial
+      await tester.tap(find.byKey(const Key('home_speed_dial_fab')));
       await tester.pumpAndSettle();
 
       expect(find.byKey(const Key('clipboard_sniff_banner')), findsOneWidget);
-      expect(find.text('检测到证件号'), findsOneWidget);
-      expect(find.text('存为证件'), findsOneWidget);
+      expect(find.textContaining('存为证件'), findsOneWidget);
 
       // Tap ignore
       await tester.tap(find.byKey(const Key('clipboard_sniff_ignore_button')));
@@ -231,9 +233,12 @@ void main() {
       // Banner dismissed
       expect(find.byKey(const Key('clipboard_sniff_banner')), findsNothing);
 
-      // Trigger app resumed lifecycle
-      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
-      await tester.pump(const Duration(milliseconds: 600));
+      // Close speed dial
+      await tester.tap(find.byKey(const Key('speedDialOverlayFab')));
+      await tester.pumpAndSettle();
+
+      // Reopen speed dial
+      await tester.tap(find.byKey(const Key('home_speed_dial_fab')));
       await tester.pumpAndSettle();
 
       // Banner should NOT re-appear for the ignored clipboard text

@@ -177,6 +177,16 @@ class SettingsView extends ConsumerWidget {
         await db.delete(table).go();
       }
     });
+    // Clear onboarding/feature prefs before the best-effort filesystem cleanup
+    // below: preference state must not depend on IO completing.
+    final prefs = await ref.read(sharedPreferencesProvider.future);
+    await prefs.remove(PrivacyPrefsKeys.onboardingClipboardAsked);
+    await prefs.remove(PrivacyPrefsKeys.presentAutoBrightness);
+    await prefs.remove(PrivacyPrefsKeys.clipboardSniffEnabled);
+    await prefs.remove('clipboard_last_handled_hash');
+    ref.invalidate(clipboardSniffEnabledProvider);
+    ref.invalidate(presentAutoBrightnessProvider);
+
     await deleteAllIdPhotos();
     await ref.read(quickAccessIdsProvider.notifier).clearAll();
 
@@ -208,12 +218,28 @@ class SettingsView extends ConsumerWidget {
         _buildSectionHeader(context, l10n.appearance),
         Card(
           margin: EdgeInsets.zero,
-          child: _navTile(
-            context,
-            icon: Icons.brightness_medium_outlined,
-            title: l10n.theme,
-            trailingText: themeText,
-            onTap: () => _showThemeSheet(context, ref, l10n, themeMode),
+          child: Column(
+            children: [
+              _navTile(
+                context,
+                icon: Icons.brightness_medium_outlined,
+                title: l10n.theme,
+                trailingText: themeText,
+                onTap: () => _showThemeSheet(context, ref, l10n, themeMode),
+              ),
+              const Divider(height: 1, indent: 56, endIndent: 16),
+              SwitchListTile(
+                secondary: const Icon(Icons.brightness_high_outlined),
+                title: Text(l10n.presentAutoBrightnessTitle),
+                subtitle: Text(l10n.presentAutoBrightnessSubtitle),
+                value: ref.watch(presentAutoBrightnessProvider).value ?? false,
+                onChanged: (val) {
+                  ref
+                      .read(presentAutoBrightnessProvider.notifier)
+                      .setEnabled(val);
+                },
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 16),

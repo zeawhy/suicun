@@ -2279,7 +2279,7 @@ abstract class AppLocalizations {
   /// No description provided for @clipboardSniffSubtitle.
   ///
   /// In zh, this message translates to:
-  /// **'回到 App 时识别剪贴板中的证件号、地址、链接，仅在本地处理'**
+  /// **'点击 + 时识别剪贴板中的证件号、地址、链接'**
   String get clipboardSniffSubtitle;
 
   /// No description provided for @setQuickAccess.
@@ -2365,6 +2365,60 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'危险操作'**
   String get dangerousOperations;
+
+  /// No description provided for @onboardingClipboardTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'开启剪贴板识别？'**
+  String get onboardingClipboardTitle;
+
+  /// No description provided for @onboardingClipboardBody.
+  ///
+  /// In zh, this message translates to:
+  /// **'复制证件号、地址或网址后，点「+」时随存会提示你一键保存。内容只在本机识别，不会上传。'**
+  String get onboardingClipboardBody;
+
+  /// No description provided for @onboardingClipboardEnable.
+  ///
+  /// In zh, this message translates to:
+  /// **'开启'**
+  String get onboardingClipboardEnable;
+
+  /// No description provided for @onboardingClipboardNotNow.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂不'**
+  String get onboardingClipboardNotNow;
+
+  /// No description provided for @onboardingClipboardFooter.
+  ///
+  /// In zh, this message translates to:
+  /// **'可随时在 设置 › 安全与隐私 中更改'**
+  String get onboardingClipboardFooter;
+
+  /// No description provided for @presentAutoBrightnessTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'出示证件时调高亮度'**
+  String get presentAutoBrightnessTitle;
+
+  /// No description provided for @presentAutoBrightnessSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'方便他人查看或扫码'**
+  String get presentAutoBrightnessSubtitle;
+
+  /// No description provided for @presentBrightness.
+  ///
+  /// In zh, this message translates to:
+  /// **'亮度'**
+  String get presentBrightness;
+
+  /// No description provided for @presentIdDocument.
+  ///
+  /// In zh, this message translates to:
+  /// **'出示证件'**
+  String get presentIdDocument;
 }
 
 class _AppLocalizationsDelegate

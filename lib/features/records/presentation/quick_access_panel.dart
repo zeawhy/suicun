@@ -84,8 +84,8 @@ QuickTypeStyle getQuickTypeStyle(QuickRecordType type, bool isDark) {
           borderColor: Color(0xFF2C394A),
           accentColor: Color(0xFF90B8DE),
           icon: Icons.badge_outlined,
-          actionLabel: '出示',
-          actionIcon: Icons.visibility_outlined,
+          actionLabel: '出示证件',
+          actionIcon: Icons.slideshow_outlined,
         );
       case QuickRecordType.password:
         return const QuickTypeStyle(
@@ -124,8 +124,8 @@ QuickTypeStyle getQuickTypeStyle(QuickRecordType type, bool isDark) {
         borderColor: Color(0xFFCBD5E1),
         accentColor: Color(0xFF334155),
         icon: Icons.badge_outlined,
-        actionLabel: '出示',
-        actionIcon: Icons.visibility_outlined,
+        actionLabel: '出示证件',
+        actionIcon: Icons.slideshow_outlined,
       );
     case QuickRecordType.password:
       return const QuickTypeStyle(

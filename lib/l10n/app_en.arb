@@ -545,7 +545,7 @@
   "galleryPermissionTitle": "Gallery Permission",
   "galleryPermissionMessage": "Saving ID photos to the system gallery requires gallery permission. Photos are saved to the local gallery only",
   "clipboardSniffTitle": "Clipboard Recognition",
-  "clipboardSniffSubtitle": "Recognize ID numbers, addresses, and links from clipboard upon returning to app. Processed locally only.",
+  "clipboardSniffSubtitle": "Recognize ID numbers, addresses, and links from clipboard when tapping +",
   "setQuickAccess": "Set as quick access",
   "unsetQuickAccess": "Remove from quick access",
   "quickAccessAdded": "Added to quick access",
@@ -560,5 +560,14 @@
   "appLock": "App lock",
   "appLockStatusEnabled": "Enabled",
   "appLockStatusDisabled": "Disabled",
-  "dangerousOperations": "Dangerous operations"
+  "dangerousOperations": "Dangerous operations",
+  "onboardingClipboardTitle": "Enable Clipboard Recognition?",
+  "onboardingClipboardBody": "After copying ID numbers, addresses, or links, SuiVault can suggest one-tap saving when tapping \"+\". Processed locally only, never uploaded.",
+  "onboardingClipboardEnable": "Enable",
+  "onboardingClipboardNotNow": "Not Now",
+  "onboardingClipboardFooter": "You can change this anytime in Settings › Security & Privacy",
+  "presentAutoBrightnessTitle": "Increase Brightness When Presenting ID",
+  "presentAutoBrightnessSubtitle": "Convenient for others to view or scan",
+  "presentBrightness": "Brightness",
+  "presentIdDocument": "Present ID"
 }
