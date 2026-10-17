@@ -1220,12 +1220,6 @@ abstract class AppLocalizations {
   /// **'尾号 {digits}'**
   String idNumberLastDigits(String digits);
 
-  /// No description provided for @idNumberMaybeInvalid.
-  ///
-  /// In zh, this message translates to:
-  /// **'号码格式可能有误'**
-  String get idNumberMaybeInvalid;
-
   /// No description provided for @idOriginalType.
   ///
   /// In zh, this message translates to:

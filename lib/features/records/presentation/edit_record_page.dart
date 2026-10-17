@@ -10,7 +10,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:suicun/core/database/providers.dart';
 import 'package:suicun/features/categories/presentation/category_display_name.dart';
 import 'package:suicun/features/records/domain/record_model.dart';
@@ -58,10 +57,16 @@ class EditRecordPage extends ConsumerStatefulWidget {
 
 class _EditRecordPageState extends ConsumerState<EditRecordPage> {
   late final TextEditingController _titleController;
-  String? _lastAutoIdTitle;
   late final TextEditingController _bodyController;
   late final FocusNode _bodyFocusNode;
   bool _initialized = false;
+
+  /// Last auto-generated ID document title (§1.5). Used to decide whether
+  /// the title should be auto-updated when the form data changes.
+  String _lastAutoIdTitle = '';
+
+  /// Guard so the §1.3 redirect to IdDocForm only happens once.
+  bool _idDocRedirectDone = false;
 
   /// Body shows rich text when not editing; tap to edit.
   late bool _bodyEditing;
@@ -473,26 +478,23 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
   Future<void> _openIdDocForm(
     BuildContext context,
     RecordDetail? record,
+    IdDocData? initialData,
   ) async {
     if (record == null) return;
     final l10n = AppLocalizations.of(context);
-    // Decode current body (new or legacy format). Null when creating.
-    final initial = decodeIdDocBody(
-      _bodyController.text,
-      origTypeLabel: l10n.idOriginalType,
-    );
-    // Remember the auto-generated title so _saveIdDocFormData only
-    // overwrites the title when the user hasn't customized it.
-    if (initial != null) {
-      final type = IdDocTypeStorage.fromStorageKey(initial.type);
-      _lastAutoIdTitle = generateIdDocTitle(l10n, type, initial.name);
-    } else {
-      _lastAutoIdTitle = null;
-    }
+    // §1.5: Initialize _lastAutoIdTitle from current data.
+    final currentData = decodeIdDocBody(_bodyController.text);
+    _lastAutoIdTitle = currentData == null
+        ? ''
+        : generateIdDocTitle(
+            l10n,
+            IdDocTypeStorage.fromStorageKey(currentData.type),
+            currentData.name,
+          );
     await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => IdDocForm(
-          initialData: initial,
+          initialData: initialData,
           recordId: record.id,
           onSave: (data) => _saveIdDocFormData(data, record),
           categoryRow: _buildCategoryRow(l10n, Theme.of(context), Theme.of(context).colorScheme, record),
@@ -503,18 +505,71 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
     if (mounted) setState(() {});
   }
 
+  /// §1.3: New ID document flow — opens IdDocForm directly instead of
+  /// filling a text template. Ensures the record exists, replaces this
+  /// transient page with the form, and deletes the record if the user
+  /// leaves it empty.
+  Future<void> _redirectToIdDocFormForNew() async {
+    if (!mounted) return;
+    final notifier = ref.read(editRecordProvider(widget.recordId).notifier);
+    final recordId = await notifier.ensureRecordExists();
+    if (!mounted) return;
+    final record = ref.read(editRecordProvider(widget.recordId)).record;
+    if (record == null) {
+      if (mounted) context.pop();
+      return;
+    }
+    final l10n = AppLocalizations.of(context);
+    _lastAutoIdTitle = '';
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => IdDocForm(
+          initialData: null,
+          recordId: recordId,
+          onSave: (data) => _saveIdDocFormData(data, record),
+          categoryRow: _buildCategoryRow(
+              l10n, Theme.of(context), Theme.of(context).colorScheme, record),
+          tagRow: _buildTagRow(
+              l10n, Theme.of(context), Theme.of(context).colorScheme, record),
+        ),
+      ),
+    );
+    if (!mounted) return;
+    // §1.3: Delete the record if all fields were left empty.
+    final current = ref.read(editRecordProvider(widget.recordId)).record;
+    if (current != null) {
+      final data = decodeIdDocBody(current.body);
+      if (data == null || _isIdDocDataEmpty(data)) {
+        await ref.read(recordRepositoryProvider).softDeleteRecord(current.id);
+        ref.invalidate(recordsListProvider);
+      }
+    }
+    // Pop the transient EditRecordPage.
+    if (mounted) context.pop();
+  }
+
+  /// Returns true if all user-editable ID document fields are empty.
+  bool _isIdDocDataEmpty(IdDocData data) {
+    return (data.name?.trim().isEmpty ?? true) &&
+        (data.number?.trim().isEmpty ?? true) &&
+        (data.photoFront?.isEmpty ?? true) &&
+        (data.photoBack?.isEmpty ?? true) &&
+        data.issueDate == null &&
+        data.expiryDate == null &&
+        (data.note?.trim().isEmpty ?? true);
+  }
+
   Future<void> _saveIdDocFormData(IdDocData data, RecordDetail record) async {
+    // §1.5: Body stores only the codec output — no localized text.
     final l10n = AppLocalizations.of(context);
     final type = IdDocTypeStorage.fromStorageKey(data.type);
     final newAutoTitle = generateIdDocTitle(l10n, type, data.name);
     final current = _titleController.text.trim();
-    // Only auto-update the title when it is empty or still the last
-    // auto-generated title (i.e. the user hasn't customized it).
+    // Only auto-update the title if it's empty or still the last auto title.
     if (current.isEmpty || current == _lastAutoIdTitle) {
       _titleController.text = newAutoTitle;
     }
     _lastAutoIdTitle = newAutoTitle;
-    // Structured storage: no localized text in the body.
     _bodyController.text = encodeIdDocBody(data);
     _onChanged();
   }
@@ -585,6 +640,16 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
           widget.initialText!.isNotEmpty) {
         _bodyController.text = widget.initialText!;
         _initialized = true;
+      } else if (_isNew &&
+          widget.templateId == 'id_document' &&
+          !_idDocRedirectDone) {
+        // §1.3: New ID document opens IdDocForm directly; no text template.
+        // (initialText case above is handled as a normal note per spec.)
+        _initialized = true;
+        _idDocRedirectDone = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _redirectToIdDocFormForNew();
+        });
       } else if (_isNew &&
           widget.templateId != null &&
           widget.templateId != 'blank') {
@@ -957,7 +1022,11 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
                                 data: decodeIdDocBody(_bodyController.text) ??
                                     const IdDocData(type: 'other'),
                                 record: record,
-                                onEdit: () => _openIdDocForm(context, record),
+                                onEdit: () => _openIdDocForm(
+                                  context,
+                                  record,
+                                  decodeIdDocBody(_bodyController.text),
+                                ),
                                 categoryRow: _buildCategoryRow(l10n, theme, colorScheme, record),
                                 suggestionRow: _buildSuggestionRow(l10n, theme, colorScheme),
                                 tagRow: _buildTagRow(l10n, theme, colorScheme, record),

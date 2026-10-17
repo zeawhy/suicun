@@ -598,9 +598,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get idNumberMaybeInvalid => 'Number format may be incorrect';
-
-  @override
   String get idOriginalType => 'Original type';
 
   @override

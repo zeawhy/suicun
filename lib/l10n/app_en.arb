@@ -400,7 +400,6 @@
   "idNumberCopied": "Document number copied",
   "idNumberCopiedMsg": "ID number copied to clipboard",
   "idNumberLastDigits": "Last {digits} digits",
-  "idNumberMaybeInvalid": "Number format may be incorrect",
   "idOriginalType": "Original type",
   "idPhotoAdd": "Add photo",
   "idPhotoBack": "Back photo",

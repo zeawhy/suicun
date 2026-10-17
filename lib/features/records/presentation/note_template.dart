@@ -101,8 +101,9 @@ class NoteTemplate {
     NoteTemplate(
       id: 'id_document',
       icon: Icons.badge_outlined,
-      bodyZh: '证件类型：\n姓名：\n证件号码：\n有效期至：\n证件照片正面：\n证件照片反面：\n备注：',
-      bodyEn: 'Document type:\nName:\nDocument number:\nValid until:\nID photo front:\nID photo back:\nNotes:',
+      // §1.3: New flow opens IdDocForm directly; the text template is no longer used.
+      bodyZh: '',
+      bodyEn: '',
     ),
   ];
 

@@ -582,9 +582,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get idNumberMaybeInvalid => '号码格式可能有误';
-
-  @override
   String get idOriginalType => '原类型';
 
   @override
