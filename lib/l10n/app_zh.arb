@@ -1,5 +1,15 @@
 {
   "@@locale": "zh",
+  "@backupPhotoSizeWarn": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
   "@conflictCount": {
     "placeholders": {
       "count": {
@@ -227,6 +237,7 @@
   "backupAndSync": "备份与同步",
   "backupPassword": "备份密码",
   "backupPasswordHint": "换设备恢复需要此密码，请妥善保存",
+  "backupPhotoSizeWarn": "备份包含 {count} 张证件照片，文件约 {size}",
   "batchCategorize": "批量分类",
   "batchDelete": "批量删除",
   "batchFavorite": "批量收藏",
@@ -330,6 +341,7 @@
   "exportJsonUnencrypted": "导出 JSON（未加密）",
   "exportMarkdownZip": "导出 Markdown ZIP",
   "exportOtherFormats": "导出为其他格式",
+  "exportPlainNoPhotos": "明文导出不包含证件照片",
   "exportSuccess": "导出成功",
   "exportTxt": "导出 TXT",
   "favorite": "收藏",
@@ -389,6 +401,7 @@
   "idNumberCopiedMsg": "证件号码已复制到剪贴板",
   "idNumberLastDigits": "尾号 {digits}",
   "idNumberMaybeInvalid": "号码格式可能有误",
+  "idOriginalType": "原类型",
   "idPhotoAdd": "添加照片",
   "idPhotoBack": "反面照片",
   "idPhotoFront": "正面照片",

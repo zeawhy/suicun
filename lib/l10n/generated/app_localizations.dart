@@ -242,6 +242,12 @@ abstract class AppLocalizations {
   /// **'换设备恢复需要此密码，请妥善保存'**
   String get backupPasswordHint;
 
+  /// No description provided for @backupPhotoSizeWarn.
+  ///
+  /// In zh, this message translates to:
+  /// **'备份包含 {count} 张证件照片，文件约 {size}'**
+  String backupPhotoSizeWarn(int count, String size);
+
   /// No description provided for @batchCategorize.
   ///
   /// In zh, this message translates to:
@@ -860,6 +866,12 @@ abstract class AppLocalizations {
   /// **'导出为其他格式'**
   String get exportOtherFormats;
 
+  /// No description provided for @exportPlainNoPhotos.
+  ///
+  /// In zh, this message translates to:
+  /// **'明文导出不包含证件照片'**
+  String get exportPlainNoPhotos;
+
   /// No description provided for @exportSuccess.
   ///
   /// In zh, this message translates to:
@@ -1213,6 +1225,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'号码格式可能有误'**
   String get idNumberMaybeInvalid;
+
+  /// No description provided for @idOriginalType.
+  ///
+  /// In zh, this message translates to:
+  /// **'原类型'**
+  String get idOriginalType;
 
   /// No description provided for @idPhotoAdd.
   ///
