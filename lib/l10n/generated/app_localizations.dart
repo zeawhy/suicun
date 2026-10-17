@@ -146,6 +146,12 @@ abstract class AppLocalizations {
   /// **'全部'**
   String get all;
 
+  /// No description provided for @allowIdScreenshots.
+  ///
+  /// In zh, this message translates to:
+  /// **'允许截屏证件页面'**
+  String get allowIdScreenshots;
+
   /// No description provided for @appLock.
   ///
   /// In zh, this message translates to:
@@ -265,6 +271,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'正文较长（超过 1 MiB），建议拆分'**
   String get bodyLimit;
+
+  /// No description provided for @cameraPermissionDenied.
+  ///
+  /// In zh, this message translates to:
+  /// **'需要相机权限才能拍照'**
+  String get cameraPermissionDenied;
 
   /// No description provided for @cameraRationaleMessage.
   ///
@@ -1118,6 +1130,66 @@ abstract class AppLocalizations {
   /// **'证件信息'**
   String get idDocumentInfo;
 
+  /// No description provided for @idExpired.
+  ///
+  /// In zh, this message translates to:
+  /// **'已过期'**
+  String get idExpired;
+
+  /// No description provided for @idExpiringSoon.
+  ///
+  /// In zh, this message translates to:
+  /// **'即将到期'**
+  String get idExpiringSoon;
+
+  /// No description provided for @idFieldExpiryDate.
+  ///
+  /// In zh, this message translates to:
+  /// **'有效期至'**
+  String get idFieldExpiryDate;
+
+  /// No description provided for @idFieldIssueDate.
+  ///
+  /// In zh, this message translates to:
+  /// **'签发日期'**
+  String get idFieldIssueDate;
+
+  /// No description provided for @idFieldIssuingCountry.
+  ///
+  /// In zh, this message translates to:
+  /// **'签发国家'**
+  String get idFieldIssuingCountry;
+
+  /// No description provided for @idFieldName.
+  ///
+  /// In zh, this message translates to:
+  /// **'姓名'**
+  String get idFieldName;
+
+  /// No description provided for @idFieldNote.
+  ///
+  /// In zh, this message translates to:
+  /// **'备注'**
+  String get idFieldNote;
+
+  /// No description provided for @idFieldNumber.
+  ///
+  /// In zh, this message translates to:
+  /// **'证件号码'**
+  String get idFieldNumber;
+
+  /// No description provided for @idFieldType.
+  ///
+  /// In zh, this message translates to:
+  /// **'证件类型'**
+  String get idFieldType;
+
+  /// No description provided for @idNoExpiry.
+  ///
+  /// In zh, this message translates to:
+  /// **'长期'**
+  String get idNoExpiry;
+
   /// No description provided for @idNumberCopied.
   ///
   /// In zh, this message translates to:
@@ -1135,6 +1207,126 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'尾号 {digits}'**
   String idNumberLastDigits(String digits);
+
+  /// No description provided for @idNumberMaybeInvalid.
+  ///
+  /// In zh, this message translates to:
+  /// **'号码格式可能有误'**
+  String get idNumberMaybeInvalid;
+
+  /// No description provided for @idPhotoAdd.
+  ///
+  /// In zh, this message translates to:
+  /// **'添加照片'**
+  String get idPhotoAdd;
+
+  /// No description provided for @idPhotoBack.
+  ///
+  /// In zh, this message translates to:
+  /// **'反面照片'**
+  String get idPhotoBack;
+
+  /// No description provided for @idPhotoFront.
+  ///
+  /// In zh, this message translates to:
+  /// **'正面照片'**
+  String get idPhotoFront;
+
+  /// No description provided for @idPhotoPick.
+  ///
+  /// In zh, this message translates to:
+  /// **'从相册选择'**
+  String get idPhotoPick;
+
+  /// No description provided for @idPhotoRemove.
+  ///
+  /// In zh, this message translates to:
+  /// **'删除'**
+  String get idPhotoRemove;
+
+  /// No description provided for @idPhotoReplace.
+  ///
+  /// In zh, this message translates to:
+  /// **'更换'**
+  String get idPhotoReplace;
+
+  /// No description provided for @idPhotoTake.
+  ///
+  /// In zh, this message translates to:
+  /// **'拍照'**
+  String get idPhotoTake;
+
+  /// No description provided for @idTypeCnResidentId.
+  ///
+  /// In zh, this message translates to:
+  /// **'中国居民身份证'**
+  String get idTypeCnResidentId;
+
+  /// No description provided for @idTypeDriverLicense.
+  ///
+  /// In zh, this message translates to:
+  /// **'驾驶证'**
+  String get idTypeDriverLicense;
+
+  /// No description provided for @idTypeGroupChina.
+  ///
+  /// In zh, this message translates to:
+  /// **'中国证件'**
+  String get idTypeGroupChina;
+
+  /// No description provided for @idTypeHealthInsurance.
+  ///
+  /// In zh, this message translates to:
+  /// **'医保卡'**
+  String get idTypeHealthInsurance;
+
+  /// No description provided for @idTypeHkMoPermit.
+  ///
+  /// In zh, this message translates to:
+  /// **'港澳通行证'**
+  String get idTypeHkMoPermit;
+
+  /// No description provided for @idTypeNationalId.
+  ///
+  /// In zh, this message translates to:
+  /// **'身份证'**
+  String get idTypeNationalId;
+
+  /// No description provided for @idTypeOther.
+  ///
+  /// In zh, this message translates to:
+  /// **'其他证件'**
+  String get idTypeOther;
+
+  /// No description provided for @idTypePassport.
+  ///
+  /// In zh, this message translates to:
+  /// **'护照'**
+  String get idTypePassport;
+
+  /// No description provided for @idTypeResidencePermit.
+  ///
+  /// In zh, this message translates to:
+  /// **'居留卡'**
+  String get idTypeResidencePermit;
+
+  /// No description provided for @idTypeSocialSecurity.
+  ///
+  /// In zh, this message translates to:
+  /// **'社保卡'**
+  String get idTypeSocialSecurity;
+
+  /// No description provided for @idTypeStudentId.
+  ///
+  /// In zh, this message translates to:
+  /// **'学生证'**
+  String get idTypeStudentId;
+
+  /// No description provided for @idTypeTwPermit.
+  ///
+  /// In zh, this message translates to:
+  /// **'台湾通行证'**
+  String get idTypeTwPermit;
 
   /// No description provided for @importData.
   ///
@@ -1483,6 +1675,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'开启剪贴板识别？'**
   String get onboardingClipboardTitle;
+
+  /// No description provided for @openSettings.
+  ///
+  /// In zh, this message translates to:
+  /// **'去设置'**
+  String get openSettings;
 
   /// No description provided for @password.
   ///
@@ -2767,24 +2965,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'放大'**
   String get zoomInAction;
-
-  /// No description provided for @cameraPermissionDenied.
-  ///
-  /// In zh, this message translates to:
-  /// **'需要相机权限才能拍照'**
-  String get cameraPermissionDenied;
-
-  /// No description provided for @openSettings.
-  ///
-  /// In zh, this message translates to:
-  /// **'去设置'**
-  String get openSettings;
-
-  /// No description provided for @allowIdScreenshots.
-  ///
-  /// In zh, this message translates to:
-  /// **'允许截屏证件页面'**
-  String get allowIdScreenshots;
 }
 
 class _AppLocalizationsDelegate

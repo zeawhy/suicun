@@ -33,6 +33,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get all => 'All';
 
   @override
+  String get allowIdScreenshots => 'Allow screenshots of ID pages';
+
+  @override
   String get appLock => 'App lock';
 
   @override
@@ -92,6 +95,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get bodyLimit => 'Body is large (>1 MiB), consider splitting';
+
+  @override
+  String get cameraPermissionDenied => 'Camera access is needed to take photos';
 
   @override
   String get cameraRationaleMessage =>
@@ -543,6 +549,36 @@ class AppLocalizationsEn extends AppLocalizations {
   String get idDocumentInfo => 'ID information';
 
   @override
+  String get idExpired => 'Expired';
+
+  @override
+  String get idExpiringSoon => 'Expires soon';
+
+  @override
+  String get idFieldExpiryDate => 'Expiry date';
+
+  @override
+  String get idFieldIssueDate => 'Issue date';
+
+  @override
+  String get idFieldIssuingCountry => 'Issuing country';
+
+  @override
+  String get idFieldName => 'Name';
+
+  @override
+  String get idFieldNote => 'Note';
+
+  @override
+  String get idFieldNumber => 'Document number';
+
+  @override
+  String get idFieldType => 'Document type';
+
+  @override
+  String get idNoExpiry => 'No expiry';
+
+  @override
   String get idNumberCopied => 'Document number copied';
 
   @override
@@ -552,6 +588,66 @@ class AppLocalizationsEn extends AppLocalizations {
   String idNumberLastDigits(String digits) {
     return 'Last $digits digits';
   }
+
+  @override
+  String get idNumberMaybeInvalid => 'Number format may be incorrect';
+
+  @override
+  String get idPhotoAdd => 'Add photo';
+
+  @override
+  String get idPhotoBack => 'Back photo';
+
+  @override
+  String get idPhotoFront => 'Front photo';
+
+  @override
+  String get idPhotoPick => 'Choose from gallery';
+
+  @override
+  String get idPhotoRemove => 'Remove';
+
+  @override
+  String get idPhotoReplace => 'Replace';
+
+  @override
+  String get idPhotoTake => 'Take photo';
+
+  @override
+  String get idTypeCnResidentId => 'China Resident ID';
+
+  @override
+  String get idTypeDriverLicense => 'Driver\'s license';
+
+  @override
+  String get idTypeGroupChina => 'China documents';
+
+  @override
+  String get idTypeHealthInsurance => 'Health insurance card';
+
+  @override
+  String get idTypeHkMoPermit => 'HK-Macau Travel Permit';
+
+  @override
+  String get idTypeNationalId => 'ID card';
+
+  @override
+  String get idTypeOther => 'Other';
+
+  @override
+  String get idTypePassport => 'Passport';
+
+  @override
+  String get idTypeResidencePermit => 'Residence permit';
+
+  @override
+  String get idTypeSocialSecurity => 'Social security card';
+
+  @override
+  String get idTypeStudentId => 'Student ID';
+
+  @override
+  String get idTypeTwPermit => 'Taiwan Travel Permit';
 
   @override
   String get importData => 'Import';
@@ -753,6 +849,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboardingClipboardTitle => 'Enable Clipboard Recognition?';
+
+  @override
+  String get openSettings => 'Open settings';
 
   @override
   String get password => 'Password';
@@ -1435,13 +1534,4 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get zoomInAction => 'Zoom in';
-
-  @override
-  String get cameraPermissionDenied => 'Camera access is needed to take photos';
-
-  @override
-  String get openSettings => 'Open settings';
-
-  @override
-  String get allowIdScreenshots => 'Allow screenshots of ID pages';
 }
