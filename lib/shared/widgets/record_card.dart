@@ -179,6 +179,7 @@ class RecordCard extends StatelessWidget {
       record,
       untitled: untitledLabel,
       defaultDocType: l10n.templateIdDocument,
+      context: context,
     );
     final titleColor = displayTitle != untitledLabel
         ? colorScheme.onSurface

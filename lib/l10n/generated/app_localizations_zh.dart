@@ -21,25 +21,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get addKeyword => '添加关键词';
 
   @override
-  String get addressInfoLabel => '地址信息';
-
-  @override
   String get addTag => '新增标签';
 
   @override
   String get addTags => '添加标签';
 
   @override
+  String get addressInfoLabel => '地址信息';
+
+  @override
   String get all => '全部';
 
   @override
-  String get appearance => '外观';
-
-  @override
   String get appLock => '应用锁';
-
-  @override
-  String get appLocked => '随存已锁定';
 
   @override
   String get appLockStatusDisabled => '未开启';
@@ -48,10 +42,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get appLockStatusEnabled => '已开启';
 
   @override
+  String get appLocked => '随存已锁定';
+
+  @override
   String get appName => '随存';
 
   @override
   String get appTagline => '保存以后还要找的信息';
+
+  @override
+  String get appearance => '外观';
 
   @override
   String get autoSaveHint => '自动保存，无需手动点击保存。';
@@ -126,6 +126,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chooseFromGallery => '从相册选择';
 
   @override
+  String get choosePhotoSide => '选择照片';
+
+  @override
   String get clearAllData => '清除全部数据';
 
   @override
@@ -182,12 +185,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get conflictHistoryNote => '被弃用的版本会保留到历史记录，不会被删除。';
 
   @override
-  String get conflictsEmpty => '没有未解决的冲突';
-
-  @override
-  String get conflictsTitle => '同步冲突';
-
-  @override
   String get conflictTypeCategory => '分类';
 
   @override
@@ -195,6 +192,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get conflictTypeTag => '标签';
+
+  @override
+  String get conflictsEmpty => '没有未解决的冲突';
+
+  @override
+  String get conflictsTitle => '同步冲突';
 
   @override
   String get connectAndSync => '连接并同步';
@@ -226,10 +229,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get copyRecoveryKey => '复制';
 
   @override
-  String get createdAtPrefix => '创建于';
+  String get createNewVault => '创建新库';
 
   @override
-  String get createNewVault => '创建新库';
+  String get createdAtPrefix => '创建于';
 
   @override
   String get dangerousOperations => '危险操作';
@@ -492,7 +495,39 @@ class AppLocalizationsZh extends AppLocalizations {
   String get hidePassword => '隐藏密码';
 
   @override
+  String get iHaveSavedPassword => '我已妥善保存加密密码';
+
+  @override
+  String get idCardBackPhoto => '背面照片';
+
+  @override
+  String get idCardFlipBack => '翻回正面';
+
+  @override
+  String get idCardFrontPhoto => '正面照片';
+
+  @override
+  String get idCardHintFlip => '点击卡片翻面 · 长按复制号码';
+
+  @override
+  String get idCardHintNoFlip => '长按卡片复制号码';
+
+  @override
+  String get idCardMoreActions => '更多操作';
+
+  @override
+  String get idCardTapToReveal => '点击查看';
+
+  @override
+  String idCardValidUntil(String date) {
+    return '有效期至 $date';
+  }
+
+  @override
   String get idDocumentInfo => '证件信息';
+
+  @override
+  String get idNumberCopied => '证件号码已复制';
 
   @override
   String get idNumberCopiedMsg => '证件号码已复制到剪贴板';
@@ -501,9 +536,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String idNumberLastDigits(String digits) {
     return '尾号 $digits';
   }
-
-  @override
-  String get iHaveSavedPassword => '我已妥善保存加密密码';
 
   @override
   String get importData => '导入';
@@ -603,6 +635,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get localVersion => '本机版本';
 
   @override
+  String get lockTimeout => '后台锁定超时';
+
+  @override
   String lockedKeysNotice(int count) {
     return '有 $count 把密钥未解锁，部分内容暂时无法显示';
   }
@@ -611,9 +646,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String lockoutTryLater(Object seconds) {
     return '尝试次数过多，请 $seconds 秒后再试';
   }
-
-  @override
-  String get lockTimeout => '后台锁定超时';
 
   @override
   String get manage => '管理';
@@ -777,6 +809,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get presentBrightness => '亮度';
 
   @override
+  String get presentDocument => '出示证件';
+
+  @override
   String get presentIdDocument => '出示证件';
 
   @override
@@ -845,12 +880,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get recordDeleted => '已移至回收站';
 
   @override
-  String get recordsEmpty => '还没有保存的信息';
-
-  @override
-  String get recordsEmptyHint => '点击下方「＋ 新建信息」开始保存';
-
-  @override
   String get recordTitleContact => '联系人记录';
 
   @override
@@ -867,6 +896,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get recordTitleTodo => '待办记录';
+
+  @override
+  String get recordsEmpty => '还没有保存的信息';
+
+  @override
+  String get recordsEmptyHint => '点击下方「＋ 新建信息」开始保存';
 
   @override
   String get recoverDesc =>
@@ -963,12 +998,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get save => '保存';
 
   @override
-  String get saved => '已保存';
-
-  @override
-  String get savedToGallery => '已保存到相册';
-
-  @override
   String get saveFailed => '保存失败，点击重试';
 
   @override
@@ -976,6 +1005,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get saveToGallery => '保存到相册';
+
+  @override
+  String get saved => '已保存';
+
+  @override
+  String get savedToGallery => '已保存到相册';
 
   @override
   String get saving => '保存中…';
@@ -1014,12 +1049,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get selectCategory => '选择分类';
 
   @override
+  String get selectTags => '选择标签';
+
+  @override
   String selectedCount(int count) {
     return '已选 $count 条';
   }
-
-  @override
-  String get selectTags => '选择标签';
 
   @override
   String get setPin => '设置 PIN';
@@ -1094,14 +1129,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get syncDirectory => '同步目录';
 
   @override
-  String get synced => '已同步';
-
-  @override
-  String syncedRecordCount(int synced, int total) {
-    return '已同步 $synced / 共 $total 条记录';
-  }
-
-  @override
   String get syncEngineWip => '同步引擎开发中（阶段 C）';
 
   @override
@@ -1130,6 +1157,14 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get syncStatusUnavailableDesc => '同步引擎正在接入，稍后再试。';
+
+  @override
+  String get synced => '已同步';
+
+  @override
+  String syncedRecordCount(int synced, int total) {
+    return '已同步 $synced / 共 $total 条记录';
+  }
 
   @override
   String get tagName => '标签名称';
@@ -1198,6 +1233,14 @@ class AppLocalizationsZh extends AppLocalizations {
   String get themeSystem => '跟随系统';
 
   @override
+  String timeToday(String time) {
+    return '今天 $time';
+  }
+
+  @override
+  String get timeYesterday => '昨天';
+
+  @override
   String get timeout1Min => '1 分钟';
 
   @override
@@ -1205,14 +1248,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get timeoutImmediately => '立即';
-
-  @override
-  String timeToday(String time) {
-    return '今天 $time';
-  }
-
-  @override
-  String get timeYesterday => '昨天';
 
   @override
   String get titleHint => '标题（可选）';

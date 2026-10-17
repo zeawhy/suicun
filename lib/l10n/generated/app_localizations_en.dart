@@ -21,25 +21,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addKeyword => 'Add keyword';
 
   @override
-  String get addressInfoLabel => 'Address information';
-
-  @override
   String get addTag => 'Add Tag';
 
   @override
   String get addTags => 'Add tags';
 
   @override
+  String get addressInfoLabel => 'Address information';
+
+  @override
   String get all => 'All';
 
   @override
-  String get appearance => 'Appearance';
-
-  @override
   String get appLock => 'App lock';
-
-  @override
-  String get appLocked => 'SuiVault is locked';
 
   @override
   String get appLockStatusDisabled => 'Disabled';
@@ -48,10 +42,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appLockStatusEnabled => 'Enabled';
 
   @override
+  String get appLocked => 'SuiVault is locked';
+
+  @override
   String get appName => 'SuiVault';
 
   @override
   String get appTagline => 'Save it now, find it later';
+
+  @override
+  String get appearance => 'Appearance';
 
   @override
   String get autoSaveHint => 'Auto-saved, no need to tap save.';
@@ -128,6 +128,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chooseFromGallery => 'Choose from gallery';
 
   @override
+  String get choosePhotoSide => 'Choose photo';
+
+  @override
   String get clearAllData => 'Clear all data';
 
   @override
@@ -188,12 +191,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'The discarded version is kept in history and will not be deleted.';
 
   @override
-  String get conflictsEmpty => 'No unresolved conflicts';
-
-  @override
-  String get conflictsTitle => 'Sync conflicts';
-
-  @override
   String get conflictTypeCategory => 'Category';
 
   @override
@@ -201,6 +198,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get conflictTypeTag => 'Tag';
+
+  @override
+  String get conflictsEmpty => 'No unresolved conflicts';
+
+  @override
+  String get conflictsTitle => 'Sync conflicts';
 
   @override
   String get connectAndSync => 'Connect & sync';
@@ -232,10 +235,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get copyRecoveryKey => 'Copy';
 
   @override
-  String get createdAtPrefix => 'Created';
+  String get createNewVault => 'Create new vault';
 
   @override
-  String get createNewVault => 'Create new vault';
+  String get createdAtPrefix => 'Created';
 
   @override
   String get dangerousOperations => 'Dangerous operations';
@@ -508,7 +511,39 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hidePassword => 'Hide password';
 
   @override
+  String get iHaveSavedPassword => 'I have saved the encryption password';
+
+  @override
+  String get idCardBackPhoto => 'Back photo';
+
+  @override
+  String get idCardFlipBack => 'Flip back';
+
+  @override
+  String get idCardFrontPhoto => 'Front photo';
+
+  @override
+  String get idCardHintFlip => 'Tap to flip · Long-press to copy number';
+
+  @override
+  String get idCardHintNoFlip => 'Long-press to copy number';
+
+  @override
+  String get idCardMoreActions => 'More actions';
+
+  @override
+  String get idCardTapToReveal => 'Tap to reveal';
+
+  @override
+  String idCardValidUntil(String date) {
+    return 'Valid until $date';
+  }
+
+  @override
   String get idDocumentInfo => 'ID information';
+
+  @override
+  String get idNumberCopied => 'Document number copied';
 
   @override
   String get idNumberCopiedMsg => 'ID number copied to clipboard';
@@ -517,9 +552,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String idNumberLastDigits(String digits) {
     return 'Last $digits digits';
   }
-
-  @override
-  String get iHaveSavedPassword => 'I have saved the encryption password';
 
   @override
   String get importData => 'Import';
@@ -621,6 +653,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get localVersion => 'This device';
 
   @override
+  String get lockTimeout => 'Lock after background';
+
+  @override
   String lockedKeysNotice(int count) {
     return '$count keys are still locked; some content is temporarily unavailable';
   }
@@ -629,9 +664,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String lockoutTryLater(Object seconds) {
     return 'Too many attempts, try again in ${seconds}s';
   }
-
-  @override
-  String get lockTimeout => 'Lock after background';
 
   @override
   String get manage => 'Manage';
@@ -801,6 +833,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get presentBrightness => 'Brightness';
 
   @override
+  String get presentDocument => 'Show document';
+
+  @override
   String get presentIdDocument => 'Present ID';
 
   @override
@@ -869,12 +904,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recordDeleted => 'Moved to trash';
 
   @override
-  String get recordsEmpty => 'No info saved yet';
-
-  @override
-  String get recordsEmptyHint => 'Tap \"+ New Info\" below to start saving';
-
-  @override
   String get recordTitleContact => 'Contact record';
 
   @override
@@ -891,6 +920,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get recordTitleTodo => 'To-do record';
+
+  @override
+  String get recordsEmpty => 'No info saved yet';
+
+  @override
+  String get recordsEmptyHint => 'Tap \"+ New Info\" below to start saving';
 
   @override
   String get recoverDesc =>
@@ -988,12 +1023,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get save => 'Save';
 
   @override
-  String get saved => 'Saved';
-
-  @override
-  String get savedToGallery => 'Saved to gallery';
-
-  @override
   String get saveFailed => 'Save failed, tap to retry';
 
   @override
@@ -1001,6 +1030,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get saveToGallery => 'Save to gallery';
+
+  @override
+  String get saved => 'Saved';
+
+  @override
+  String get savedToGallery => 'Saved to gallery';
 
   @override
   String get saving => 'Saving…';
@@ -1040,12 +1075,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get selectCategory => 'Select Category';
 
   @override
+  String get selectTags => 'Select Tags';
+
+  @override
   String selectedCount(int count) {
     return '$count selected';
   }
-
-  @override
-  String get selectTags => 'Select Tags';
 
   @override
   String get setPin => 'Set PIN';
@@ -1120,14 +1155,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get syncDirectory => 'Sync directory';
 
   @override
-  String get synced => 'Synced';
-
-  @override
-  String syncedRecordCount(int synced, int total) {
-    return 'Synced $synced / $total records';
-  }
-
-  @override
   String get syncEngineWip => 'Sync engine in development (Stage C)';
 
   @override
@@ -1157,6 +1184,14 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get syncStatusUnavailableDesc =>
       'The sync engine is still being wired up. Please try again later.';
+
+  @override
+  String get synced => 'Synced';
+
+  @override
+  String syncedRecordCount(int synced, int total) {
+    return 'Synced $synced / $total records';
+  }
 
   @override
   String get tagName => 'Tag Name';
@@ -1227,6 +1262,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get themeSystem => 'System';
 
   @override
+  String timeToday(String time) {
+    return 'Today $time';
+  }
+
+  @override
+  String get timeYesterday => 'Yesterday';
+
+  @override
   String get timeout1Min => '1 minute';
 
   @override
@@ -1234,14 +1277,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get timeoutImmediately => 'Immediately';
-
-  @override
-  String timeToday(String time) {
-    return 'Today $time';
-  }
-
-  @override
-  String get timeYesterday => 'Yesterday';
 
   @override
   String get titleHint => 'Title (optional)';

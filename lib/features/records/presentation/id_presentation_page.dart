@@ -342,6 +342,7 @@ class _IdPresentationPageState extends State<IdPresentationPage>
       widget.record,
       untitled: l10n.untitledRecord,
       defaultDocType: l10n.templateIdDocument,
+      context: context,
     );
     final sideText = _photoItems.isEmpty
         ? ''
