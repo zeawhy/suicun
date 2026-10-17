@@ -1435,4 +1435,88 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get zoomInAction => 'Zoom in';
+
+  @override
+  String get idTypePassport => 'Passport';
+
+  @override
+  String get idTypeDriverLicense => 'Driver\'s license';
+
+  @override
+  String get idTypeNationalId => 'ID card';
+
+  @override
+  String get idTypeResidencePermit => 'Residence permit';
+
+  @override
+  String get idTypeSocialSecurity => 'Social security card';
+
+  @override
+  String get idTypeHealthInsurance => 'Health insurance card';
+
+  @override
+  String get idTypeStudentId => 'Student ID';
+
+  @override
+  String get idTypeCnResidentId => 'China Resident ID';
+
+  @override
+  String get idTypeHkMoPermit => 'HK-Macau Travel Permit';
+
+  @override
+  String get idTypeTwPermit => 'Taiwan Travel Permit';
+
+  @override
+  String get idTypeOther => 'Other';
+
+  @override
+  String get idTypeGroupChina => 'China documents';
+
+  @override
+  String get idFieldType => 'Document type';
+
+  @override
+  String get idFieldName => 'Name';
+
+  @override
+  String get idFieldNumber => 'Document number';
+
+  @override
+  String get idFieldIssuingCountry => 'Issuing country';
+
+  @override
+  String get idFieldIssueDate => 'Issue date';
+
+  @override
+  String get idFieldExpiryDate => 'Expiry date';
+
+  @override
+  String get idNoExpiry => 'No expiry';
+
+  @override
+  String get idPhotoFront => 'Front photo';
+
+  @override
+  String get idPhotoBack => 'Back photo';
+
+  @override
+  String get idPhotoAdd => 'Add photo';
+
+  @override
+  String get idPhotoReplace => 'Replace';
+
+  @override
+  String get idPhotoRemove => 'Remove';
+
+  @override
+  String get idPhotoTake => 'Take photo';
+
+  @override
+  String get idPhotoPick => 'Choose from gallery';
+
+  @override
+  String get idFieldNote => 'Note';
+
+  @override
+  String get idNumberMaybeInvalid => 'Number format may be incorrect';
 }

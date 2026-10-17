@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:suicun/core/database/providers.dart';
 import 'package:suicun/features/categories/presentation/category_display_name.dart';
 import 'package:suicun/features/records/domain/record_model.dart';
@@ -22,6 +23,9 @@ import 'package:suicun/features/records/presentation/secret_line.dart';
 import 'package:suicun/features/records/presentation/template_views/blank_template_view.dart';
 import 'package:suicun/features/records/presentation/template_views/contact_template_view.dart';
 import 'package:suicun/features/records/presentation/template_views/id_document_template_view.dart';
+import 'package:suicun/features/records/domain/id_doc_data.dart';
+import 'package:suicun/features/records/presentation/id_doc_form.dart';
+import 'package:suicun/features/records/presentation/id_doc_types.dart';
 import 'package:suicun/features/records/presentation/template_views/idea_template_view.dart';
 import 'package:suicun/features/records/presentation/template_views/password_template_view.dart';
 import 'package:suicun/features/records/presentation/template_views/template_detector.dart';
@@ -462,6 +466,81 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
     await ref
         .read(editRecordProvider(widget.recordId).notifier)
         .setTags(remaining);
+  }
+
+  Future<void> _openIdDocForm(
+    BuildContext context,
+    RecordDetail? record,
+    IdDocumentTemplateData? templateData,
+  ) async {
+    if (record == null) return;
+    final l10n = AppLocalizations.of(context);
+    final initial = templateData == null
+        ? null
+        : IdDocData(
+            type: _mapOldDocTypeToNew(templateData.docType),
+            name: templateData.name,
+            number: templateData.docNumber,
+            expiryDate: _parseValidUntil(templateData.validUntil),
+            photoFront: templateData.photoFront,
+            photoBack: templateData.photoBack,
+            note: templateData.notes,
+          );
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => IdDocForm(
+          initialData: initial,
+          recordId: record.id,
+          onSave: (data) => _saveIdDocFormData(data, record),
+          categoryRow: _buildCategoryRow(l10n, Theme.of(context), Theme.of(context).colorScheme, record),
+          tagRow: _buildTagRow(l10n, Theme.of(context), Theme.of(context).colorScheme, record),
+        ),
+      ),
+    );
+    if (mounted) setState(() {});
+  }
+
+  String _mapOldDocTypeToNew(String? oldType) {
+    if (oldType == null) return 'other';
+    final lower = oldType.toLowerCase().trim();
+    if (oldType == '身份证' || lower == 'id card') return 'national_id';
+    if (oldType == '护照' || lower == 'passport') return 'passport';
+    if (oldType == '驾驶证' || lower == 'driver license') return 'driver_license';
+    if (oldType == '社保卡' || lower == 'social security card') return 'social_security';
+    if (oldType == '港澳通行证' || lower.contains('hmt')) return 'hk_mo_permit';
+    return 'other';
+  }
+
+  DateTime? _parseValidUntil(String? validUntil) {
+    if (validUntil == null || validUntil.trim().isEmpty) return null;
+    try {
+      return DateTime.parse(validUntil.trim());
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> _saveIdDocFormData(IdDocData data, RecordDetail record) async {
+    final l10n = AppLocalizations.of(context);
+    final type = IdDocTypeStorage.fromStorageKey(data.type);
+    if (_titleController.text.trim().isEmpty) {
+      _titleController.text = generateIdDocTitle(l10n, type, data.name);
+    }
+    final lines = <String>[];
+    final isZh = Localizations.localeOf(context).languageCode == 'zh';
+    lines.add('${isZh ? '证件类型' : 'Document type'}: ${type.localizedName(l10n)}');
+    if (data.name?.isNotEmpty ?? false) lines.add('${isZh ? '姓名' : 'Name'}: ${data.name}');
+    if (data.number?.isNotEmpty ?? false) lines.add('${isZh ? '证件号码' : 'Document number'}: ${data.number}');
+    if (data.expiryDate != null) {
+      lines.add('${isZh ? '有效期至' : 'Valid until'}: ${DateFormat('yyyy-MM-dd').format(data.expiryDate!)}');
+    } else if (data.noExpiry) {
+      lines.add('${isZh ? '有效期至' : 'Valid until'}: ${isZh ? '长期' : 'No expiry'}');
+    }
+    if (data.photoFront?.isNotEmpty ?? false) lines.add('${isZh ? '证件照片正面' : 'ID photo front'}: ${data.photoFront}');
+    if (data.photoBack?.isNotEmpty ?? false) lines.add('${isZh ? '证件照片反面' : 'ID photo back'}: ${data.photoBack}');
+    if (data.note?.isNotEmpty ?? false) lines.add('${isZh ? '备注' : 'Notes'}: ${data.note}');
+    _bodyController.text = lines.join('\n');
+    _onChanged();
   }
 
   Future<void> _deleteRecord(AppLocalizations l10n, RecordDetail? record) async {
@@ -909,10 +988,11 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
                                   _bodyController.text = newBody;
                                   _onChanged();
                                 },
-                                onEdit: () => setState(() {
-                                  _bodyEditing = true;
-                                  _bodyFocusNode.requestFocus();
-                                }),
+                                onEdit: () => _openIdDocForm(
+                                  context,
+                                  record,
+                                  parseIdDocumentTemplate(_bodyController.text),
+                                ),
                                 categoryRow: _buildCategoryRow(l10n, theme, colorScheme, record),
                                 suggestionRow: _buildSuggestionRow(l10n, theme, colorScheme),
                                 tagRow: _buildTagRow(l10n, theme, colorScheme, record),
