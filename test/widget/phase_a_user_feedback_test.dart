@@ -130,8 +130,14 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(TextField), findsOneWidget);
-      // FAB should be hidden in search state
-      expect(find.byKey(const Key('home_speed_dial_fab')), findsNothing);
+      // FAB should be hidden in search state (Round 6 §2: FAB stays in tree
+      // with opacity 0 instead of being removed)
+      final fabFinder = find.byKey(const Key('home_speed_dial_fab'));
+      expect(fabFinder, findsOneWidget);
+      final opacityWidget = tester.widget<AnimatedOpacity>(
+        find.ancestor(of: fabFinder, matching: find.byType(AnimatedOpacity)),
+      );
+      expect(opacityWidget.opacity, 0);
 
       // Tap blank area (the empty search prompt SliverFillRemaining)
       await tester.tap(find.text('输入关键词搜索全部记录'));
