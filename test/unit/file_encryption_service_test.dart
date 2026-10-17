@@ -12,15 +12,25 @@ void main() {
   group('FileEncryptionService', () {
     late MemoryKeyValueStore store;
     late FileEncryptionService svc;
+    late Directory tempDir;
 
-    setUp(() {
+    setUp(() async {
       store = MemoryKeyValueStore();
       svc = FileEncryptionService(store: store);
+      tempDir = await Directory.systemTemp.createTemp('file_enc_test_');
     });
+
+    tearDown(() async {
+      if (await tempDir.exists()) {
+        await tempDir.delete(recursive: true);
+      }
+    });
+
+    File tempFile(String name) => File('${tempDir.path}/$name.enc');
 
     test('encrypt/decrypt roundtrip', () async {
       final plain = Uint8List.fromList(List.generate(256, (i) => i % 256));
-      final file = File('${Directory.systemTemp.path}/test_enc_${DateTime.now().microsecondsSinceEpoch}.enc');
+      final file = tempFile('enc');
 
       await svc.writeEncrypted(file, plain);
       expect(await file.exists(), isTrue);
@@ -33,12 +43,11 @@ void main() {
       final decrypted = await svc.readDecrypted(file);
       expect(decrypted, plain);
 
-      await file.delete();
     });
 
     test('tampered ciphertext fails authentication', () async {
       final plain = Uint8List.fromList([1, 2, 3, 4, 5]);
-      final file = File('${Directory.systemTemp.path}/test_tamper_${DateTime.now().microsecondsSinceEpoch}.enc');
+      final file = tempFile('tamper');
 
       await svc.writeEncrypted(file, plain);
 
@@ -48,35 +57,32 @@ void main() {
       await file.writeAsBytes(raw);
 
       expect(
-        () => svc.readDecrypted(file),
+        svc.readDecrypted(file),
         throwsA(isA<FileEncryptionError>()),
       );
 
-      await file.delete();
     });
 
     test('bad magic throws', () async {
-      final file = File('${Directory.systemTemp.path}/test_magic_${DateTime.now().microsecondsSinceEpoch}.enc');
+      final file = tempFile('magic');
       await file.writeAsBytes(Uint8List.fromList(List.filled(40, 0)));
 
       expect(
-        () => svc.readDecrypted(file),
+        svc.readDecrypted(file),
         throwsA(isA<FileEncryptionError>()),
       );
 
-      await file.delete();
     });
 
     test('truncated file throws', () async {
-      final file = File('${Directory.systemTemp.path}/test_trunc_${DateTime.now().microsecondsSinceEpoch}.enc');
+      final file = tempFile('trunc');
       await file.writeAsBytes(Uint8List.fromList([0x53, 0x56, 0x46])); // only 3 bytes
 
       expect(
-        () => svc.readDecrypted(file),
+        svc.readDecrypted(file),
         throwsA(isA<FileEncryptionError>()),
       );
 
-      await file.delete();
     });
 
     test('corrupt key is not overwritten (fail closed)', () async {
@@ -84,7 +90,7 @@ void main() {
       await store.write(kFileKeyStoreKey, 'not-valid-base64!!!');
 
       expect(
-        () => svc.ensureKey(),
+        svc.ensureKey(),
         throwsA(isA<FileEncryptionError>()),
       );
 
@@ -98,7 +104,7 @@ void main() {
       await store.write(kFileKeyStoreKey, 'aGVsbG8='); // "hello" = 5 bytes
 
       expect(
-        () => svc.ensureKey(),
+        svc.ensureKey(),
         throwsA(isA<FileEncryptionError>()),
       );
 
@@ -116,8 +122,8 @@ void main() {
 
     test('different nonces produce different ciphertexts', () async {
       final plain = Uint8List.fromList([1, 2, 3, 4]);
-      final file1 = File('${Directory.systemTemp.path}/test_nonce1_${DateTime.now().microsecondsSinceEpoch}.enc');
-      final file2 = File('${Directory.systemTemp.path}/test_nonce2_${DateTime.now().microsecondsSinceEpoch}.enc');
+      final file1 = tempFile('nonce1');
+      final file2 = tempFile('nonce2');
 
       await svc.writeEncrypted(file1, plain);
       await svc.writeEncrypted(file2, plain);

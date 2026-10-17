@@ -30,8 +30,11 @@ void main() {
     });
 
     test('preset templates (non-blank) have non-empty bodies in zh and en', () {
-      final nonBlank = NoteTemplate.all.where((t) => t.id != 'blank');
-      expect(nonBlank.length, 5);
+      // Round 5 §1.3: the id_document template body is intentionally empty —
+      // creating a document opens IdDocForm directly instead of filling text.
+      final nonBlank = NoteTemplate.all
+          .where((t) => t.id != 'blank' && t.id != 'id_document');
+      expect(nonBlank.length, 4);
 
       for (final template in nonBlank) {
         expect(template.bodyZh.trim(), isNotEmpty);
@@ -54,13 +57,15 @@ void main() {
       expect(passwordTemplate.bodyEn, contains('Password:'));
     });
 
-    test('id_document template body contains docType and docNumber in zh and en', () {
+    test('id_document template body is empty (opens IdDocForm directly)', () {
+      // Round 5 §1.3: selecting the 证件 template no longer fills a text
+      // template; the form opens directly.
       final idDocTemplate = NoteTemplate.byId('id_document');
       expect(idDocTemplate, isNotNull);
-      expect(idDocTemplate!.bodyZh, contains('证件类型：'));
-      expect(idDocTemplate.bodyZh, contains('证件号码：'));
-      expect(idDocTemplate.bodyEn, contains('Document type:'));
-      expect(idDocTemplate.bodyEn, contains('Document number:'));
+      expect(idDocTemplate!.bodyZh, isEmpty);
+      expect(idDocTemplate.bodyEn, isEmpty);
+      expect(idDocTemplate.getBody('zh'), isEmpty);
+      expect(idDocTemplate.getBody('en'), isEmpty);
     });
 
     test('byId retrieves template or null for unknown id', () {

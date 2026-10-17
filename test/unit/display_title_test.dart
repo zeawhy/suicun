@@ -34,7 +34,12 @@ void main() {
         title: '',
         body: '证件类型：身份证\n姓名：张三\n证件号码：110101199003072391',
       );
-      expect(displayTitleFor(r, untitled: '未命名记录'), '身份证 · 张三');
+      // Legacy body decodes to type key 'cn_resident_id'; without a
+      // context the fallback is defaultDocType.
+      expect(
+          displayTitleFor(r,
+              untitled: '未命名记录', defaultDocType: '证件'),
+          '证件 · 张三');
     });
 
     test('ID document template without name: formats docType only', () {
@@ -42,7 +47,10 @@ void main() {
         title: '',
         body: '证件类型：港澳通行证\n证件号码：C12345678',
       );
-      expect(displayTitleFor(r, untitled: '未命名记录'), '港澳通行证');
+      expect(
+          displayTitleFor(r,
+              untitled: '未命名记录', defaultDocType: '证件'),
+          '证件');
     });
 
     test('ID document template without docType: uses default docType', () {
@@ -50,7 +58,10 @@ void main() {
         title: '',
         body: '姓名：李四\n证件号码：110101199003072391',
       );
-      expect(displayTitleFor(r, untitled: '未命名记录'), '证件 · 李四');
+      expect(
+          displayTitleFor(r,
+              untitled: '未命名记录', defaultDocType: '证件'),
+          '证件 · 李四');
     });
 
     test('ID document template empty fields: falls back to default docType', () {
@@ -58,7 +69,10 @@ void main() {
         title: '',
         body: '证件类型：\n证件号码：12345',
       );
-      expect(displayTitleFor(r, untitled: '未命名记录'), '证件');
+      expect(
+          displayTitleFor(r,
+              untitled: '未命名记录', defaultDocType: '证件'),
+          '证件');
     });
 
     test('Password template: returns website/app name', () {

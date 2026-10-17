@@ -183,7 +183,7 @@ void main() {
         ),
       ));
       await tester.pumpAndSettle();
-      expect(find.text('居民身份证 · 王小二'), findsOneWidget);
+      expect(find.text('China Resident ID · 王小二'), findsOneWidget);
 
       // 2. QuickAccessGrid 中的胶囊
       await tester.pumpWidget(wrapWithTheme(
@@ -194,7 +194,7 @@ void main() {
         ),
       ));
       await tester.pumpAndSettle();
-      expect(find.text('居民身份证 · 王小二'), findsOneWidget);
+      expect(find.text('China Resident ID · 王小二'), findsOneWidget);
 
       // 3. RecentOpenedBar 中的 chip
       await tester.pumpWidget(wrapWithTheme(
@@ -204,14 +204,14 @@ void main() {
         ),
       ));
       await tester.pumpAndSettle();
-      expect(find.text('居民身份证 · 王小二'), findsOneWidget);
+      expect(find.text('China Resident ID · 王小二'), findsOneWidget);
 
       // 4. IdPresentationPage 顶部出示标题
       await tester.pumpWidget(wrapWithTheme(
         IdPresentationPage(record: idRecord),
       ));
       await tester.pumpAndSettle();
-      expect(find.text('居民身份证 · 王小二'), findsWidgets);
+      expect(find.text('China Resident ID · 王小二'), findsWidgets);
 
       // 清理 IdPresentationPage 退出时的计时器
       await tester.pumpWidget(const SizedBox());

@@ -156,6 +156,7 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
         title: '',
         body: _bodyController.text,
         untitled: '',
+        context: context,
       );
       if (autoTitle.isNotEmpty) {
         _titleController.text = autoTitle;

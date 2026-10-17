@@ -12,6 +12,7 @@ import 'package:suicun/features/records/domain/record_model.dart';
 import 'package:suicun/features/records/presentation/home_sort_provider.dart';
 import 'package:suicun/features/records/presentation/search/pinyin_search_helper.dart';
 import 'package:suicun/features/records/presentation/template_views/id_photo_storage.dart';
+import 'package:suicun/features/records/domain/id_doc_codec.dart';
 import 'package:suicun/features/records/presentation/template_views/template_detector.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
 import 'package:suicun/shared/theme/app_theme.dart';
@@ -543,13 +544,11 @@ class RecordCard extends StatelessWidget {
         );
 
       case RecordCardTemplateType.idDocument:
-        final idData = parseIdDocumentTemplate(record.body);
-        final docType = idData?.docType?.trim();
-        final num = idData?.docNumber?.trim() ?? '';
+        // Round 5 §1.2: decode via codec (structured or legacy body).
+        final idDoc = decodeIdDocBody(record.body);
+        final num = idDoc?.number?.trim() ?? '';
         final maskedNum = _maskDocNumber(num);
-        final prefix =
-            (docType != null && docType.isNotEmpty) ? '$docType: ' : '';
-        final fullText = '$prefix$maskedNum';
+        final fullText = maskedNum;
         final baseStyle = theme.textTheme.bodyMedium?.copyWith(
           fontSize: 13,
           color: colorScheme.onSurfaceVariant,
@@ -700,7 +699,9 @@ class RecordCard extends StatelessWidget {
   }
 
   Widget _buildThumbnail() {
-    final idData = parseIdDocumentTemplate(record.body);
+    // Round 5 §1.2: bodies are structured (codec); legacy "label: value"
+    // bodies still decode via the codec.
+    final idData = decodeIdDocBody(record.body);
     final photoPath = idData?.photoFront?.isNotEmpty == true
         ? idData!.photoFront
         : (idData?.photoBack?.isNotEmpty == true ? idData!.photoBack : null);

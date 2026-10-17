@@ -105,7 +105,7 @@ void main() {
     expect(await exportFile.exists(), isTrue);
     final exported =
         jsonDecode(await exportFile.readAsString()) as Map<String, dynamic>;
-    expect(exported['schema_version'], 1);
+    expect(exported['schema_version'], 2);
     expect((exported['records'] as List), hasLength(4));
     expect((exported['categories'] as List), hasLength(2));
     expect((exported['tags'] as List), hasLength(2));

@@ -2,7 +2,10 @@
 // Verification tests for Phase 2 (P1: 交互概念收敛, T6-T10)
 
 import 'dart:io';
+import 'dart:typed_data';
 import 'dart:ui' show ImageFilter;
+
+import 'package:flutter/services.dart';
 
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +14,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:suicun/core/crypto/file_encryption_service.dart';
 import 'package:suicun/core/database/app_database.dart';
 import 'package:suicun/core/database/providers.dart';
 import 'package:suicun/features/categories/domain/category_model.dart';
@@ -24,6 +28,39 @@ import 'package:suicun/l10n/generated/app_localizations.dart';
 import 'package:suicun/main.dart';
 import 'package:suicun/shared/theme/app_theme.dart';
 import 'package:suicun/shared/widgets/record_card.dart';
+
+/// In-memory mock for flutter_secure_storage's method channel so the
+/// default [FileEncryptionService] works in widget tests.
+void installFakeSecureStorage() {
+  final store = <String, String>{};
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+      .setMockMethodCallHandler(
+    const MethodChannel('plugins.it_nomads.com/flutter_secure_storage'),
+    (MethodCall call) async {
+      final args = (call.arguments as Map?)?.cast<String, dynamic>() ?? {};
+      final key = args['key'] as String?;
+      switch (call.method) {
+        case 'write':
+          if (key != null) store[key] = args['value'] as String? ?? '';
+          return null;
+        case 'read':
+          return key != null ? store[key] : null;
+        case 'delete':
+          if (key != null) store.remove(key);
+          return null;
+        case 'containsKey':
+          return key != null && store.containsKey(key);
+        case 'readAll':
+          return Map<String, String>.from(store);
+        case 'deleteAll':
+          store.clear();
+          return null;
+        default:
+          return null;
+      }
+    },
+  );
+}
 
 class _FakePathProvider extends PathProviderPlatform {
   _FakePathProvider(this.dir);
@@ -406,16 +443,24 @@ void main() {
   group('T10: 身份证照片缩略图默认模糊', () {
     testWidgets('RecordCard renders blurred image with visibility_off_outlined overlay for idDocument with photo',
         (tester) async {
-      final photosDir = Directory('${tempDir.path}/id_photos')..createSync(recursive: true);
-      final photoFile = File('${photosDir.path}/front.jpg');
-      photoFile.writeAsBytesSync(kTransparentImageBytes);
+      // NOTE: testWidgets bodies run in a FakeAsync zone — real async I/O
+      // (secure storage channel, file encryption) must run inside runAsync.
+      await tester.runAsync(() async {
+        installFakeSecureStorage();
+        final photosDir = Directory('${tempDir.path}/id_photos')
+          ..createSync(recursive: true);
+        // Round 5 §2.3: ID photos are stored encrypted (.enc).
+        final photoFile = File('${photosDir.path}/front.enc');
+        await FileEncryptionService().writeEncrypted(
+            photoFile, Uint8List.fromList(kTransparentImageBytes));
+      });
 
       final now = DateTime.now();
       final record = RecordDetail(
         record: RecordModel(
           id: 'rec-id-photo',
           title: '居民身份证',
-          body: '证件类型：身份证\n姓名：张三\n证件号码：110101199003072345\n证件照片正面：id_photos/front.jpg',
+          body: '证件类型：身份证\n姓名：张三\n证件号码：110101199003072345\n证件照片正面：id_photos/front.enc',
           isFavorite: false,
           createdAt: now,
           updatedAt: now,
