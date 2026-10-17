@@ -1254,4 +1254,46 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get presentIdDocument => 'Present ID';
+
+  @override
+  String get plaintextExportConfirmTitle => 'Unencrypted Export';
+
+  @override
+  String get plaintextExportConfirm =>
+      'The exported file is unencrypted and contains sensitive information such as ID numbers and passwords. Continue?';
+
+  @override
+  String get fullBackup => 'Full Backup';
+
+  @override
+  String get exportEncryptedBackupRecommended =>
+      'Export Encrypted Backup (Recommended)';
+
+  @override
+  String get exportEncryptedBackupSubtitle =>
+      'Password required; use when restoring on another device';
+
+  @override
+  String get restoreBackup => 'Restore Backup';
+
+  @override
+  String get restoreBackupSubtitle => 'Supports encrypted and JSON backups';
+
+  @override
+  String get exportOtherFormats => 'Export in Other Formats';
+
+  @override
+  String get exportJsonUnencrypted => 'Export JSON (Unencrypted)';
+
+  @override
+  String get exportJsonSubtitle => 'Plaintext, readable by anyone';
+
+  @override
+  String get importSectionTitle => 'Import';
+
+  @override
+  String get importMarkdownOrTxt => 'Import Markdown / TXT';
+
+  @override
+  String get reportIssue => 'Feedback / Report Issue';
 }

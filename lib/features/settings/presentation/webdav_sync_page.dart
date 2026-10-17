@@ -650,6 +650,11 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
                 ],
                 const SizedBox(height: 12),
                 _buildE2eCard(l10n, theme, colorScheme),
+                if (isEnabled) ...[
+                  const SizedBox(height: 12),
+                  _buildRemoveCredentialsCard(l10n, theme, colorScheme),
+                ],
+                const SizedBox(height: 24),
               ],
             ),
     );
@@ -875,59 +880,48 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            InkWell(
-              borderRadius: BorderRadius.circular(8),
-              onTap: overview.conflictCount > 0
-                  ? () => context.push('/settings/webdav/conflicts')
-                  : null,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  children: [
-                    Icon(
-                      overview.conflictCount > 0
-                          ? Icons.warning_amber_rounded
-                          : Icons.check_circle_outline,
-                      size: 20,
-                      color: overview.conflictCount > 0
-                          ? colorScheme.error
-                          : colorScheme.onSurfaceVariant,
-                      semanticLabel: l10n.conflictCount(overview.conflictCount),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        l10n.conflictCount(overview.conflictCount),
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: overview.conflictCount > 0
-                              ? colorScheme.error
-                              : null,
-                          fontWeight: overview.conflictCount > 0
-                              ? FontWeight.w600
-                              : FontWeight.normal,
+            if (overview.conflictCount > 0) ...[
+              const SizedBox(height: 8),
+              InkWell(
+                borderRadius: BorderRadius.circular(8),
+                onTap: () => context.push('/settings/webdav/conflicts'),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.warning_amber_rounded,
+                        size: 20,
+                        color: Color(0xFFE65100),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          l10n.conflictCount(overview.conflictCount),
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: const Color(0xFFE65100),
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
-                    ),
-                    if (overview.conflictCount > 0) ...[
                       Text(
                         l10n.viewConflicts,
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: colorScheme.primary,
+                          color: const Color(0xFFE65100),
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       const SizedBox(width: 4),
-                      Icon(
+                      const Icon(
                         Icons.chevron_right,
                         size: 18,
-                        color: colorScheme.primary,
+                        color: Color(0xFFE65100),
                       ),
                     ],
-                  ],
+                  ),
                 ),
               ),
-            ),
+            ],
             if (overview.lockedKeyCount > 0) ...[
               const SizedBox(height: 8),
               Container(
@@ -1013,20 +1007,6 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
                 onPressed: canSyncNow ? () => _handleSyncNow(l10n) : null,
               ),
             ),
-            if (overview.enabled) ...[
-              const SizedBox(height: 12),
-              Center(
-                child: TextButton(
-                  style: TextButton.styleFrom(
-                    foregroundColor: colorScheme.error,
-                  ),
-                  onPressed: _disablingAction
-                      ? null
-                      : () => _confirmRemoveCredentials(l10n),
-                  child: Text(l10n.removeCredentials),
-                ),
-              ),
-            ],
           ],
         ),
       ),
@@ -1041,87 +1021,124 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
     final serverUrl = _urlController.text.trim();
     final username = _userController.text.trim();
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              l10n.settings,
-              style: theme.textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: colorScheme.primary,
-              ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(4, 4, 4, 8),
+          child: Text(
+            l10n.settings,
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: colorScheme.primary,
+              letterSpacing: 0.2,
             ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Icon(
-                  Icons.dns_outlined,
-                  size: 20,
-                  color: colorScheme.onSurfaceVariant,
-                  semanticLabel: l10n.webdavUrl,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        l10n.webdavUrl,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                      Text(
-                        serverUrl.isEmpty ? '-' : serverUrl,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w500,
-                        ),
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Icon(
-                  Icons.person_outline,
-                  size: 20,
-                  color: colorScheme.onSurfaceVariant,
-                  semanticLabel: l10n.username,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        l10n.username,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                      Text(
-                        username.isEmpty ? '-' : username,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w500,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ],
+          ),
         ),
+        Card(
+          margin: EdgeInsets.zero,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.dns_outlined,
+                      size: 20,
+                      color: colorScheme.onSurfaceVariant,
+                      semanticLabel: l10n.webdavUrl,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n.webdavUrl,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                          Text(
+                            serverUrl.isEmpty ? '-' : serverUrl,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w500,
+                            ),
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.person_outline,
+                      size: 20,
+                      color: colorScheme.onSurfaceVariant,
+                      semanticLabel: l10n.username,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n.username,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                          Text(
+                            username.isEmpty ? '-' : username,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w500,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRemoveCredentialsCard(
+    AppLocalizations l10n,
+    ThemeData theme,
+    ColorScheme colorScheme,
+  ) {
+    return Card(
+      margin: EdgeInsets.zero,
+      child: ListTile(
+        leading: Icon(
+          Icons.delete_outline,
+          color: colorScheme.error,
+        ),
+        title: Text(
+          l10n.removeCredentials,
+          style: TextStyle(
+            color: colorScheme.error,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        trailing: Icon(
+          Icons.chevron_right,
+          color: colorScheme.error.withValues(alpha: 0.7),
+        ),
+        onTap: _disablingAction ? null : () => _confirmRemoveCredentials(l10n),
       ),
     );
   }
@@ -2031,11 +2048,16 @@ class _WebdavSyncPageState extends ConsumerState<WebdavSyncPage> {
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
+            const Icon(
+              Icons.check_circle,
+              size: 14,
+              color: Color(0xFF4CAF50),
+            ),
+            const SizedBox(width: 4),
             Text(
               l10n.e2eEnabled,
               style: theme.textTheme.bodySmall?.copyWith(
-                color: colorScheme.primary,
-                fontWeight: FontWeight.w600,
+                color: colorScheme.onSurfaceVariant,
               ),
             ),
             const SizedBox(width: 4),

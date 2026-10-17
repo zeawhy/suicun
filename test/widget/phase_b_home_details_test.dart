@@ -70,11 +70,13 @@ void main() {
   });
 
   Widget wrapWithTheme(Widget child) {
-    return MaterialApp(
-      theme: AppTheme.lightTheme(),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: Scaffold(body: child),
+    return ProviderScope(
+      child: MaterialApp(
+        theme: AppTheme.lightTheme(),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(body: child),
+      ),
     );
   }
 

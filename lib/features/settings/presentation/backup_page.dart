@@ -1,7 +1,8 @@
 // lib/features/settings/presentation/backup_page.dart
-// Backup & restore: JSON export/import, Markdown ZIP export, TXT export.
-// Restyled with grouped cards; all business logic unchanged.
+// Backup & restore: full backup (encrypted export + auto-detect restore),
+// other exports (plaintext JSON/Markdown ZIP/TXT with warning), text import.
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
@@ -54,35 +55,12 @@ class _BackupPageState extends ConsumerState<BackupPage> {
     }
   }
 
-  Future<void> _runJsonImport(AppLocalizations l10n) async {
-    if (_busy) return;
-    final picked = await FilePicker.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['json'],
-    );
-    final path = picked.isEmpty ? null : picked.first.path;
-    if (path == null) return;
-
-    final service = ref.read(backupServiceProvider);
-    final file = File(path);
-
-    int count;
-    try {
-      count = await service.previewJsonImport(file);
-    } on AppError catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.importFailed(e.message))),
-      );
-      return;
-    }
-
-    if (!mounted) return;
+  Future<bool> _confirmPlaintextExport(AppLocalizations l10n) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(l10n.importData),
-        content: Text(l10n.importPreview(count)),
+        title: Text(l10n.plaintextExportConfirmTitle),
+        content: Text(l10n.plaintextExportConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
@@ -95,26 +73,254 @@ class _BackupPageState extends ConsumerState<BackupPage> {
         ],
       ),
     );
-    if (confirmed != true) return;
+    return confirmed == true;
+  }
 
+  Future<void> _runPlaintextExport(
+    AppLocalizations l10n,
+    Future<File> Function() exportFn,
+  ) async {
+    if (_busy) return;
+    final ok = await _confirmPlaintextExport(l10n);
+    if (!ok || !mounted) return;
+    await _runExport(l10n, exportFn);
+  }
+
+  /// Password dialog for encrypted backup. Returns the password or null.
+  Future<String?> _askBackupPassword(
+      AppLocalizations l10n, bool confirm) async {
+    final c1 = TextEditingController();
+    final c2 = TextEditingController();
+    String? error;
+    return showDialog<String>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setState) => AlertDialog(
+          title: Text(l10n.encryptedBackup),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(l10n.backupPasswordHint,
+                  style: Theme.of(ctx).textTheme.bodySmall),
+              const SizedBox(height: 12),
+              TextField(
+                controller: c1,
+                obscureText: true,
+                decoration:
+                    InputDecoration(labelText: l10n.backupPassword),
+              ),
+              if (confirm)
+                TextField(
+                  controller: c2,
+                  obscureText: true,
+                  decoration:
+                      InputDecoration(labelText: l10n.confirmPassword),
+                ),
+              if (error != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(error!,
+                      style: TextStyle(
+                          color: Theme.of(ctx).colorScheme.error)),
+                ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text(MaterialLocalizations.of(ctx).cancelButtonLabel),
+            ),
+            FilledButton(
+              onPressed: () {
+                if (confirm && c1.text != c2.text) {
+                  setState(() => error = l10n.passwordMismatch);
+                  return;
+                }
+                if (c1.text.length < 8) {
+                  setState(() => error = l10n.passwordTooShort);
+                  return;
+                }
+                Navigator.of(ctx).pop(c1.text);
+              },
+              child: Text(MaterialLocalizations.of(ctx).okButtonLabel),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _exportEncrypted(AppLocalizations l10n) async {
+    if (_busy) return;
+    final password = await _askBackupPassword(l10n, true);
+    if (password == null || !mounted) return;
     setState(() => _busy = true);
     try {
-      final imported = await service.importJson(file);
-      ref.invalidate(recordsListProvider);
-      ref.invalidate(trashListProvider);
+      final file =
+          await ref.read(backupServiceProvider).exportEncryptedBackup(password);
+      if (!mounted) return;
+      await SharePlus.instance.share(
+        ShareParams(files: [XFile(file.path)], subject: l10n.encryptedBackup),
+      );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.importSuccess(imported))),
+          SnackBar(content: Text(l10n.exportSuccess)),
         );
       }
     } on AppError catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.importFailed(e.message))),
+          SnackBar(content: Text(l10n.exportFailed(e.message))),
         );
       }
     } finally {
       if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _runRestoreBackup(AppLocalizations l10n) async {
+    if (_busy) return;
+    final picked = await FilePicker.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['json'],
+    );
+    final path = picked.isEmpty ? null : picked.first.path;
+    if (path == null || !mounted) return;
+
+    final file = File(path);
+    final service = ref.read(backupServiceProvider);
+
+    final String content;
+    try {
+      content = await file.readAsString();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.importFailed(e.toString()))),
+      );
+      return;
+    }
+
+    dynamic decoded;
+    try {
+      decoded = jsonDecode(content);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.importFailed('Invalid JSON file'))),
+      );
+      return;
+    }
+
+    final isEncrypted = decoded is Map<String, dynamic> &&
+        decoded['format'] == 'suicun-encrypted-backup';
+
+    if (isEncrypted) {
+      final password = await _askBackupPassword(l10n, false);
+      if (password == null || !mounted) return;
+
+      int count;
+      try {
+        count = await service.previewEncryptedImport(file, password);
+      } on AppError catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.importFailed(e.message))),
+        );
+        return;
+      }
+
+      if (!mounted) return;
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(l10n.importEncryptedBackup),
+          content: Text(l10n.importPreview(count)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: Text(l10n.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: Text(l10n.confirm),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true || !mounted) return;
+
+      setState(() => _busy = true);
+      try {
+        final imported = await service.importEncryptedBackup(file, password);
+        ref.invalidate(recordsListProvider);
+        ref.invalidate(trashListProvider);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.importSuccess(imported))),
+          );
+        }
+      } on AppError catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.importFailed(e.message))),
+          );
+        }
+      } finally {
+        if (mounted) setState(() => _busy = false);
+      }
+    } else {
+      int count;
+      try {
+        count = await service.previewJsonImport(file);
+      } on AppError catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.importFailed(e.message))),
+        );
+        return;
+      }
+
+      if (!mounted) return;
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(l10n.importData),
+          content: Text(l10n.importPreview(count)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: Text(l10n.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: Text(l10n.confirm),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true || !mounted) return;
+
+      setState(() => _busy = true);
+      try {
+        final imported = await service.importJson(file);
+        ref.invalidate(recordsListProvider);
+        ref.invalidate(trashListProvider);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.importSuccess(imported))),
+          );
+        }
+      } on AppError catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.importFailed(e.message))),
+          );
+        }
+      } finally {
+        if (mounted) setState(() => _busy = false);
+      }
     }
   }
 
@@ -170,6 +376,7 @@ class _BackupPageState extends ConsumerState<BackupPage> {
     Widget actionTile({
       required IconData icon,
       required String title,
+      String? subtitle,
       required VoidCallback? onTap,
     }) {
       return ListTile(
@@ -192,8 +399,17 @@ class _BackupPageState extends ConsumerState<BackupPage> {
           title,
           style: theme.textTheme.bodyMedium?.copyWith(
             fontWeight: FontWeight.w600,
+            color: theme.colorScheme.onSurface,
           ),
         ),
+        subtitle: subtitle != null
+            ? Text(
+                subtitle,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              )
+            : null,
         trailing: Icon(
           Icons.chevron_right,
           color: theme.colorScheme.onSurfaceVariant,
@@ -209,17 +425,40 @@ class _BackupPageState extends ConsumerState<BackupPage> {
           ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              groupTitle(l10n.export),
+              groupTitle(l10n.fullBackup),
+              Card(
+                margin: EdgeInsets.zero,
+                child: Column(
+                  children: [
+                    actionTile(
+                      icon: Icons.lock_outline,
+                      title: l10n.exportEncryptedBackupRecommended,
+                      subtitle: l10n.exportEncryptedBackupSubtitle,
+                      onTap: _busy ? null : () => _exportEncrypted(l10n),
+                    ),
+                    const Divider(height: 1, indent: 56, endIndent: 16),
+                    actionTile(
+                      icon: Icons.restore_outlined,
+                      title: l10n.restoreBackup,
+                      subtitle: l10n.restoreBackupSubtitle,
+                      onTap: _busy ? null : () => _runRestoreBackup(l10n),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              groupTitle(l10n.exportOtherFormats),
               Card(
                 margin: EdgeInsets.zero,
                 child: Column(
                   children: [
                     actionTile(
                       icon: Icons.file_download_outlined,
-                      title: l10n.exportJson,
+                      title: l10n.exportJsonUnencrypted,
+                      subtitle: l10n.exportJsonSubtitle,
                       onTap: _busy
                           ? null
-                          : () => _runExport(l10n, service.exportJson),
+                          : () => _runPlaintextExport(l10n, service.exportJson),
                     ),
                     const Divider(height: 1, indent: 56, endIndent: 16),
                     actionTile(
@@ -227,7 +466,8 @@ class _BackupPageState extends ConsumerState<BackupPage> {
                       title: l10n.exportMarkdownZip,
                       onTap: _busy
                           ? null
-                          : () => _runExport(l10n, service.exportMarkdownZip),
+                          : () => _runPlaintextExport(
+                              l10n, service.exportMarkdownZip),
                     ),
                     const Divider(height: 1, indent: 56, endIndent: 16),
                     actionTile(
@@ -235,29 +475,19 @@ class _BackupPageState extends ConsumerState<BackupPage> {
                       title: l10n.exportTxt,
                       onTap: _busy
                           ? null
-                          : () => _runExport(l10n, service.exportTxt),
+                          : () => _runPlaintextExport(l10n, service.exportTxt),
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 20),
-              groupTitle(l10n.importData),
+              groupTitle(l10n.importSectionTitle),
               Card(
                 margin: EdgeInsets.zero,
-                child: Column(
-                  children: [
-                    actionTile(
-                      icon: Icons.restore_outlined,
-                      title: l10n.importJson,
-                      onTap: _busy ? null : () => _runJsonImport(l10n),
-                    ),
-                    const Divider(height: 1, indent: 56, endIndent: 16),
-                    actionTile(
-                      icon: Icons.note_add_outlined,
-                      title: l10n.importMarkdown,
-                      onTap: _busy ? null : () => _runTextImport(l10n),
-                    ),
-                  ],
+                child: actionTile(
+                  icon: Icons.note_add_outlined,
+                  title: l10n.importMarkdownOrTxt,
+                  onTap: _busy ? null : () => _runTextImport(l10n),
                 ),
               ),
             ],

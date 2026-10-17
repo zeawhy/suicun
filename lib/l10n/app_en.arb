@@ -568,5 +568,18 @@
   "presentAutoBrightnessTitle": "Increase Brightness When Presenting ID",
   "presentAutoBrightnessSubtitle": "Convenient for others to view or scan",
   "presentBrightness": "Brightness",
-  "presentIdDocument": "Present ID"
+  "presentIdDocument": "Present ID",
+  "plaintextExportConfirmTitle": "Unencrypted Export",
+  "plaintextExportConfirm": "The exported file is unencrypted and contains sensitive information such as ID numbers and passwords. Continue?",
+  "fullBackup": "Full Backup",
+  "exportEncryptedBackupRecommended": "Export Encrypted Backup (Recommended)",
+  "exportEncryptedBackupSubtitle": "Password required; use when restoring on another device",
+  "restoreBackup": "Restore Backup",
+  "restoreBackupSubtitle": "Supports encrypted and JSON backups",
+  "exportOtherFormats": "Export in Other Formats",
+  "exportJsonUnencrypted": "Export JSON (Unencrypted)",
+  "exportJsonSubtitle": "Plaintext, readable by anyone",
+  "importSectionTitle": "Import",
+  "importMarkdownOrTxt": "Import Markdown / TXT",
+  "reportIssue": "Feedback / Report Issue"
 }

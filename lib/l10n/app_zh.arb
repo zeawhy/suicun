@@ -568,5 +568,18 @@
   "presentAutoBrightnessTitle": "出示证件时调高亮度",
   "presentAutoBrightnessSubtitle": "方便他人查看或扫码",
   "presentBrightness": "亮度",
-  "presentIdDocument": "出示证件"
+  "presentIdDocument": "出示证件",
+  "plaintextExportConfirmTitle": "未加密导出确认",
+  "plaintextExportConfirm": "导出的文件未加密，包含证件号和密码等敏感信息。确定继续？",
+  "fullBackup": "完整备份",
+  "exportEncryptedBackupRecommended": "导出加密备份（推荐）",
+  "exportEncryptedBackupSubtitle": "需设置密码，换设备恢复时使用",
+  "restoreBackup": "恢复备份",
+  "restoreBackupSubtitle": "支持加密备份与 JSON 备份",
+  "exportOtherFormats": "导出为其他格式",
+  "exportJsonUnencrypted": "导出 JSON（未加密）",
+  "exportJsonSubtitle": "明文，任何人可读取",
+  "importSectionTitle": "导入",
+  "importMarkdownOrTxt": "导入 Markdown / TXT",
+  "reportIssue": "反馈问题"
 }

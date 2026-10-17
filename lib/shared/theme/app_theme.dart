@@ -249,6 +249,20 @@ class AppTheme {
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
+      switchTheme: SwitchThemeData(
+        trackOutlineColor: WidgetStateProperty.resolveWith((s) =>
+            s.contains(WidgetState.selected)
+                ? Colors.transparent
+                : colorScheme.outline),
+        thumbColor: WidgetStateProperty.resolveWith((s) =>
+            s.contains(WidgetState.selected)
+                ? colorScheme.onPrimary
+                : colorScheme.outline),
+        trackColor: WidgetStateProperty.resolveWith((s) =>
+            s.contains(WidgetState.selected)
+                ? colorScheme.primary
+                : colorScheme.surfaceContainerHighest),
+      ),
       extensions: const [
         SuiVaultColors.light,
       ],
@@ -417,6 +431,20 @@ class AppTheme {
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+      switchTheme: SwitchThemeData(
+        trackOutlineColor: WidgetStateProperty.resolveWith((s) =>
+            s.contains(WidgetState.selected)
+                ? Colors.transparent
+                : colorScheme.outline),
+        thumbColor: WidgetStateProperty.resolveWith((s) =>
+            s.contains(WidgetState.selected)
+                ? colorScheme.onPrimary
+                : colorScheme.outline),
+        trackColor: WidgetStateProperty.resolveWith((s) =>
+            s.contains(WidgetState.selected)
+                ? colorScheme.primary
+                : colorScheme.surfaceContainerHighest),
       ),
       extensions: const [
         SuiVaultColors.dark,
