@@ -16,7 +16,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:suicun/features/records/domain/id_doc_data.dart';
 import 'package:suicun/features/records/domain/id_doc_expiry.dart';
 import 'package:suicun/features/records/presentation/id_doc_types.dart';
-import 'package:suicun/features/records/presentation/template_views/id_doc_type.dart';
 import 'package:suicun/features/records/presentation/template_views/id_expiry_pill.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
 import 'package:suicun/shared/utils/mask_doc_number.dart';
