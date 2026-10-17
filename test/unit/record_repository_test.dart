@@ -6,8 +6,11 @@
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:suicun/core/database/app_database.dart';
+import 'package:suicun/core/errors/app_errors.dart';
 import 'package:suicun/features/categories/data/category_repository.dart';
 import 'package:suicun/features/records/data/record_repository.dart';
+import 'package:suicun/features/records/domain/id_doc_codec.dart';
+import 'package:suicun/features/records/domain/id_doc_data.dart';
 import 'package:suicun/features/tags/data/tag_repository.dart';
 
 void main() {
@@ -384,6 +387,77 @@ void main() {
       // Table still intact
       final all = await recordRepo.searchRecords();
       expect(all, hasLength(1));
+    });
+  });
+
+  group('round 7 §3.2: id document body protection', () {
+    test('refuses to overwrite a valid id doc body with garbage', () async {
+      final created = await recordRepo.createRecord(
+        title: '身份证',
+        body: encodeIdDocBody(
+          const IdDocData(type: 'cn_resident_id', name: '张三'),
+        ),
+      );
+      expect(
+        () => recordRepo.updateRecord(created.id, body: 'plain text now'),
+        throwsA(isA<DatabaseError>()),
+      );
+      // Database untouched.
+      final fetched = await recordRepo.getRecord(created.id);
+      expect(isIdDocBody(fetched!.body), isTrue);
+      expect(decodeIdDocBody(fetched.body)?.name, '张三');
+    });
+
+    test('refuses mangled json, allows valid id doc updates', () async {
+      final created = await recordRepo.createRecord(
+        title: '身份证',
+        body: encodeIdDocBody(
+          const IdDocData(type: 'cn_resident_id', name: '张三'),
+        ),
+      );
+      // Mangled JSON after the marker -> refused.
+      expect(
+        () => recordRepo.updateRecord(
+          created.id,
+          body: '$kIdDocBodyMarker\n{broken',
+        ),
+        throwsA(isA<DatabaseError>()),
+      );
+      // A valid new id doc body -> allowed.
+      final updated = await recordRepo.updateRecord(
+        created.id,
+        body: encodeIdDocBody(
+          const IdDocData(type: 'passport', name: 'Li'),
+        ),
+      );
+      expect(decodeIdDocBody(updated.body)?.type, 'passport');
+    });
+
+    test('non-id records are unaffected by the guard', () async {
+      final created = await recordRepo.createRecord(
+        title: 'note',
+        body: 'hello',
+      );
+      final updated = await recordRepo.updateRecord(
+        created.id,
+        body: 'world',
+      );
+      expect(updated.body, 'world');
+    });
+
+    test('body-less updates (favorite/category) are unaffected', () async {
+      final created = await recordRepo.createRecord(
+        title: '身份证',
+        body: encodeIdDocBody(
+          const IdDocData(type: 'cn_resident_id', name: '张三'),
+        ),
+      );
+      final updated = await recordRepo.updateRecord(
+        created.id,
+        isFavorite: true,
+      );
+      expect(updated.isFavorite, isTrue);
+      expect(isIdDocBody(updated.body), isTrue);
     });
   });
 }

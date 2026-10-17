@@ -2,11 +2,13 @@
 // Data layer for records — wraps AppDatabase with domain mapping.
 
 import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:uuid/uuid.dart';
 
 import 'package:suicun/core/database/app_database.dart';
 import 'package:suicun/core/errors/app_errors.dart';
 import 'package:suicun/features/categories/domain/category_model.dart';
+import 'package:suicun/features/records/domain/id_doc_codec.dart';
 import 'package:suicun/features/records/domain/record_model.dart';
 import 'package:suicun/features/sync/sync_enqueuer.dart';
 import 'package:suicun/features/tags/domain/tag_model.dart';
@@ -121,6 +123,24 @@ class RecordRepository {
     bool clearCategoryId = false,
   }) async {
     final now = DateTime.now().toUtc();
+
+    // Round 7 §3.2: never overwrite a valid ID document body with content
+    // that no longer parses. Any caller bug that mangles the body is
+    // refused here instead of corrupting the database.
+    if (body != null) {
+      final current = await getRecord(id);
+      final oldBody = current?.record.body ?? '';
+      if (decodeIdDocBody(oldBody) != null && decodeIdDocBody(body) == null) {
+        debugPrint(
+          '[record_repository] Refusing to overwrite valid ID document '
+          'body for record $id: new body does not decode.',
+        );
+        throw DatabaseError(
+          'Refusing to overwrite a valid ID document body with '
+          'unparseable content',
+        );
+      }
+    }
 
     try {
       await _db.transaction(() async {

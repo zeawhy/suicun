@@ -82,6 +82,17 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
 
   bool get _isNew => widget.recordId == null;
 
+  /// Round 7 §3.1: stable structured-record detection. Unlike the
+  /// [isIdDocRecord]/[isPasswordTemplateRecord] view selectors in [build],
+  /// this does NOT depend on [_bodyEditing], so entering text-edit mode can
+  /// never flip an ID document or password into "plain note" treatment and
+  /// expose the raw-text mutation buttons.
+  bool get _isIdDocStructured => isIdDocBody(_bodyController.text);
+  bool get _isPasswordStructured =>
+      !_isIdDocStructured &&
+      parsePasswordTemplate(_bodyController.text) != null;
+  bool get _isStructuredRecord => _isIdDocStructured || _isPasswordStructured;
+
   /// 「⋯」按钮的 key，用来给气泡菜单定位。
   final GlobalKey _menuAnchorKey = GlobalKey();
 
@@ -129,6 +140,9 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
   }
 
   void _switchTemplate(String templateId) {
+    // Round 7 §3.1/§3.5: never splice template text into structured bodies
+    // (ID document / password) — it would corrupt the structured format.
+    if (_isStructuredRecord) return;
     final locale = Localizations.localeOf(context).languageCode;
     final template = NoteTemplate.byId(templateId);
     if (template != null) {
@@ -691,7 +705,19 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
     if (!_initialized) {
       if (state.record != null) {
         _titleController.text = state.record!.title;
-        _bodyController.text = state.record!.body;
+        var body = state.record!.body;
+        // Round 7 §3.3: silently repair Markdown-prefixed ID document
+        // bodies on open (e.g. "- [ ] " added by the old insert-todo
+        // button). The repaired body is saved once via the normal
+        // auto-save chain; no user prompt.
+        final repaired = repairPrefixedIdDocBody(body);
+        if (repaired != null) {
+          body = repaired;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) _onChanged();
+          });
+        }
+        _bodyController.text = body;
         _initialized = true;
       } else if (_isNew &&
           widget.initialText != null &&
@@ -1209,13 +1235,18 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
               child: Row(
                 children: [
                   // 模板切换胶囊
+                  // Round 7 §3.1: structured records (ID doc / password)
+                  // show the type label only — tapping must not splice
+                  // template text into the structured body.
                   InkWell(
-                    onTap: () async {
-                      final selected = await showTemplateSheet(context);
-                      if (selected != null && mounted) {
-                        _switchTemplate(selected);
-                      }
-                    },
+                    onTap: _isStructuredRecord
+                        ? null
+                        : () async {
+                            final selected = await showTemplateSheet(context);
+                            if (selected != null && mounted) {
+                              _switchTemplate(selected);
+                            }
+                          },
                     borderRadius: BorderRadius.circular(14),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
@@ -1250,20 +1281,24 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
                   ),
                   const SizedBox(width: 6),
                   // 快捷插入待办 checkbox
-                  IconButton(
-                    icon: const Icon(Icons.check_box_outlined, size: 20),
-                    tooltip: l10n.formatCheckbox,
-                    padding: EdgeInsets.zero,
-                    constraints:
-                        const BoxConstraints(minWidth: 36, minHeight: 36),
-                    onPressed: () {
-                      if (!_bodyEditing) {
-                        setState(() => _bodyEditing = true);
-                      }
-                      _applyLineFormat(toggleCheckboxAt);
-                    },
-                  ),
-                  const SizedBox(width: 6),
+                  // Round 7 §3.1: hidden for structured records (ID document
+                  // / password) — prepending "- [ ] " would corrupt the
+                  // structured body.
+                  if (!_isStructuredRecord)
+                    IconButton(
+                      icon: const Icon(Icons.check_box_outlined, size: 20),
+                      tooltip: l10n.formatCheckbox,
+                      padding: EdgeInsets.zero,
+                      constraints:
+                          const BoxConstraints(minWidth: 36, minHeight: 36),
+                      onPressed: () {
+                        if (!_bodyEditing) {
+                          setState(() => _bodyEditing = true);
+                        }
+                        _applyLineFormat(toggleCheckboxAt);
+                      },
+                    ),
+                  if (!_isStructuredRecord) const SizedBox(width: 6),
                   // 智能分类推荐 Chip
                   if (_suggestions.isNotEmpty)
                     Expanded(
@@ -1313,11 +1348,16 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
     ColorScheme colorScheme,
   ) {
     final text = _bodyController.text;
-    if (_bodyEditing) {
+    // Round 7 §3.1: ID documents never enter raw-text editing — the body
+    // is only editable through IdDocForm.
+    if (_bodyEditing && !_isIdDocStructured) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildFormatToolbar(l10n, theme, colorScheme),
+          // Round 7 §3.1/§3.5: no format toolbar for structured records
+          // (ID document / password).
+          if (!_isStructuredRecord)
+            _buildFormatToolbar(l10n, theme, colorScheme),
           TextField(
             controller: _bodyController,
             focusNode: _bodyFocusNode,
@@ -1431,6 +1471,8 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
 
   /// Applies a line-level format op at the current cursor position.
   void _applyLineFormat(FormatEditResult Function(String, int) op) {
+    // Round 7 §3.5: never mutate structured bodies through text ops.
+    if (_isStructuredRecord) return;
     final selection = _bodyController.selection;
     final offset = selection.isValid
         ? selection.baseOffset
@@ -1447,6 +1489,8 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
   /// Applies bold to the current selection, or inserts `****` with the
   /// cursor in the middle when nothing is selected.
   void _applyBoldFormat() {
+    // Round 7 §3.5: never mutate structured bodies through text ops.
+    if (_isStructuredRecord) return;
     final selection = _bodyController.selection;
     final int start;
     final int end;
@@ -1545,6 +1589,8 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
   /// Toggles the checklist item at [lineIndex] and writes the change back
   /// through the normal auto-save chain.
   void _toggleChecklistLine(int lineIndex) {
+    // Round 7 §3.5: never mutate structured bodies through text ops.
+    if (_isStructuredRecord) return;
     final newBody = toggleChecklistLineAt(_bodyController.text, lineIndex);
     if (newBody == _bodyController.text) return;
     _bodyController.text = newBody;

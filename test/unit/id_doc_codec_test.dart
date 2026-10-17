@@ -169,4 +169,61 @@ void main() {
       expect(data.photoBack, 'id_photos/b.jpg');
     });
   });
+
+  group('round 7 §3.3: lenient markdown prefix handling', () {
+    IdDocData sampleData() => IdDocData(
+          type: 'cn_resident_id',
+          name: '张三',
+          number: '110101199003072340',
+          photoFront: 'id_photos/abc_front.enc',
+          note: '备注',
+        );
+
+    test('checkbox-prefixed body decodes and repairs to canonical', () {
+      final canonical = encodeIdDocBody(sampleData());
+      final damaged = '- [ ] $canonical';
+      expect(isIdDocBody(damaged), isTrue);
+      expect(decodeIdDocBody(damaged), equals(sampleData()));
+      expect(repairPrefixedIdDocBody(damaged), canonical);
+      // Re-encoding the repaired body is stable.
+      expect(encodeIdDocBody(decodeIdDocBody(damaged)!), canonical);
+    });
+
+    test('repeated mixed prefixes decode', () {
+      final canonical = encodeIdDocBody(sampleData());
+      const prefixes = [
+        '- [x] - [ ] ',
+        '- [ ] - [x] - [ ] ',
+        '- ',
+        '* ',
+        '- - [ ] ',
+        '  - [ ] ',
+      ];
+      for (final p in prefixes) {
+        final damaged = '$p$canonical';
+        expect(isIdDocBody(damaged), isTrue, reason: p);
+        expect(decodeIdDocBody(damaged), equals(sampleData()), reason: p);
+        expect(repairPrefixedIdDocBody(damaged), canonical, reason: p);
+      }
+    });
+
+    test('no prefix -> repair returns null', () {
+      final canonical = encodeIdDocBody(sampleData());
+      expect(repairPrefixedIdDocBody(canonical), isNull);
+      expect(stripIdDocBodyPrefix(canonical), isNull);
+    });
+
+    test('prefix but unparseable JSON -> no repair, decode null', () {
+      const damaged = '- [ ] suivault:id_doc:v2\n{not json}';
+      expect(isIdDocBody(damaged), isTrue);
+      expect(decodeIdDocBody(damaged), isNull);
+      expect(repairPrefixedIdDocBody(damaged), isNull);
+    });
+
+    test('plain note starting with dash is not an id doc', () {
+      expect(isIdDocBody('- buy milk\n- call mom'), isFalse);
+      expect(decodeIdDocBody('- buy milk'), isNull);
+      expect(repairPrefixedIdDocBody('- buy milk'), isNull);
+    });
+  });
 }

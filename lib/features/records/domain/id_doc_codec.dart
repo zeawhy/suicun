@@ -17,10 +17,31 @@ import 'package:suicun/features/records/presentation/template_views/template_det
 /// Marker line identifying the new structured ID document body format.
 const kIdDocBodyMarker = 'suivault:id_doc:v2';
 
+/// Matches one or more Markdown list/checkbox prefixes at the very start of
+/// a body: `- `, `* `, `- [ ] `, `- [x] `/`- [X] `, possibly repeated, with
+/// optional surrounding spaces/tabs. (Round 7 §3.3: the "insert todo"
+/// button used to prepend `- [ ] ` to ID document bodies.)
+final RegExp _kLeadingListPrefixPattern =
+    RegExp(r'^(?:[ \t]*(?:-\s\[[ xX]\]|[-*])[ \t]*)+');
+
+/// Strips leading Markdown list/checkbox prefixes from [body].
+///
+/// Returns the stripped body, or `null` when no prefix was present.
+String? stripIdDocBodyPrefix(String body) {
+  final match = _kLeadingListPrefixPattern.firstMatch(body);
+  if (match == null) return null;
+  return body.substring(match.end);
+}
+
 /// Returns true if [body] is an ID document body (new or legacy format).
 bool isIdDocBody(String body) {
   final trimmed = body.trimLeft();
   if (trimmed.startsWith(kIdDocBodyMarker)) return true;
+  // Round 7 §3.3: tolerate Markdown list/checkbox prefixes before the marker.
+  final stripped = stripIdDocBodyPrefix(body);
+  if (stripped != null && stripped.trimLeft().startsWith(kIdDocBodyMarker)) {
+    return true;
+  }
   return parseIdDocumentTemplate(body) != null;
 }
 
@@ -42,28 +63,56 @@ IdDocData? decodeIdDocBody(String body, {String origTypeLabel = '原类型'}) {
   // New format: marker line + single-line JSON.
   final trimmedLeft = body.trimLeft();
   if (trimmedLeft.startsWith(kIdDocBodyMarker)) {
-    final lines = body.split('\n');
-    if (lines.length >= 2) {
-      // JSON may itself contain newlines in theory; join the remainder.
-      final jsonText = lines.sublist(1).join('\n').trim();
-      if (jsonText.isNotEmpty) {
-        try {
-          final map = jsonDecode(jsonText) as Map<String, dynamic>;
-          return IdDocData.fromJson(map);
-        } catch (_) {
-          // Corrupted new-format body — fall through to legacy attempt.
-        }
-      }
-    }
-    // Marker present but JSON unusable: do not silently drop; treat as
-    // non-decodable rather than mis-parsing as legacy.
-    return null;
+    return _decodeNewFormat(body);
+  }
+
+  // Round 7 §3.3: lenient — strip Markdown list/checkbox prefixes, then
+  // look for the marker again (e.g. bodies damaged by the "insert todo"
+  // button: "- [ ] suivault:id_doc:v2\n{...}").
+  final stripped = stripIdDocBodyPrefix(body);
+  if (stripped != null && stripped.trimLeft().startsWith(kIdDocBodyMarker)) {
+    return _decodeNewFormat(stripped);
   }
 
   // Legacy format.
   final template = parseIdDocumentTemplate(body);
   if (template == null) return null;
   return _convertLegacyTemplate(template, origTypeLabel: origTypeLabel);
+}
+
+/// Decodes a marker-led new-format body. Returns null when the marker is
+/// present but the JSON payload is unusable (never mis-parses as legacy).
+IdDocData? _decodeNewFormat(String body) {
+  final lines = body.split('\n');
+  if (lines.length >= 2) {
+    // JSON may itself contain newlines in theory; join the remainder.
+    final jsonText = lines.sublist(1).join('\n').trim();
+    if (jsonText.isNotEmpty) {
+      try {
+        final map = jsonDecode(jsonText) as Map<String, dynamic>;
+        return IdDocData.fromJson(map);
+      } catch (_) {
+        // Corrupted new-format body — fall through to null below.
+      }
+    }
+  }
+  // Marker present but JSON unusable: do not silently drop; treat as
+  // non-decodable rather than mis-parsing as legacy.
+  return null;
+}
+
+/// Round 7 §3.3: repairs a Markdown-prefixed ID document body.
+///
+/// Returns the canonical standard-format body when [body] carries list/
+/// checkbox prefixes but still decodes; otherwise returns null (no prefix,
+/// or undecodable even after stripping).
+String? repairPrefixedIdDocBody(String body) {
+  if (stripIdDocBodyPrefix(body) == null) return null;
+  final data = decodeIdDocBody(body);
+  if (data == null) return null;
+  final canonical = encodeIdDocBody(data);
+  if (canonical == body) return null;
+  return canonical;
 }
 
 /// Encodes [data] into the new body format. The output contains no
