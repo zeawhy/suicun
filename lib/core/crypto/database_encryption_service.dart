@@ -88,6 +88,62 @@ class DatabaseEncryptionService {
   /// cannot be opened again (used only for "erase all data" flows).
   Future<void> deleteKey() => _store.delete(kDatabaseKeyStoreKey);
 
+  /// Recovery after unreadable data (§2.6): renames the database files,
+  /// deletes ID photos, and deletes both crypto keys, so the app can
+  /// start fresh.
+  ///
+  /// - `suicun.db` (+ `-wal`/`-shm`/`-journal`) → `suicun.db.unreadable*`
+  ///   (only the most recent set is kept; older `.unreadable` files are
+  ///   deleted first).
+  /// - The `id_photos/` directory is deleted recursively.
+  /// - `suicun.crypto.dbKey.v1` and `suicun.crypto.fileKey.v1` are deleted
+  ///   from secure storage.
+  ///
+  /// [dbFileOverride] and [photosDirOverride] are test-only.
+  Future<void> resetForRecovery({
+    File? dbFileOverride,
+    Directory? photosDirOverride,
+  }) async {
+    final dbFile = dbFileOverride ?? await databaseFile();
+
+    // Delete any previous .unreadable set (keep only the most recent).
+    for (final suffix in ['', '-wal', '-shm', '-journal']) {
+      final old = File('${dbFile.path}.unreadable$suffix');
+      try {
+        if (await old.exists()) await old.delete();
+      } catch (_) {}
+    }
+
+    // Rename the unreadable database files.
+    for (final suffix in ['', '-wal', '-shm', '-journal']) {
+      final src = File('${dbFile.path}$suffix');
+      try {
+        if (await src.exists()) {
+          await src.rename('${dbFile.path}.unreadable$suffix');
+        }
+      } catch (_) {}
+    }
+
+    // Delete ID photos.
+    try {
+      final photosDir = photosDirOverride ??
+          Directory(p.join((await getApplicationDocumentsDirectory()).path,
+              'id_photos'));
+      if (await photosDir.exists()) {
+        await photosDir.delete(recursive: true);
+      }
+    } catch (_) {}
+
+    // Delete both crypto keys.
+    try {
+      await _store.delete(kDatabaseKeyStoreKey);
+    } catch (_) {}
+    try {
+      // Photo key (see file_encryption_service.dart on the photo-encryption branch).
+      await _store.delete('suicun.crypto.fileKey.v1');
+    } catch (_) {}
+  }
+
   /// SQLCipher key literal for `PRAGMA key`: x'<64 hex chars>'.
   /// The hex form avoids any password-based key derivation quirks.
   static String keyLiteral(Uint8List keyBytes) {

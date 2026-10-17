@@ -70,6 +70,13 @@
       }
     }
   },
+  "@lastBackup": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
   "@lastSuccess": {
     "placeholders": {
       "time": {
@@ -227,6 +234,7 @@
   "backupAndSync": "备份与同步",
   "backupPassword": "备份密码",
   "backupPasswordHint": "换设备恢复需要此密码，请妥善保存",
+  "backupReminderText": "你的数据只保存在这台手机上，建议开启加密备份或同步。",
   "batchCategorize": "批量分类",
   "batchDelete": "批量删除",
   "batchFavorite": "批量收藏",
@@ -236,6 +244,8 @@
   "cameraRationaleMessage": "拍照用于拍摄证件照片，仅保存到本应用私有目录",
   "cameraRationaleTitle": "相机权限说明",
   "cancel": "取消",
+  "cantReadData": "无法读取本机数据",
+  "cantReadDataDesc": "这通常发生在换机、刷机或系统数据迁移之后。你可以重新开始，然后从加密备份或 WebDAV 同步恢复数据。",
   "categories": "分类",
   "categoriesEmpty": "还没有分类",
   "category": "分类",
@@ -269,6 +279,7 @@
   "conflictsEmpty": "没有未解决的冲突",
   "conflictsTitle": "同步冲突",
   "connectAndSync": "连接并同步",
+  "connectWebdavSync": "连接 WebDAV 同步",
   "connectionFailed": "连接失败：{error}",
   "connectionSuccess": "连接成功",
   "continueAction": "继续",
@@ -428,11 +439,13 @@
   "keywords": "关键词",
   "keywordsEmpty": "暂无关键词，添加后可自动推荐分类",
   "landscapeAction": "横屏",
+  "lastBackup": "上次备份：{time}",
   "lastSuccess": "上次成功：{time}",
   "lastSuccessNever": "从未成功同步",
   "lastSync": "上次同步",
   "lastSyncTime": "上次同步时间：{time}",
   "lastSyncToday": "今天 {time}",
+  "later": "稍后",
   "linkCopied": "已复制链接",
   "localVersion": "本机版本",
   "lockTimeout": "后台锁定超时",
@@ -458,6 +471,7 @@
   "newVaultPassword": "新库加密密码",
   "noIdNumberRecorded": "未记录证件号码",
   "noPhotoOrNumber": "暂无证件照片与号码",
+  "notBackedUpYet": "尚未备份",
   "notFilled": "未填写",
   "notYetInput": "尚未输入",
   "ok": "确定",
@@ -480,6 +494,7 @@
   "pendingUpload": "待上传",
   "permanentDelete": "彻底删除",
   "permanentDeleteConfirm": "彻底删除后无法恢复。确认吗？",
+  "photoNotOnThisDevice": "照片未保存在此设备",
   "pinLabel": "PIN",
   "pinNotSet": "未设置",
   "pinRecord": "置顶",
@@ -548,6 +563,7 @@
   "restore": "恢复",
   "restoreBackup": "恢复备份",
   "restoreBackupSubtitle": "支持加密备份与 JSON 备份",
+  "restoreDataTitle": "要恢复数据吗？",
   "retry": "重试",
   "save": "保存",
   "saveFailed": "保存失败，点击重试",
@@ -571,6 +587,7 @@
   "selectedCount": "已选 {count} 条",
   "setPin": "设置 PIN",
   "setQuickAccess": "设为常用",
+  "setUp": "去设置",
   "settings": "设置",
   "sharePhoto": "分享照片",
   "showNumberAction": "显示号码",
@@ -587,9 +604,12 @@
   "speedDialBlank": "空白速记",
   "speedDialId": "证件",
   "speedDialPassword": "密码",
+  "startOver": "重新开始",
+  "startOverConfirm": "本机无法读取的数据将被清除，无法撤销。",
   "startRecovery": "开始恢复",
   "startSync": "开始同步",
   "startSyncSetup": "开始同步设置",
+  "startupFailed": "启动失败",
   "sync": "同步",
   "syncCompleted": "同步已完成",
   "syncDirectory": "同步目录",
@@ -609,6 +629,7 @@
   "tags": "标签",
   "tagsEmpty": "还没有标签",
   "takePhoto": "拍照",
+  "technicalDetails": "技术详情",
   "templateBlank": "空白笔记",
   "templateBlankDesc": "从空白开始自由记录",
   "templateContact": "联系人",

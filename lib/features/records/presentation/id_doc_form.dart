@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:suicun/features/records/domain/id_doc_data.dart';
 import 'package:suicun/features/records/presentation/id_doc_types.dart';
 import 'package:suicun/features/records/presentation/template_views/id_photo_storage.dart';
@@ -137,6 +138,11 @@ class _IdDocFormState extends State<IdDocForm> {
       );
       await widget.onSave(data);
       await recordRecentDocType(_selectedType);
+      // §2.7: mark that the user has saved an ID document (backup reminder).
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('id_doc_saved_once', true);
+      } catch (_) {}
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
@@ -468,6 +474,10 @@ class _IdDocFormState extends State<IdDocForm> {
   Widget _buildPhotoRow(BuildContext context, AppLocalizations l10n,
       ThemeData theme, {required bool isFront}) {
     final file = isFront ? _photoFrontFile : _photoBackFile;
+    final rel = isFront ? _photoFrontRel : _photoBackRel;
+    // Path set but file missing on this device (e.g. synced from another
+    // device): show a placeholder that allows re-adding (§2.5).
+    final missing = (rel?.isNotEmpty ?? false) && file == null;
     final label = isFront ? l10n.idPhotoFront : l10n.idPhotoBack;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -487,38 +497,62 @@ class _IdDocFormState extends State<IdDocForm> {
               clipBehavior: Clip.antiAlias,
               child: file != null
                   ? Image.file(file, fit: BoxFit.cover)
-                  : InkWell(
-                      onTap: () => _pickPhoto(context, l10n, isFront: isFront),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.add_a_photo_outlined, size: 24),
-                          const SizedBox(height: 4),
-                          Text(l10n.idPhotoAdd,
-                              style: theme.textTheme.bodySmall),
-                        ],
-                      ),
-                    ),
+                  : missing
+                      ? InkWell(
+                          onTap: () =>
+                              _pickPhoto(context, l10n, isFront: isFront),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.image_not_supported_outlined,
+                                  size: 24),
+                              const SizedBox(height: 4),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 4),
+                                child: Text(l10n.photoNotOnThisDevice,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.center,
+                                    style: theme.textTheme.bodySmall),
+                              ),
+                            ],
+                          ),
+                        )
+                      : InkWell(
+                          onTap: () =>
+                              _pickPhoto(context, l10n, isFront: isFront),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.add_a_photo_outlined, size: 24),
+                              const SizedBox(height: 4),
+                              Text(l10n.idPhotoAdd,
+                                  style: theme.textTheme.bodySmall),
+                            ],
+                          ),
+                        ),
             ),
-            if (file != null) ...[
+            if (file != null || missing) ...[
               const SizedBox(width: 12),
               TextButton.icon(
                   onPressed: () => _pickPhoto(context, l10n, isFront: isFront),
                   icon: const Icon(Icons.refresh_outlined, size: 18),
-                  label: Text(l10n.idPhotoReplace)),
-              TextButton.icon(
-                  onPressed: () => _removePhoto(isFront),
-                  icon: const Icon(Icons.delete_outline, size: 18),
-                  label: Text(l10n.idPhotoRemove),
-                  style: TextButton.styleFrom(
-                      foregroundColor: theme.colorScheme.error)),
+                  label:
+                      Text(missing ? l10n.idPhotoAdd : l10n.idPhotoReplace)),
+              if (file != null)
+                TextButton.icon(
+                    onPressed: () => _removePhoto(isFront),
+                    icon: const Icon(Icons.delete_outline, size: 18),
+                    label: Text(l10n.idPhotoRemove),
+                    style: TextButton.styleFrom(
+                        foregroundColor: theme.colorScheme.error)),
             ],
           ],
         ),
       ],
     );
   }
-
   Future<void> _pickPhoto(BuildContext context, AppLocalizations l10n,
       {required bool isFront}) async {
     final source = await showModalBottomSheet<ImageSource>(

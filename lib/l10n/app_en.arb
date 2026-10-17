@@ -70,6 +70,13 @@
       }
     }
   },
+  "@lastBackup": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
   "@lastSuccess": {
     "placeholders": {
       "time": {
@@ -227,6 +234,7 @@
   "backupAndSync": "Backup & sync",
   "backupPassword": "Backup password",
   "backupPasswordHint": "Needed to restore on a new device. Keep it safe.",
+  "backupReminderText": "Your data is stored only on this phone. Turn on encrypted backup or sync to keep it safe.",
   "batchCategorize": "Categorize",
   "batchDelete": "Delete",
   "batchFavorite": "Favorite",
@@ -236,6 +244,8 @@
   "cameraRationaleMessage": "Taking photos is used to capture ID photos, which are saved only to this app's private storage",
   "cameraRationaleTitle": "Camera Permission",
   "cancel": "Cancel",
+  "cantReadData": "Can't read data on this device",
+  "cantReadDataDesc": "This usually happens after switching phones, resetting your phone, or a system data transfer. You can start over, then restore from an encrypted backup or WebDAV sync.",
   "categories": "Categories",
   "categoriesEmpty": "No categories yet",
   "category": "Category",
@@ -269,6 +279,7 @@
   "conflictsEmpty": "No unresolved conflicts",
   "conflictsTitle": "Sync conflicts",
   "connectAndSync": "Connect & sync",
+  "connectWebdavSync": "Connect WebDAV sync",
   "connectionFailed": "Connection failed: {error}",
   "connectionSuccess": "Connection successful",
   "continueAction": "Continue",
@@ -428,11 +439,13 @@
   "keywords": "Keywords",
   "keywordsEmpty": "No keywords yet — add some to enable smart suggestions",
   "landscapeAction": "Landscape",
+  "lastBackup": "Last backup: {time}",
   "lastSuccess": "Last success: {time}",
   "lastSuccessNever": "Never synced successfully",
   "lastSync": "Last sync",
   "lastSyncTime": "Last sync: {time}",
   "lastSyncToday": "Today {time}",
+  "later": "Later",
   "linkCopied": "Link copied",
   "localVersion": "This device",
   "lockTimeout": "Lock after background",
@@ -458,6 +471,7 @@
   "newVaultPassword": "New vault password",
   "noIdNumberRecorded": "No ID number recorded",
   "noPhotoOrNumber": "No photo or number available",
+  "notBackedUpYet": "Not backed up yet",
   "notFilled": "Not set",
   "notYetInput": "Nothing entered yet",
   "ok": "OK",
@@ -480,6 +494,7 @@
   "pendingUpload": "Pending upload",
   "permanentDelete": "Delete Permanently",
   "permanentDeleteConfirm": "This cannot be undone. Delete permanently?",
+  "photoNotOnThisDevice": "Photo not on this device",
   "pinLabel": "PIN",
   "pinNotSet": "Not set",
   "pinRecord": "Pin to top",
@@ -548,6 +563,7 @@
   "restore": "Restore",
   "restoreBackup": "Restore Backup",
   "restoreBackupSubtitle": "Supports encrypted and JSON backups",
+  "restoreDataTitle": "Restore your data?",
   "retry": "Retry",
   "save": "Save",
   "saveFailed": "Save failed, tap to retry",
@@ -571,6 +587,7 @@
   "selectedCount": "{count} selected",
   "setPin": "Set PIN",
   "setQuickAccess": "Set as quick access",
+  "setUp": "Set up",
   "settings": "Settings",
   "sharePhoto": "Share photo",
   "showNumberAction": "Show number",
@@ -587,9 +604,12 @@
   "speedDialBlank": "Blank note",
   "speedDialId": "ID document",
   "speedDialPassword": "Password",
+  "startOver": "Start over",
+  "startOverConfirm": "The unreadable data on this device will be erased. This can't be undone.",
   "startRecovery": "Start recovery",
   "startSync": "Start sync",
   "startSyncSetup": "Start sync setup",
+  "startupFailed": "Couldn't start",
   "sync": "Sync",
   "syncCompleted": "Sync completed",
   "syncDirectory": "Sync directory",
@@ -609,6 +629,7 @@
   "tags": "Tags",
   "tagsEmpty": "No tags yet",
   "takePhoto": "Take photo",
+  "technicalDetails": "Technical details",
   "templateBlank": "Blank note",
   "templateBlankDesc": "Start from a blank note",
   "templateContact": "Contact",

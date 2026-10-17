@@ -543,6 +543,10 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
             validUntil: validUntil,
             frontPhoto: _cardFrontFile,
             backPhoto: _cardBackFile,
+            frontPhotoMissing: (_photoFrontRel?.isNotEmpty ?? false) &&
+                _cardFrontFile == null,
+            backPhotoMissing: (_photoBackRel?.isNotEmpty ?? false) &&
+                _cardBackFile == null,
             onPresent: () {
               final rec = widget.record;
               if (rec != null) IdPresentationPage.show(context, rec);

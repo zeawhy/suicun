@@ -8,7 +8,9 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:suicun/core/errors/app_errors.dart';
 import 'package:suicun/features/backup/data/backup_providers.dart';
 import 'package:suicun/features/records/presentation/records_notifier.dart';
@@ -151,6 +153,23 @@ class _BackupPageState extends ConsumerState<BackupPage> {
     );
   }
 
+  /// §2.7: milliseconds since epoch of the last successful encrypted backup.
+  Future<int?> _getLastBackupAt() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getInt('last_encrypted_backup_at');
+    } catch (_) {
+      return null;
+    }
+  }
+
+  String _formatBackupTime(BuildContext context, int millis) {
+    final dt = DateTime.fromMillisecondsSinceEpoch(millis);
+    return DateFormat.yMMMd(Localizations.localeOf(context).toString())
+        .add_Hm()
+        .format(dt);
+  }
+
   Future<void> _exportEncrypted(AppLocalizations l10n) async {
     if (_busy) return;
     final password = await _askBackupPassword(l10n, true);
@@ -159,6 +178,13 @@ class _BackupPageState extends ConsumerState<BackupPage> {
     try {
       final file =
           await ref.read(backupServiceProvider).exportEncryptedBackup(password);
+      if (!mounted) return;
+      // §2.7: record successful encrypted backup time.
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setInt('last_encrypted_backup_at',
+            DateTime.now().millisecondsSinceEpoch);
+      } catch (_) {}
       if (!mounted) return;
       await SharePlus.instance.share(
         ShareParams(files: [XFile(file.path)], subject: l10n.encryptedBackup),
@@ -445,6 +471,28 @@ class _BackupPageState extends ConsumerState<BackupPage> {
                     ),
                   ],
                 ),
+              ),
+              const SizedBox(height: 8),
+              // §2.7: last encrypted backup status.
+              FutureBuilder<int?>(
+                future: _getLastBackupAt(),
+                builder: (context, snapshot) {
+                  final ts = snapshot.data;
+                  final text = ts == null
+                      ? l10n.notBackedUpYet
+                      : l10n.lastBackup(_formatBackupTime(context, ts));
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Text(
+                      text,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: ts == null
+                            ? theme.colorScheme.error
+                            : theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  );
+                },
               ),
               const SizedBox(height: 20),
               groupTitle(l10n.exportOtherFormats),
