@@ -15,6 +15,7 @@ import 'package:suicun/features/records/presentation/id_presentation_page.dart';
 import 'package:suicun/features/records/presentation/quick_access_panel.dart';
 import 'package:suicun/features/sync/sync_contract.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
+import 'package:suicun/l10n/generated/app_localizations_zh.dart';
 import 'package:suicun/main.dart';
 
 Future<void> pumpApp(
