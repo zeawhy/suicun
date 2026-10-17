@@ -642,7 +642,7 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
           ),
           FilledButton(
             style: FilledButton.styleFrom(
-              backgroundColor: context.suiColors.danger,
+              backgroundColor: ctx.suiColors.danger,
             ),
             onPressed: () => Navigator.of(ctx).pop(true),
             child: Text(l10n.delete),
