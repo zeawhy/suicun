@@ -25,7 +25,10 @@ Future<void> pumpApp(
   Map<String, Object> initialPrefs = const {},
   Locale locale = const Locale('zh'),
 }) async {
-  SharedPreferences.setMockInitialValues(initialPrefs);
+  SharedPreferences.setMockInitialValues({
+    'onboarding_clipboard_asked': true,
+    ...initialPrefs,
+  });
   final prefs = await SharedPreferences.getInstance();
 
   await tester.pumpWidget(

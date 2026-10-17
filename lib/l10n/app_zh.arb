@@ -545,7 +545,7 @@
   "galleryPermissionTitle": "相册权限说明",
   "galleryPermissionMessage": "保存证件照片到系统相册需要相册权限，照片仅保存到本地相册",
   "clipboardSniffTitle": "剪贴板识别",
-  "clipboardSniffSubtitle": "回到 App 时识别剪贴板中的证件号、地址、链接，仅在本地处理",
+  "clipboardSniffSubtitle": "点击 + 时识别剪贴板中的证件号、地址、链接",
   "setQuickAccess": "设为常用",
   "unsetQuickAccess": "取消常用",
   "quickAccessAdded": "已设为常用",
@@ -560,5 +560,14 @@
   "appLock": "应用锁",
   "appLockStatusEnabled": "已开启",
   "appLockStatusDisabled": "未开启",
-  "dangerousOperations": "危险操作"
+  "dangerousOperations": "危险操作",
+  "onboardingClipboardTitle": "开启剪贴板识别？",
+  "onboardingClipboardBody": "复制证件号、地址或网址后，点「+」时随存会提示你一键保存。内容只在本机识别，不会上传。",
+  "onboardingClipboardEnable": "开启",
+  "onboardingClipboardNotNow": "暂不",
+  "onboardingClipboardFooter": "可随时在 设置 › 安全与隐私 中更改",
+  "presentAutoBrightnessTitle": "出示证件时调高亮度",
+  "presentAutoBrightnessSubtitle": "方便他人查看或扫码",
+  "presentBrightness": "亮度",
+  "presentIdDocument": "出示证件"
 }

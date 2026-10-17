@@ -18,7 +18,11 @@ Future<void> pumpApp(
   AppDatabase db, {
   Map<String, Object> initialPrefs = const {},
 }) async {
-  SharedPreferences.setMockInitialValues(initialPrefs);
+  final merged = {
+    'onboarding_clipboard_asked': true,
+    ...initialPrefs,
+  };
+  SharedPreferences.setMockInitialValues(merged);
   final prefs = await SharedPreferences.getInstance();
 
   await tester.pumpWidget(
@@ -111,7 +115,7 @@ void main() {
         },
       );
 
-      expect(find.byTooltip('出示'), findsOneWidget);
+      expect(find.byTooltip('出示证件'), findsOneWidget);
     });
   });
 
@@ -153,7 +157,10 @@ void main() {
       await tester.pumpAndSettle();
 
       // Check switch list tile in settings
-      final switchListTile = find.byType(SwitchListTile);
+      final switchListTile = find.ancestor(
+        of: find.byIcon(Icons.content_paste_search_outlined),
+        matching: find.byType(SwitchListTile),
+      );
       final settingsScrollable = find.descendant(
         of: find.byType(SettingsView),
         matching: find.byType(Scrollable),
@@ -165,7 +172,10 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(switchListTile, findsOneWidget);
-      final switchFinder = find.byType(Switch);
+      final switchFinder = find.descendant(
+        of: switchListTile,
+        matching: find.byType(Switch),
+      );
       expect(switchFinder, findsOneWidget);
 
       final switchWidget = tester.widget<Switch>(switchFinder);

@@ -2,6 +2,7 @@
 
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -21,7 +22,11 @@ Future<void> pumpApp(
   Map<String, Object> initialPrefs = const {},
   Locale? locale,
 }) async {
-  SharedPreferences.setMockInitialValues(initialPrefs);
+  final merged = {
+    'onboarding_clipboard_asked': true,
+    ...initialPrefs,
+  };
+  SharedPreferences.setMockInitialValues(merged);
   final prefs = await SharedPreferences.getInstance();
 
   await tester.pumpWidget(
@@ -47,6 +52,14 @@ void main() {
 
   setUp(() async {
     db = AppDatabase(NativeDatabase.memory());
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+      const MethodChannel('github.com/aaassseee/screen_brightness'),
+      (call) async {
+        if (call.method == 'getApplicationScreenBrightness') return 0.5;
+        return null;
+      },
+    );
   });
 
   tearDown(() async {
@@ -87,8 +100,8 @@ void main() {
       expect(find.text('常用'), findsOneWidget);
       expect(find.text('2/6'), findsOneWidget);
 
-      // Verify quick action labels: 证件 -> 出示, 密码 -> 复制
-      expect(find.byTooltip('出示'), findsOneWidget);
+      // Verify quick action labels: 证件 -> 出示证件, 密码 -> 复制
+      expect(find.byTooltip('出示证件'), findsOneWidget);
       expect(find.byTooltip('复制'), findsOneWidget);
 
       // Verify titles inside blocks
@@ -124,7 +137,7 @@ void main() {
   });
 
   group('任务 2：出示模式', () {
-    testWidgets('点击出示进入全屏出示模式，包含顶部标题与底部 4 个操作', (tester) async {
+    testWidgets('点击出示进入全屏出示模式，包含顶部标题与底部 5 个操作', (tester) async {
       final now = DateTime.now().toUtc();
       final sampleRecord = RecordDetail(
         record: RecordModel(
@@ -149,8 +162,9 @@ void main() {
       expect(find.textContaining('居民身份证'), findsOneWidget);
       expect(find.byIcon(Icons.close), findsOneWidget);
 
-      // Verify 4 bottom buttons: 横屏, 号码, 复制号码, 放大
+      // Verify 5 bottom buttons: 横屏, 亮度, 号码, 复制号码, 放大
       expect(find.text('横屏'), findsOneWidget);
+      expect(find.text('亮度'), findsOneWidget);
       expect(find.text('隐藏号码'), findsOneWidget);
       expect(find.text('复制号码'), findsOneWidget);
       expect(find.text('放大'), findsOneWidget);

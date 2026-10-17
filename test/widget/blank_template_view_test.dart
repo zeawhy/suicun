@@ -39,7 +39,7 @@ void main() {
   late AppDatabase db;
 
   setUp(() async {
-    SharedPreferences.setMockInitialValues({});
+    SharedPreferences.setMockInitialValues({'onboarding_clipboard_asked': true});
     db = AppDatabase(NativeDatabase.memory());
   });
 

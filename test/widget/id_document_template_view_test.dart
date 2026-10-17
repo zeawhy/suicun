@@ -36,7 +36,7 @@ Widget createTestWidget({
 
 void main() {
   setUp(() {
-    SharedPreferences.setMockInitialValues({});
+    SharedPreferences.setMockInitialValues({'onboarding_clipboard_asked': true});
   });
 
   group('IdDocumentTemplateView widget tests', () {

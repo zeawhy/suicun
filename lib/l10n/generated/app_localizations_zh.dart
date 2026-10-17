@@ -1150,7 +1150,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get clipboardSniffTitle => '剪贴板识别';
 
   @override
-  String get clipboardSniffSubtitle => '回到 App 时识别剪贴板中的证件号、地址、链接，仅在本地处理';
+  String get clipboardSniffSubtitle => '点击 + 时识别剪贴板中的证件号、地址、链接';
 
   @override
   String get setQuickAccess => '设为常用';
@@ -1193,4 +1193,32 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get dangerousOperations => '危险操作';
+
+  @override
+  String get onboardingClipboardTitle => '开启剪贴板识别？';
+
+  @override
+  String get onboardingClipboardBody =>
+      '复制证件号、地址或网址后，点「+」时随存会提示你一键保存。内容只在本机识别，不会上传。';
+
+  @override
+  String get onboardingClipboardEnable => '开启';
+
+  @override
+  String get onboardingClipboardNotNow => '暂不';
+
+  @override
+  String get onboardingClipboardFooter => '可随时在 设置 › 安全与隐私 中更改';
+
+  @override
+  String get presentAutoBrightnessTitle => '出示证件时调高亮度';
+
+  @override
+  String get presentAutoBrightnessSubtitle => '方便他人查看或扫码';
+
+  @override
+  String get presentBrightness => '亮度';
+
+  @override
+  String get presentIdDocument => '出示证件';
 }

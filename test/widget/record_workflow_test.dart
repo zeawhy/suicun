@@ -63,7 +63,7 @@ void main() {
   late AppDatabase db;
 
   setUp(() async {
-    SharedPreferences.setMockInitialValues({});
+    SharedPreferences.setMockInitialValues({'onboarding_clipboard_asked': true});
     db = await freshDb();
   });
 
@@ -192,6 +192,10 @@ void main() {
 
     // Open trash via settings
     await tester.tap(find.byIcon(Icons.menu_rounded));
+    await tester.pumpAndSettle();
+    // The Trash tile may be below the fold in small test viewports;
+    // scroll it into view before tapping.
+    await tester.ensureVisible(find.text('Trash'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Trash'));
     await tester.pumpAndSettle();

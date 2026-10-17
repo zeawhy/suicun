@@ -1180,7 +1180,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get clipboardSniffSubtitle =>
-      'Recognize ID numbers, addresses, and links from clipboard upon returning to app. Processed locally only.';
+      'Recognize ID numbers, addresses, and links from clipboard when tapping +';
 
   @override
   String get setQuickAccess => 'Set as quick access';
@@ -1223,4 +1223,35 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dangerousOperations => 'Dangerous operations';
+
+  @override
+  String get onboardingClipboardTitle => 'Enable Clipboard Recognition?';
+
+  @override
+  String get onboardingClipboardBody =>
+      'After copying ID numbers, addresses, or links, SuiVault can suggest one-tap saving when tapping \"+\". Processed locally only, never uploaded.';
+
+  @override
+  String get onboardingClipboardEnable => 'Enable';
+
+  @override
+  String get onboardingClipboardNotNow => 'Not Now';
+
+  @override
+  String get onboardingClipboardFooter =>
+      'You can change this anytime in Settings › Security & Privacy';
+
+  @override
+  String get presentAutoBrightnessTitle =>
+      'Increase Brightness When Presenting ID';
+
+  @override
+  String get presentAutoBrightnessSubtitle =>
+      'Convenient for others to view or scan';
+
+  @override
+  String get presentBrightness => 'Brightness';
+
+  @override
+  String get presentIdDocument => 'Present ID';
 }
