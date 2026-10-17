@@ -252,6 +252,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get copiedToClipboardMsg => 'Copied to clipboard';
 
   @override
+  String get docNumberCopied => 'Document number copied';
+
+  @override
   String get copy => 'Copy';
 
   @override
@@ -271,6 +274,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get data => 'Data';
+
+  @override
+  String get settingsGroupIdDocuments => 'ID documents';
 
   @override
   String get defaultCategoryIdeas => 'Ideas';
@@ -966,7 +972,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get presentAutoBrightnessSubtitle => 'Easier to read or scan';
 
   @override
-  String get presentAutoBrightnessTitle => 'Boost brightness';
+  String get presentAutoBrightnessTitle =>
+      'Increase brightness in full screen view';
 
   @override
   String get presentBrightness => 'Brightness';
@@ -1342,6 +1349,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get synced => 'Synced';
+
+  @override
+  String get syncStatusOk => 'Synced';
+
+  @override
+  String get syncStatusError => 'Sync error';
 
   @override
   String syncedRecordCount(int synced, int total) {

@@ -187,9 +187,17 @@ class SettingsView extends ConsumerWidget {
                 trailingText: themeText,
                 onTap: () => _showThemeSheet(context, ref, l10n, themeMode),
               ),
-              const Divider(height: 1, indent: 56, endIndent: 16),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        _buildSectionHeader(context, l10n.settingsGroupIdDocuments),
+        Card(
+          margin: EdgeInsets.zero,
+          child: Column(
+            children: [
               SwitchListTile(
-                secondary: const Icon(Icons.brightness_high_outlined),
+                secondary: const Icon(Icons.light_mode_outlined),
                 title: Text(l10n.presentAutoBrightnessTitle),
                 subtitle: Text(
                   l10n.presentAutoBrightnessSubtitle,

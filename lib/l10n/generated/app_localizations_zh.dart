@@ -245,6 +245,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get copiedToClipboardMsg => '已复制到剪贴板';
 
   @override
+  String get docNumberCopied => '已复制证件号码';
+
+  @override
   String get copy => '复制';
 
   @override
@@ -264,6 +267,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get data => '数据';
+
+  @override
+  String get settingsGroupIdDocuments => '证件';
 
   @override
   String get defaultCategoryIdeas => '灵感';
@@ -941,7 +947,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get presentAutoBrightnessSubtitle => '方便他人查看或扫码';
 
   @override
-  String get presentAutoBrightnessTitle => '出示时调高亮度';
+  String get presentAutoBrightnessTitle => '全屏查看时调高亮度';
 
   @override
   String get presentBrightness => '亮度';
@@ -1313,6 +1319,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get synced => '已同步';
+
+  @override
+  String get syncStatusOk => '同步正常';
+
+  @override
+  String get syncStatusError => '同步出错';
 
   @override
   String syncedRecordCount(int synced, int total) {

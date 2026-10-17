@@ -554,6 +554,12 @@ abstract class AppLocalizations {
   /// **'已复制到剪贴板'**
   String get copiedToClipboardMsg;
 
+  /// Snackbar message after copying an ID document number from a record card
+  ///
+  /// In zh, this message translates to:
+  /// **'已复制证件号码'**
+  String get docNumberCopied;
+
   /// No description provided for @copy.
   ///
   /// In zh, this message translates to:
@@ -595,6 +601,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'数据'**
   String get data;
+
+  /// Settings section header for ID document related options
+  ///
+  /// In zh, this message translates to:
+  /// **'证件'**
+  String get settingsGroupIdDocuments;
 
   /// No description provided for @defaultCategoryIdeas.
   ///
@@ -1883,7 +1895,7 @@ abstract class AppLocalizations {
   /// No description provided for @presentAutoBrightnessTitle.
   ///
   /// In zh, this message translates to:
-  /// **'出示时调高亮度'**
+  /// **'全屏查看时调高亮度'**
   String get presentAutoBrightnessTitle;
 
   /// No description provided for @presentBrightness.
@@ -2599,6 +2611,18 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'已同步'**
   String get synced;
+
+  /// Tooltip for home page sync badge when sync is healthy
+  ///
+  /// In zh, this message translates to:
+  /// **'同步正常'**
+  String get syncStatusOk;
+
+  /// Tooltip for home page sync badge when last sync failed
+  ///
+  /// In zh, this message translates to:
+  /// **'同步出错'**
+  String get syncStatusError;
 
   /// No description provided for @syncedRecordCount.
   ///
