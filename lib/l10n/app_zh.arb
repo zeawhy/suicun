@@ -388,7 +388,6 @@
   "idNumberCopied": "证件号码已复制",
   "idNumberCopiedMsg": "证件号码已复制到剪贴板",
   "idNumberLastDigits": "尾号 {digits}",
-  "idNumberMaybeInvalid": "号码格式可能有误",
   "idPhotoAdd": "添加照片",
   "idPhotoBack": "反面照片",
   "idPhotoFront": "正面照片",

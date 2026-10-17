@@ -1,18 +1,17 @@
 // lib/features/records/presentation/id_doc_form.dart
 // Round 4 §3: ID document edit form.
 
+import 'dart:async';
 import 'dart:io';
 
 import 'package:country_picker/country_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:suicun/features/records/domain/id_doc_data.dart';
 import 'package:suicun/features/records/presentation/id_doc_types.dart';
 import 'package:suicun/features/records/presentation/template_views/id_photo_storage.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
-import 'package:suicun/shared/utils/cn_id_validator.dart';
 
 class IdDocForm extends StatefulWidget {
   const IdDocForm({
@@ -53,7 +52,16 @@ class _IdDocFormState extends State<IdDocForm> {
 
   List<IdDocType> _orderedTypes = [];
   bool _isSaving = false;
-  DateTime? _lastSave;
+
+  /// §1.6.1: True debounce — 600ms Timer restarted on every change.
+  Timer? _saveTimer;
+
+  /// Set when a change arrives while [_performSave] is running; triggers
+  /// one more save after the current one finishes.
+  bool _pendingSave = false;
+
+  /// True once the user manually picks a type (§1.6.4).
+  bool _userSelectedType = false;
 
   @override
   void initState() {
@@ -80,7 +88,14 @@ class _IdDocFormState extends State<IdDocForm> {
     final countryCode =
         WidgetsBinding.instance.platformDispatcher.locale.countryCode;
     final ordered = await getOrderedDocTypes(countryCode);
-    if (mounted) setState(() => _orderedTypes = ordered);
+    if (!mounted) return;
+    setState(() => _orderedTypes = ordered);
+    // §1.6.4: New form defaults to the first ordered type.
+    if (widget.initialData == null &&
+        !_userSelectedType &&
+        ordered.isNotEmpty) {
+      setState(() => _selectedType = ordered.first);
+    }
   }
 
   Future<void> _resolvePhotos() async {
@@ -95,27 +110,40 @@ class _IdDocFormState extends State<IdDocForm> {
 
   @override
   void dispose() {
+    _saveTimer?.cancel();
     _nameController.dispose();
     _numberController.dispose();
     _noteController.dispose();
     super.dispose();
   }
 
-  void _onFieldChanged() => _debouncedSave();
-
-  void _debouncedSave() {
-    final now = DateTime.now();
-    if (_lastSave != null &&
-        now.difference(_lastSave!) < const Duration(milliseconds: 800)) {
-      return;
-    }
-    _lastSave = now;
-    _save();
+  void _onFieldChanged() {
+    // §1.6.1: Real debounce — cancel and restart the 600ms timer.
+    _saveTimer?.cancel();
+    _saveTimer = Timer(const Duration(milliseconds: 600), () {
+      _save();
+    });
   }
 
+  /// Debounced save entry point. If a save is already running, just mark
+  /// [_pendingSave] so one more save happens afterwards.
   Future<void> _save() async {
-    if (_isSaving) return;
-    setState(() => _isSaving = true);
+    if (_isSaving) {
+      _pendingSave = true;
+      return;
+    }
+    await _performSave();
+    if (_pendingSave) {
+      _pendingSave = false;
+      await _performSave();
+    }
+  }
+
+  /// The actual save work (no re-entrancy guard here).
+  Future<void> _performSave() async {
+    _isSaving = true;
+    // Show the saving indicator.
+    if (mounted) setState(() {});
     try {
       final data = IdDocData(
         type: _selectedType.storageKey,
@@ -138,7 +166,27 @@ class _IdDocFormState extends State<IdDocForm> {
       await widget.onSave(data);
       await recordRecentDocType(_selectedType);
     } finally {
-      if (mounted) setState(() => _isSaving = false);
+      _isSaving = false;
+      if (mounted) setState(() {});
+    }
+  }
+
+  /// §1.6.1: Final save on page exit. Cancels the debounce timer, waits for
+  /// any in-progress save, then performs one last save to capture the
+  /// latest field values.
+  Future<void> _finalSaveOnExit() async {
+    _saveTimer?.cancel();
+    _saveTimer = null;
+    // Wait for any in-progress save to finish.
+    while (_isSaving) {
+      await Future.delayed(const Duration(milliseconds: 50));
+    }
+    // One last save to capture the latest state.
+    await _performSave();
+    // In case a change snuck in during the final save.
+    if (_pendingSave) {
+      _pendingSave = false;
+      await _performSave();
     }
   }
 
@@ -147,7 +195,15 @@ class _IdDocFormState extends State<IdDocForm> {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
-    return Scaffold(
+    // §1.6.1: Intercept pop to perform a final save and wait for it.
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        await _finalSaveOnExit();
+        if (context.mounted) Navigator.of(context).pop(result);
+      },
+      child: Scaffold(
       appBar: AppBar(
         title: Text(_selectedType.localizedName(l10n)),
         actions: [
@@ -192,6 +248,7 @@ class _IdDocFormState extends State<IdDocForm> {
           ],
           const SizedBox(height: 32),
         ],
+      ),
       ),
     );
   }
@@ -241,7 +298,10 @@ class _IdDocFormState extends State<IdDocForm> {
           _TypePickerSheet(types: _orderedTypes, selected: _selectedType, l10n: l10n),
     );
     if (selected != null && selected != _selectedType) {
-      setState(() => _selectedType = selected);
+      setState(() {
+        _selectedType = selected;
+        _userSelectedType = true;
+      });
       _onFieldChanged();
     }
   }
@@ -256,39 +316,25 @@ class _IdDocFormState extends State<IdDocForm> {
   }
 
   Widget _buildNumberField(AppLocalizations l10n, ThemeData theme) {
-    final showInvalidHint = _selectedType == IdDocType.cnResidentId &&
-        _numberController.text.trim().isNotEmpty &&
-        !isValidCnIdNumber(_numberController.text.trim());
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        TextField(
-          controller: _numberController,
-          obscureText: _obscureNumber,
-          decoration: InputDecoration(
-            labelText: l10n.idFieldNumber,
-            border: const OutlineInputBorder(),
-            suffixIcon: IconButton(
-              icon: Icon(_obscureNumber
-                  ? Icons.visibility_outlined
-                  : Icons.visibility_off_outlined),
-              onPressed: () => setState(() => _obscureNumber = !_obscureNumber),
-            ),
-          ),
-          inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9 \-]')),
-          ],
-          textInputAction: TextInputAction.next,
-          onChanged: (_) => setState(() {}),
+    // §1.6.2: No restrictions on the number — any characters allowed,
+    // no validation hint.
+    return TextField(
+      controller: _numberController,
+      obscureText: _obscureNumber,
+      decoration: InputDecoration(
+        labelText: l10n.idFieldNumber,
+        border: const OutlineInputBorder(),
+        suffixIcon: IconButton(
+          icon: Icon(_obscureNumber
+              ? Icons.visibility_outlined
+              : Icons.visibility_off_outlined),
+          onPressed: () => setState(() => _obscureNumber = !_obscureNumber),
         ),
-        if (showInvalidHint)
-          Padding(
-            padding: const EdgeInsets.only(top: 8, left: 12),
-            child: Text(l10n.idNumberMaybeInvalid,
-                style: theme.textTheme.bodySmall
-                    ?.copyWith(color: theme.colorScheme.error)),
-          ),
-      ],
+      ),
+      keyboardType: TextInputType.visiblePassword,
+      autocorrect: false,
+      enableSuggestions: false,
+      textInputAction: TextInputAction.next,
     );
   }
 
@@ -297,7 +343,12 @@ class _IdDocFormState extends State<IdDocForm> {
     String displayName = '';
     if (_issuingCountryCode != null) {
       try {
-        displayName = Country.parse(_issuingCountryCode!).name;
+        // §1.6.3: Localized country name via CountryLocalizations.
+        displayName =
+            CountryLocalizations.of(context)?.countryName(
+              countryCode: _issuingCountryCode!,
+            ) ??
+            Country.parse(_issuingCountryCode!).name;
       } catch (_) {}
     }
     return Column(
@@ -543,9 +594,14 @@ class _IdDocFormState extends State<IdDocForm> {
     final picker = ImagePicker();
     final picked = await picker.pickImage(source: source, imageQuality: 85);
     if (picked == null) return;
+    // §1.7: Delete the old photo file when replacing.
+    final oldRel = isFront ? _photoFrontRel : _photoBackRel;
     final rel = await saveIdPhoto(picked,
         recordId: widget.recordId, isFront: isFront);
     if (rel == null) return;
+    if (oldRel != null && oldRel != rel) {
+      await deleteIdPhotoFile(oldRel);
+    }
     final file = await resolveIdPhoto(rel);
     if (!mounted) return;
     setState(() {
@@ -560,7 +616,13 @@ class _IdDocFormState extends State<IdDocForm> {
     _onFieldChanged();
   }
 
-  void _removePhoto(bool isFront) {
+  Future<void> _removePhoto(bool isFront) async {
+    // §1.7: Delete the photo file when removing.
+    final oldRel = isFront ? _photoFrontRel : _photoBackRel;
+    if (oldRel != null) {
+      await deleteIdPhotoFile(oldRel);
+    }
+    if (!mounted) return;
     setState(() {
       if (isFront) {
         _photoFrontRel = null;

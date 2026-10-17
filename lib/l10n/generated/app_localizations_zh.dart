@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -572,9 +573,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String idNumberLastDigits(String digits) {
     return '尾号 $digits';
   }
-
-  @override
-  String get idNumberMaybeInvalid => '号码格式可能有误';
 
   @override
   String get idPhotoAdd => '添加照片';

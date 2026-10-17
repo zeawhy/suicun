@@ -1,3 +1,4 @@
+import 'package:country_picker/country_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:suicun/core/crypto/database_encryption_service.dart';
@@ -123,7 +124,11 @@ class SuicunApp extends ConsumerWidget {
       themeMode: currentThemeMode,
       theme: AppTheme.lightTheme(),
       darkTheme: AppTheme.darkTheme(),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      // §1.6.3: CountryLocalizations for localized country names in IdDocForm.
+      localizationsDelegates: [
+        ...AppLocalizations.localizationsDelegates,
+        CountryLocalizations.delegate,
+      ],
       supportedLocales: AppLocalizations.supportedLocales,
       routerConfig: router,
     );

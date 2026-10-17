@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -588,9 +589,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String idNumberLastDigits(String digits) {
     return 'Last $digits digits';
   }
-
-  @override
-  String get idNumberMaybeInvalid => 'Number format may be incorrect';
 
   @override
   String get idPhotoAdd => 'Add photo';

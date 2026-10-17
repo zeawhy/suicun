@@ -176,4 +176,23 @@ class EditRecordNotifier extends _$EditRecordNotifier {
       await _saveFuture;
     }
   }
+
+  /// Ensures a record exists, creating an empty one if necessary.
+  /// Returns the record ID. Used by the ID document new-flow (§1.3)
+  /// which needs a record ID before opening IdDocForm.
+  Future<String> ensureRecordExists() async {
+    if (state.record != null) return state.record!.id;
+    await _serialize(() async {
+      if (state.record != null) return;
+      final repo = ref.read(recordRepositoryProvider);
+      final newRecord = await repo.createRecord(
+        title: '',
+        body: '',
+        isFavorite: false,
+        tagIds: const [],
+      );
+      state = state.copyWith(record: newRecord, saveState: SaveState.saved);
+    });
+    return state.record!.id;
+  }
 }
