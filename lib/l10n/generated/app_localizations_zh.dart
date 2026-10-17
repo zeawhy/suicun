@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -833,6 +834,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get noPhotoOrNumber => '暂无证件照片与号码';
+
+  @override
+  String get photoNotOnDevice => '照片未保存在此设备';
 
   @override
   String get notBackedUpYet => '尚未备份';

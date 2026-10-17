@@ -3,8 +3,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:suicun/core/database/providers.dart';
 import 'package:suicun/features/records/data/autosave_service.dart';
 import 'package:suicun/features/records/domain/record_model.dart';
+import 'package:suicun/features/records/domain/id_doc_codec.dart';
 import 'package:suicun/features/records/presentation/records_notifier.dart';
-import 'package:suicun/features/records/presentation/template_views/template_detector.dart';
 import 'package:suicun/shared/utils/display_title.dart';
 
 part 'edit_record_notifier.g.dart';
@@ -110,7 +110,7 @@ class EditRecordNotifier extends _$EditRecordNotifier {
     final effectiveTitle = (title != null &&
             title.trim().isEmpty &&
             body != null &&
-            isIdDocumentTemplate(body))
+            isIdDocBody(body))
         ? displayTitleFrom(title: '', body: body, untitled: '')
         : title;
     return _serialize(() async {

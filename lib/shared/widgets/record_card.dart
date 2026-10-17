@@ -1,6 +1,5 @@
 // lib/shared/widgets/record_card.dart
 
-import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' show ImageFilter;
 
@@ -13,11 +12,15 @@ import 'package:suicun/features/records/presentation/home_sort_provider.dart';
 import 'package:suicun/features/records/presentation/search/pinyin_search_helper.dart';
 import 'package:suicun/features/records/presentation/template_views/id_photo_storage.dart';
 import 'package:suicun/features/records/domain/id_doc_codec.dart';
+import 'package:suicun/features/records/domain/id_doc_expiry.dart';
+import 'package:suicun/features/records/presentation/id_doc_types.dart';
+import 'package:suicun/features/records/presentation/template_views/id_expiry_pill.dart';
 import 'package:suicun/features/records/presentation/template_views/template_detector.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
 import 'package:suicun/shared/theme/app_theme.dart';
 import 'package:suicun/shared/utils/date_formatter.dart';
 import 'package:suicun/shared/utils/display_title.dart';
+import 'package:suicun/shared/utils/mask_doc_number.dart';
 
 /// Normalized template types for card rendering and core action dispatch.
 enum RecordCardTemplateType {
@@ -86,8 +89,10 @@ class RecordCard extends StatelessWidget {
   final String uncategorizedLabel;
 
   static RecordCardTemplateType _detectTemplateType(String body) {
+    // Round 6 §1: ID document check comes first; isIdDocBody covers both
+    // the new JSON format and legacy label:value text.
+    if (isIdDocBody(body)) return RecordCardTemplateType.idDocument;
     if (isPasswordTemplate(body)) return RecordCardTemplateType.password;
-    if (isIdDocumentTemplate(body)) return RecordCardTemplateType.idDocument;
     if (isContactTemplate(body)) return RecordCardTemplateType.contact;
     if (isTodoTemplate(body)) return RecordCardTemplateType.todo;
     if (isIdeaTemplate(body)) return RecordCardTemplateType.idea;
@@ -120,9 +125,9 @@ class RecordCard extends StatelessWidget {
         }
         return null;
       case RecordCardTemplateType.idDocument:
-        final data = parseIdDocumentTemplate(body);
-        if (data?.docNumber != null && data!.docNumber!.isNotEmpty) {
-          return data.docNumber;
+        final data = decodeIdDocBody(body);
+        if (data?.number != null && data!.number!.isNotEmpty) {
+          return data.number;
         }
         return null;
       case RecordCardTemplateType.contact:
@@ -142,14 +147,6 @@ class RecordCard extends StatelessWidget {
       case RecordCardTemplateType.note:
         return null;
     }
-  }
-
-  static String _maskDocNumber(String raw) {
-    if (raw.isEmpty) return '******';
-    if (raw.length <= 6) return '******';
-    final start = raw.substring(0, 4);
-    final end = raw.substring(raw.length - 4);
-    return '$start${'*' * (raw.length - 8).clamp(2, 8)}$end';
   }
 
   Future<void> _handleCopy(
@@ -200,7 +197,15 @@ class RecordCard extends StatelessWidget {
 
     final templateType = _detectTemplateType(record.body);
     final copyableText = _extractCoreCopyableText(templateType, record.body);
-    final templateIcon = _iconForTemplate(templateType);
+    // Round 6 §1: ID document cards use the per-type icon (e.g. passport →
+    // flight_takeoff_outlined) instead of a generic badge icon.
+    final IconData templateIcon;
+    if (templateType == RecordCardTemplateType.idDocument) {
+      final idDoc = decodeIdDocBody(record.body);
+      templateIcon = IdDocTypeStorage.fromStorageKey(idDoc?.type).icon;
+    } else {
+      templateIcon = _iconForTemplate(templateType);
+    }
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -544,26 +549,35 @@ class RecordCard extends StatelessWidget {
         );
 
       case RecordCardTemplateType.idDocument:
-        // Round 5 §1.2: decode via codec (structured or legacy body).
+        // Round 6 §1: preview row shows "type name · masked number"
+        // (e.g. 护照 · E1•••5678) plus an expiry pill when applicable.
+        // The raw JSON body is never shown.
+        final l10n = AppLocalizations.of(context);
         final idDoc = decodeIdDocBody(record.body);
+        final docType = IdDocTypeStorage.fromStorageKey(idDoc?.type);
+        final typeName = docType.localizedName(l10n);
         final num = idDoc?.number?.trim() ?? '';
-        final maskedNum = _maskDocNumber(num);
-        final fullText = maskedNum;
+        final maskedNum = num.isNotEmpty ? maskDocNumber(num) : '';
+        final previewText =
+            maskedNum.isNotEmpty ? '$typeName · $maskedNum' : typeName;
+        final expiryStatus =
+            idDoc != null ? expiryStatusOf(idDoc) : IdDocExpiryStatus.valid;
         final baseStyle = theme.textTheme.bodyMedium?.copyWith(
           fontSize: 13,
           color: colorScheme.onSurfaceVariant,
           fontFeatures: const [FontFeature.tabularFigures()],
         );
+        final Widget previewLabel;
         if (searchQuery != null && searchQuery!.isNotEmpty) {
           final highlightStyle = baseStyle?.copyWith(
             fontWeight: FontWeight.bold,
             color: colorScheme.primary,
             backgroundColor: colorScheme.primary.withValues(alpha: 0.15),
           );
-          return Text.rich(
+          previewLabel = Text.rich(
             TextSpan(
               children: buildHighlightedSpans(
-                text: fullText,
+                text: previewText,
                 query: searchQuery!,
                 baseStyle: baseStyle,
                 highlightStyle: highlightStyle,
@@ -572,12 +586,22 @@ class RecordCard extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           );
+        } else {
+          previewLabel = Text(
+            previewText,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: baseStyle,
+          );
         }
-        return Text(
-          fullText,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: baseStyle,
+        return Row(
+          children: [
+            Expanded(child: previewLabel),
+            if (expiryStatus != IdDocExpiryStatus.valid) ...[
+              const SizedBox(width: 6),
+              IdExpiryPill(status: expiryStatus),
+            ],
+          ],
         );
 
       case RecordCardTemplateType.contact:

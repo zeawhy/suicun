@@ -108,7 +108,7 @@ void main() {
       expect(find.text('已复制到剪贴板'), findsOneWidget);
     });
 
-    testWidgets('id document record shows badge icon, masked number, and copies docNumber',
+    testWidgets('id document record shows per-type icon, masked number, and copies docNumber',
         (tester) async {
       String? copiedData;
       tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
@@ -138,12 +138,12 @@ void main() {
       await tester.pumpWidget(wrapCard(record: record));
       await tester.pumpAndSettle();
 
-      // Level 1: Badge icon + Copy button
-      expect(find.byIcon(Icons.badge_outlined), findsOneWidget);
+      // Level 1: per-type icon (身份证 -> credit_card_outlined) + Copy button
+      expect(find.byIcon(Icons.credit_card_outlined), findsOneWidget);
       expect(find.byIcon(Icons.copy_rounded), findsOneWidget);
 
-      // Level 2: Masked docNumber
-      expect(find.textContaining('1101********2345'), findsOneWidget);
+      // Level 2: Masked docNumber (global maskDocNumber format with spaces)
+      expect(find.textContaining('1101 **** **** **** 2345'), findsOneWidget);
       expect(find.text('110101199003072345'), findsNothing);
 
       // Tap copy button -> copies raw docNumber
