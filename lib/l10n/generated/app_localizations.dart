@@ -134,6 +134,12 @@ abstract class AppLocalizations {
   /// **'添加标签'**
   String get addTags;
 
+  /// No description provided for @addToQuickAccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'加入常用'**
+  String get addToQuickAccess;
+
   /// No description provided for @addressInfoLabel.
   ///
   /// In zh, this message translates to:
@@ -659,7 +665,7 @@ abstract class AppLocalizations {
   /// No description provided for @deleteRecordConfirm.
   ///
   /// In zh, this message translates to:
-  /// **'删除后可在回收站找回。'**
+  /// **'删除后可以在回收站中恢复。'**
   String get deleteRecordConfirm;
 
   /// No description provided for @deleteRecordTitle.
@@ -1976,6 +1982,12 @@ abstract class AppLocalizations {
   /// **'已设为常用'**
   String get quickAccessAdded;
 
+  /// No description provided for @quickAccessFull.
+  ///
+  /// In zh, this message translates to:
+  /// **'常用已满（最多 6 个）'**
+  String get quickAccessFull;
+
   /// No description provided for @quickAccessHint.
   ///
   /// In zh, this message translates to:
@@ -2033,7 +2045,7 @@ abstract class AppLocalizations {
   /// No description provided for @recordDeleted.
   ///
   /// In zh, this message translates to:
-  /// **'已移至回收站'**
+  /// **'已移到回收站'**
   String get recordDeleted;
 
   /// No description provided for @recordTitleContact.
@@ -2191,6 +2203,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'移除凭据将关闭同步并删除已保存的 WebDAV 账号密码，本地数据保留。确认吗？'**
   String get removeCredentialsConfirm;
+
+  /// No description provided for @removeFromQuickAccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'移出常用'**
+  String get removeFromQuickAccess;
 
   /// No description provided for @rename.
   ///

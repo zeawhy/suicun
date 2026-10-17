@@ -17,6 +17,7 @@ import 'package:suicun/features/records/presentation/checklist_line.dart';
 import 'package:suicun/features/records/presentation/edit_record_notifier.dart';
 import 'package:suicun/features/records/presentation/markdown_line.dart';
 import 'package:suicun/features/records/presentation/note_template.dart';
+import 'package:suicun/features/records/data/quick_access_storage.dart';
 import 'package:suicun/features/records/presentation/records_notifier.dart';
 import 'package:suicun/features/records/presentation/secret_line.dart';
 import 'package:suicun/features/records/presentation/template_views/blank_template_view.dart';
@@ -36,6 +37,7 @@ import 'package:suicun/l10n/generated/app_localizations.dart';
 import 'package:suicun/services/auto_category_service.dart';
 import 'package:suicun/shared/theme/app_theme.dart';
 import 'package:suicun/shared/utils/display_title.dart';
+import 'package:suicun/shared/widgets/action_bubble.dart';
 
 class EditRecordPage extends ConsumerStatefulWidget {
   const EditRecordPage({
@@ -79,6 +81,9 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
   Map<String, String> _suggestionColors = const {};
 
   bool get _isNew => widget.recordId == null;
+
+  /// 「⋯」按钮的 key，用来给气泡菜单定位。
+  final GlobalKey _menuAnchorKey = GlobalKey();
 
   @override
   void initState() {
@@ -577,6 +582,53 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
     _onChanged();
   }
 
+  /// 记录详情页「⋯」气泡菜单：只保留「加入常用/移出常用」和「删除」。
+  /// 分类/标签在页面底部已有入口，不再放进菜单。
+  Future<void> _showRecordMenu(
+      AppLocalizations l10n, RecordDetail? record) async {
+    final recordId = widget.recordId;
+    // 等 provider 加载完成，避免 loading 时误判为未满。
+    final quickIds =
+        await ref.read(quickAccessIdsProvider.future);
+    final isPinned = recordId != null && quickIds.contains(recordId);
+    final isFull = !isPinned &&
+        quickIds.length >= QuickAccessService.maxQuickAccessCount;
+    // 提前拿到 messenger，避免异步闭包里跨 async gap 用 context。
+    final messenger = ScaffoldMessenger.of(context);
+
+    await showActionBubble(
+      context: context,
+      anchorKey: _menuAnchorKey,
+      items: [
+        ActionBubbleItem(
+          icon: isPinned ? Icons.push_pin : Icons.push_pin_outlined,
+          label: isPinned
+              ? l10n.removeFromQuickAccess
+              : l10n.addToQuickAccess,
+          enabled: recordId != null && !isFull,
+          onTap: () async {
+            if (recordId == null) return;
+            if (isFull) {
+              messenger.showSnackBar(
+                SnackBar(content: Text(l10n.quickAccessFull)),
+              );
+              return;
+            }
+            await ref
+                .read(quickAccessIdsProvider.notifier)
+                .toggle(recordId);
+          },
+        ),
+        ActionBubbleItem(
+          icon: Icons.delete_outline,
+          label: l10n.delete,
+          destructive: true,
+          onTap: () => _deleteRecord(l10n, record),
+        ),
+      ],
+    );
+  }
+
   Future<void> _deleteRecord(AppLocalizations l10n, RecordDetail? record) async {
     if (record == null) {
       if (mounted) context.pop();
@@ -585,16 +637,19 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(l10n.delete),
-        content: Text(l10n.recordDeleted),
+        title: Text(l10n.deleteRecordTitle),
+        content: Text(l10n.deleteRecordConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
             child: Text(l10n.cancel),
           ),
           FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: ctx.suiColors.danger,
+            ),
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(l10n.confirm),
+            child: Text(l10n.delete),
           ),
         ],
       ),
@@ -899,24 +954,10 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
                     .toggleFavorite();
               },
             ),
-            PopupMenuButton<String>(
+            IconButton(
+              key: _menuAnchorKey,
               icon: const Icon(Icons.more_horiz),
-              onSelected: (value) {
-                switch (value) {
-                  case 'category':
-                    _pickCategory(l10n, record);
-                  case 'tags':
-                    _pickTags(l10n, record);
-                  case 'delete':
-                    _deleteRecord(l10n, record);
-                }
-              },
-              itemBuilder: (ctx) => [
-                PopupMenuItem(
-                    value: 'category', child: Text(l10n.selectCategory)),
-                PopupMenuItem(value: 'tags', child: Text(l10n.selectTags)),
-                PopupMenuItem(value: 'delete', child: Text(l10n.delete)),
-              ],
+              onPressed: () => _showRecordMenu(l10n, record),
             ),
           ],
         ),

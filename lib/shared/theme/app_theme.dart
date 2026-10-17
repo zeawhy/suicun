@@ -300,6 +300,7 @@ class AppTheme {
       ),
       extensions: const [
         SuiVaultColors.light,
+        ActionBubbleTheme.light,
       ],
     );
   }
@@ -475,6 +476,7 @@ class AppTheme {
       ),
       extensions: const [
         SuiVaultColors.dark,
+        ActionBubbleTheme.dark,
       ],
     );
   }
@@ -568,14 +570,136 @@ class SuiVaultColors extends ThemeExtension<SuiVaultColors> {
   }
 }
 
+/// 圆角气泡菜单（记录详情页「⋯」菜单等）的颜色与尺寸。
+/// 颜色浅色/深色分别配置；尺寸两端共用。页面里不写颜色，统一从这里取。
+class ActionBubbleTheme extends ThemeExtension<ActionBubbleTheme> {
+  const ActionBubbleTheme({
+    required this.background,
+    required this.border,
+    required this.shadow,
+    required this.rowIcon,
+    required this.rowText,
+    required this.destructive,
+    required this.divider,
+    required this.pressedRow,
+    required this.pressedDestructive,
+  });
+
+  // ─── 尺寸（浅色/深色共用，单位 px） ───
+  static const double borderRadius = 16;
+  static const double verticalPadding = 6;
+  static const double rowHeight = 48;
+  static const double rowHPadding = 16;
+  static const double rowHMargin = 6; // 按下态行背景左右留白
+  static const double pressedRadius = 10; // 按下态行内圆角
+  static const double iconSize = 20;
+  static const double fontSize = 15;
+  static const double iconTextGap = 12;
+  static const double dividerIndent = 12;
+  static const double minWidth = 168;
+  static const double maxWidth = 240;
+  static const double anchorGap = 4; // 气泡与「⋯」按钮的垂直间距
+  static const double screenEdgeMargin = 12; // 气泡距屏幕右边缘最小距离
+  static const double barrierOpacity = 0.06; // 遮罩 #202938 透明度
+  static const double disabledOpacity = 0.4;
+  static const double popScaleFrom = 0.92;
+  static const int popInMs = 160;
+  static const int fadeOutMs = 100;
+
+  final Color background;
+  final Color border;
+  final Color shadow;
+  final Color rowIcon;
+  final Color rowText;
+  final Color destructive;
+  final Color divider;
+  final Color pressedRow;
+  final Color pressedDestructive;
+
+  static const ActionBubbleTheme light = ActionBubbleTheme(
+    background: Color(0xFFFFFFFF),
+    border: Color(0xFFE5EAF2),
+    shadow: Color(0x1F202938), // #202938 12%
+    rowIcon: Color(0xFF3265E5),
+    rowText: Color(0xFF202938),
+    destructive: Color(0xFFC43D48),
+    divider: Color(0xFFEEF2F7),
+    pressedRow: Color(0xFFF3F6FB),
+    pressedDestructive: Color(0xFFFDEEEF),
+  );
+
+  static const ActionBubbleTheme dark = ActionBubbleTheme(
+    background: Color(0xFF262E3D),
+    border: Color(0xFF333D4F),
+    shadow: Color(0x66000000), // 黑色 40%
+    rowIcon: Color(0xFF8FB0F5),
+    rowText: Color(0xFFE6EAF2),
+    destructive: Color(0xFFFF8A93),
+    divider: Color(0xFF333D4F),
+    pressedRow: Color(0xFF2F3849),
+    pressedDestructive: Color(0xFF3A2328),
+  );
+
+  @override
+  ActionBubbleTheme copyWith({
+    Color? background,
+    Color? border,
+    Color? shadow,
+    Color? rowIcon,
+    Color? rowText,
+    Color? destructive,
+    Color? divider,
+    Color? pressedRow,
+    Color? pressedDestructive,
+  }) {
+    return ActionBubbleTheme(
+      background: background ?? this.background,
+      border: border ?? this.border,
+      shadow: shadow ?? this.shadow,
+      rowIcon: rowIcon ?? this.rowIcon,
+      rowText: rowText ?? this.rowText,
+      destructive: destructive ?? this.destructive,
+      divider: divider ?? this.divider,
+      pressedRow: pressedRow ?? this.pressedRow,
+      pressedDestructive: pressedDestructive ?? this.pressedDestructive,
+    );
+  }
+
+  @override
+  ActionBubbleTheme lerp(ThemeExtension<ActionBubbleTheme>? other, double t) {
+    if (other is! ActionBubbleTheme) return this;
+    return ActionBubbleTheme(
+      background: Color.lerp(background, other.background, t) ?? background,
+      border: Color.lerp(border, other.border, t) ?? border,
+      shadow: Color.lerp(shadow, other.shadow, t) ?? shadow,
+      rowIcon: Color.lerp(rowIcon, other.rowIcon, t) ?? rowIcon,
+      rowText: Color.lerp(rowText, other.rowText, t) ?? rowText,
+      destructive: Color.lerp(destructive, other.destructive, t) ?? destructive,
+      divider: Color.lerp(divider, other.divider, t) ?? divider,
+      pressedRow: Color.lerp(pressedRow, other.pressedRow, t) ?? pressedRow,
+      pressedDestructive:
+          Color.lerp(pressedDestructive, other.pressedDestructive, t) ??
+              pressedDestructive,
+    );
+  }
+}
+
 extension SuiVaultThemeDataX on ThemeData {
   SuiVaultColors get suiColors =>
       extension<SuiVaultColors>() ??
       (brightness == Brightness.dark
           ? SuiVaultColors.dark
           : SuiVaultColors.light);
+
+  ActionBubbleTheme get actionBubble =>
+      extension<ActionBubbleTheme>() ??
+      (brightness == Brightness.dark
+          ? ActionBubbleTheme.dark
+          : ActionBubbleTheme.light);
 }
 
 extension SuiVaultBuildContextX on BuildContext {
   SuiVaultColors get suiColors => Theme.of(this).suiColors;
+
+  ActionBubbleTheme get actionBubble => Theme.of(this).actionBubble;
 }
