@@ -80,7 +80,7 @@ void main() {
 
         // 2b. Read mode shows the ID card view with hint + present button.
         expect(find.text('长按卡片复制号码'), findsOneWidget);
-        expect(find.text('出示证件'), findsOneWidget);
+        expect(find.text('全屏查看'), findsOneWidget);
 
         // 3. Document number masked by default
         expect(find.byKey(const Key('id_doc_number_masked_text')), findsOneWidget);

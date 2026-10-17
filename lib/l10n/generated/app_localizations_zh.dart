@@ -588,6 +588,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get idFieldType => '证件类型';
 
   @override
+  String get idFullScreenView => '全屏查看';
+
+  @override
   String get idNoExpiry => '长期';
 
   @override
@@ -951,12 +954,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get presentBrightness => '亮度';
-
-  @override
-  String get presentDocument => '出示证件';
-
-  @override
-  String get presentIdDocument => '出示证件';
 
   @override
   String get privacyPolicy => '隐私政策';

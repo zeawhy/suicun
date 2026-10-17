@@ -1232,6 +1232,12 @@ abstract class AppLocalizations {
   /// **'证件类型'**
   String get idFieldType;
 
+  /// No description provided for @idFullScreenView.
+  ///
+  /// In zh, this message translates to:
+  /// **'全屏查看'**
+  String get idFullScreenView;
+
   /// No description provided for @idNoExpiry.
   ///
   /// In zh, this message translates to:
@@ -1903,18 +1909,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'亮度'**
   String get presentBrightness;
-
-  /// No description provided for @presentDocument.
-  ///
-  /// In zh, this message translates to:
-  /// **'出示证件'**
-  String get presentDocument;
-
-  /// No description provided for @presentIdDocument.
-  ///
-  /// In zh, this message translates to:
-  /// **'出示证件'**
-  String get presentIdDocument;
 
   /// No description provided for @privacyPolicy.
   ///

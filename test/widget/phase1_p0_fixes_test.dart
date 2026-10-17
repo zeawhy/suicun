@@ -115,7 +115,7 @@ void main() {
         },
       );
 
-      expect(find.byTooltip('出示证件'), findsOneWidget);
+      expect(find.byTooltip('全屏查看'), findsOneWidget);
     });
   });
 
