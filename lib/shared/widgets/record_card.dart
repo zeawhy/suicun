@@ -158,11 +158,10 @@ class RecordCard extends StatelessWidget {
     await HapticFeedback.lightImpact();
     await Clipboard.setData(ClipboardData(text: text));
     if (!context.mounted) return;
-    final isZh = Localizations.localeOf(context).languageCode == 'zh';
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(isZh ? '已复制到剪贴板' : 'Copied to clipboard'),
+        content: Text(l10n.copiedToClipboardMsg),
         duration: const Duration(seconds: 2),
         behavior: SnackBarBehavior.floating,
       ),

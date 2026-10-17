@@ -12,6 +12,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get about => 'About';
 
   @override
+  String get accountPasswordLabel => 'Account & password';
+
+  @override
   String get addCategory => 'Add Category';
 
   @override
@@ -24,10 +27,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addTags => 'Add tags';
 
   @override
+  String get addressInfoLabel => 'Address information';
+
+  @override
   String get all => 'All';
 
   @override
   String get appLock => 'App lock';
+
+  @override
+  String get appLockStatusDisabled => 'Disabled';
+
+  @override
+  String get appLockStatusEnabled => 'Enabled';
 
   @override
   String get appLocked => 'SuiVault is locked';
@@ -45,10 +57,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoSaveHint => 'Auto-saved, no need to tap save.';
 
   @override
+  String get backSide => 'Back';
+
+  @override
   String get backToSync => 'Back to sync settings';
 
   @override
   String get backup => 'Backup';
+
+  @override
+  String get backupAndExport => 'Backup and export';
+
+  @override
+  String get backupAndSync => 'Backup & sync';
 
   @override
   String get backupPassword => 'Backup password';
@@ -71,6 +92,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get bodyLimit => 'Body is large (>1 MiB), consider splitting';
+
+  @override
+  String get cameraRationaleMessage =>
+      'Taking photos is used to capture ID photos, which are saved only to this app\'s private storage';
+
+  @override
+  String get cameraRationaleTitle => 'Camera Permission';
 
   @override
   String get cancel => 'Cancel';
@@ -97,7 +125,46 @@ class AppLocalizationsEn extends AppLocalizations {
   String get changePin => 'Change PIN';
 
   @override
+  String get chooseFromGallery => 'Choose from gallery';
+
+  @override
+  String get choosePhotoSide => 'Choose photo';
+
+  @override
+  String get clearAllData => 'Clear all data';
+
+  @override
+  String get clearAllDataConfirmContent =>
+      'This action cannot be undone. All local records and ID photos will be permanently deleted.';
+
+  @override
+  String get clearAllDataConfirmTitle => 'Final confirmation';
+
+  @override
+  String get clearAllDataSuccess => 'All data cleared successfully';
+
+  @override
+  String get clearAllDataWarningContent =>
+      'This will delete all records, categories, tags, and ID photos. This action cannot be undone.';
+
+  @override
+  String get clearAllDataWarningTitle => 'Clear all data?';
+
+  @override
   String get clearFilter => 'Clear Filters';
+
+  @override
+  String get clearRecentSearches => 'Clear recent searches';
+
+  @override
+  String get clipboardSniffSubtitle =>
+      'Detect IDs, addresses and links when tapping +';
+
+  @override
+  String get clipboardSniffTitle => 'Clipboard detection';
+
+  @override
+  String get closeAction => 'Close';
 
   @override
   String get configSaved => 'Configuration saved';
@@ -106,13 +173,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get confirm => 'Confirm';
 
   @override
+  String get confirmClearAllData => 'I confirm to delete all data';
+
+  @override
   String get confirmPassword => 'Confirm password';
 
   @override
   String get confirmVaultPassword => 'Confirm encryption password';
-
-  @override
-  String get copyRecoveryKey => 'Copy';
 
   @override
   String conflictCount(int count) {
@@ -150,13 +217,49 @@ class AppLocalizationsEn extends AppLocalizations {
   String get connectionSuccess => 'Connection successful';
 
   @override
+  String get continueAction => 'Continue';
+
+  @override
+  String get copied => 'Copied';
+
+  @override
+  String get copiedToClipboardMsg => 'Copied to clipboard';
+
+  @override
+  String get copy => 'Copy';
+
+  @override
+  String get copyNumberAction => 'Copy number';
+
+  @override
+  String get copyRecoveryKey => 'Copy';
+
+  @override
   String get createNewVault => 'Create new vault';
 
   @override
   String get createdAtPrefix => 'Created';
 
   @override
+  String get dangerousOperations => 'Dangerous operations';
+
+  @override
   String get data => 'Data';
+
+  @override
+  String get defaultCategoryIdeas => 'Ideas';
+
+  @override
+  String get defaultCategoryLife => 'Life';
+
+  @override
+  String get defaultCategoryStudy => 'Study';
+
+  @override
+  String get defaultCategoryTodo => 'To Do';
+
+  @override
+  String get defaultCategoryWork => 'Work';
 
   @override
   String get delete => 'Delete';
@@ -167,6 +270,13 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get deleteCategoryConfirm =>
       'Records in this category will become uncategorized. Delete?';
+
+  @override
+  String get deleteRecordConfirm =>
+      'You can restore it from Trash after deletion.';
+
+  @override
+  String get deleteRecordTitle => 'Delete this record?';
 
   @override
   String get deleteTag => 'Delete Tag';
@@ -184,6 +294,33 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get disableSyncConfirm =>
       'Disabling sync stops network tasks; local data is kept. Confirm?';
+
+  @override
+  String get docTypeCustomHint => 'Enter document type';
+
+  @override
+  String get docTypeDriverLicense => 'Driver License';
+
+  @override
+  String get docTypeHmtPermit => 'Exit-Entry Permit (HK/Macau)';
+
+  @override
+  String get docTypeIdCard => 'ID Card';
+
+  @override
+  String get docTypeOther => 'Other';
+
+  @override
+  String get docTypePassport => 'Passport';
+
+  @override
+  String get docTypePropertyCert => 'Property Certificate';
+
+  @override
+  String get docTypeSocialCard => 'Social Security Card';
+
+  @override
+  String get docTypeVehicleLicense => 'Vehicle License';
 
   @override
   String get duplicateName => 'Name already exists';
@@ -224,13 +361,28 @@ class AppLocalizationsEn extends AppLocalizations {
       'Encrypted with a random key stored in system secure storage';
 
   @override
+  String get enterKeyPassword => 'Enter password to unlock keys';
+
+  @override
   String get enterPin => 'Enter PIN to unlock';
+
+  @override
+  String get existingVaultJoined =>
+      'An existing sync vault was found and joined';
 
   @override
   String get export => 'Export';
 
   @override
   String get exportEncryptedBackup => 'Export encrypted backup';
+
+  @override
+  String get exportEncryptedBackupRecommended =>
+      'Export Encrypted Backup (Recommended)';
+
+  @override
+  String get exportEncryptedBackupSubtitle =>
+      'Password required; use when restoring on another device';
 
   @override
   String exportFailed(String error) {
@@ -241,7 +393,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exportJson => 'Export JSON Backup';
 
   @override
+  String get exportJsonSubtitle => 'Plaintext, readable by anyone';
+
+  @override
+  String get exportJsonUnencrypted => 'Export JSON (Unencrypted)';
+
+  @override
   String get exportMarkdownZip => 'Export Markdown ZIP';
+
+  @override
+  String get exportOtherFormats => 'Export in Other Formats';
 
   @override
   String get exportSuccess => 'Export successful';
@@ -259,16 +420,138 @@ class AppLocalizationsEn extends AppLocalizations {
   String get favorites => 'Favorites';
 
   @override
+  String get fieldAddress => 'Address';
+
+  @override
+  String get fieldDocName => 'Name';
+
+  @override
+  String get fieldDocNumber => 'Document number';
+
+  @override
+  String get fieldDocType => 'Document type';
+
+  @override
+  String get fieldEmail => 'Email';
+
+  @override
+  String get fieldIdea => 'Idea';
+
+  @override
+  String get fieldName => 'Name';
+
+  @override
+  String get fieldNextAction => 'Next action';
+
+  @override
+  String get fieldNotes => 'Notes';
+
+  @override
+  String get fieldPassword => 'Password';
+
+  @override
+  String get fieldPhone => 'Phone';
+
+  @override
+  String get fieldPhotoBack => 'ID photo back';
+
+  @override
+  String get fieldPhotoFront => 'ID photo front';
+
+  @override
+  String get fieldSource => 'Source';
+
+  @override
+  String get fieldUsername => 'Username / Email';
+
+  @override
+  String get fieldValidUntil => 'Valid until';
+
+  @override
+  String get fieldWebsite => 'Website / App';
+
+  @override
   String get filterEmpty => 'No records for this filter';
 
   @override
   String get filterEmptyHint => 'Try another category or clear the filter';
 
   @override
+  String get formatBold => 'Bold';
+
+  @override
+  String get formatBullet => 'Bulleted list';
+
+  @override
+  String get formatCheckbox => 'Checkbox';
+
+  @override
+  String get formatHeading => 'Heading';
+
+  @override
+  String get frontSide => 'Front';
+
+  @override
+  String get fullBackup => 'Full Backup';
+
+  @override
+  String get galleryPermissionMessage =>
+      'Saving ID photos to the system gallery requires gallery permission. Photos are saved to the local gallery only';
+
+  @override
+  String get galleryPermissionTitle => 'Gallery Permission';
+
+  @override
+  String get goToWebdavSettings => 'Open WebDAV settings';
+
+  @override
+  String get hideNumberAction => 'Hide number';
+
+  @override
   String get hidePassword => 'Hide password';
 
   @override
   String get iHaveSavedPassword => 'I have saved the encryption password';
+
+  @override
+  String get idCardBackPhoto => 'Back photo';
+
+  @override
+  String get idCardFlipBack => 'Flip back';
+
+  @override
+  String get idCardFrontPhoto => 'Front photo';
+
+  @override
+  String get idCardHintFlip => 'Tap to flip · Long-press to copy number';
+
+  @override
+  String get idCardHintNoFlip => 'Long-press to copy number';
+
+  @override
+  String get idCardMoreActions => 'More actions';
+
+  @override
+  String get idCardTapToReveal => 'Tap to reveal';
+
+  @override
+  String idCardValidUntil(String date) {
+    return 'Valid until $date';
+  }
+
+  @override
+  String get idDocumentInfo => 'ID information';
+
+  @override
+  String get idNumberCopied => 'Document number copied';
+
+  @override
+  String get idNumberCopiedMsg => 'ID number copied to clipboard';
+
+  @override
+  String idNumberLastDigits(String digits) {
+    return 'Last $digits digits';
+  }
 
   @override
   String get importData => 'Import';
@@ -288,9 +571,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importMarkdown => 'Import Markdown/TXT';
 
   @override
+  String get importMarkdownOrTxt => 'Import Markdown / TXT';
+
+  @override
   String importPreview(int count) {
     return 'About to import $count records';
   }
+
+  @override
+  String get importSectionTitle => 'Import';
 
   @override
   String importSuccess(int count) {
@@ -330,14 +619,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get keywords => 'Keywords';
 
   @override
-  String get manageKeywords => 'Manage keywords';
-
-  @override
-  String get renameCategory => 'Rename';
-
-  @override
   String get keywordsEmpty =>
       'No keywords yet — add some to enable smart suggestions';
+
+  @override
+  String get landscapeAction => 'Landscape';
 
   @override
   String lastSuccess(String time) {
@@ -349,6 +635,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lastSync => 'Last sync';
+
+  @override
+  String lastSyncTime(String time) {
+    return 'Last sync: $time';
+  }
 
   @override
   String lastSyncToday(String time) {
@@ -365,6 +656,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lockTimeout => 'Lock after background';
 
   @override
+  String lockedKeysNotice(int count) {
+    return '$count keys are still locked; some content is temporarily unavailable';
+  }
+
+  @override
   String lockoutTryLater(Object seconds) {
     return 'Too many attempts, try again in ${seconds}s';
   }
@@ -373,10 +669,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get manage => 'Manage';
 
   @override
+  String get manageCategories => 'Manage categories';
+
+  @override
+  String get manageKeywords => 'Manage keywords';
+
+  @override
   String get manualMerge => 'Merge manually';
 
   @override
   String get maxTagsReached => 'Maximum 10 tags';
+
+  @override
+  String get memoNoteLabel => 'Memo note';
 
   @override
   String get mergeBodyHint => 'Merged body';
@@ -388,9 +693,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mergeTitleHint => 'Merged title';
 
   @override
+  String get migrationBackupAndMigrate => 'Backup and Migrate';
+
+  @override
+  String get migrationBody =>
+      'The legacy directory will be kept as a backup; migration is a one-time copy. After migrating, append-only sync with protocol v2 will be used.';
+
+  @override
+  String get migrationTitle => 'Old protocol vault found';
+
+  @override
   String modified(String time) {
     return 'Modified $time';
   }
+
+  @override
+  String get multiSelectActions => 'Multi-select';
 
   @override
   String get myRecords => 'My Info';
@@ -405,13 +723,46 @@ class AppLocalizationsEn extends AppLocalizations {
   String get newVaultPassword => 'New vault password';
 
   @override
+  String get noIdNumberRecorded => 'No ID number recorded';
+
+  @override
+  String get noPhotoOrNumber => 'No photo or number available';
+
+  @override
+  String get notFilled => 'Not set';
+
+  @override
   String get notYetInput => 'Nothing entered yet';
 
   @override
   String get ok => 'OK';
 
   @override
+  String get onboardingClipboardBody =>
+      'After copying ID numbers, addresses, or links, SuiVault can suggest one-tap saving when tapping \"+\". Processed locally only, never uploaded.';
+
+  @override
+  String get onboardingClipboardEnable => 'Enable';
+
+  @override
+  String get onboardingClipboardFooter =>
+      'You can change this anytime in Settings › Security & Privacy';
+
+  @override
+  String get onboardingClipboardNotNow => 'Not Now';
+
+  @override
+  String get onboardingClipboardTitle => 'Enable Clipboard Recognition?';
+
+  @override
   String get password => 'Password';
+
+  @override
+  String get passwordChangeDeferred =>
+      'Password change is not available yet; normal sync is unaffected';
+
+  @override
+  String get passwordCopied => 'Password copied';
 
   @override
   String get passwordMismatch => 'Passwords do not match';
@@ -441,11 +792,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pendingUpload => 'Pending upload';
 
   @override
-  String syncedRecordCount(int synced, int total) {
-    return 'Synced $synced / $total records';
-  }
-
-  @override
   String get permanentDelete => 'Delete Permanently';
 
   @override
@@ -459,6 +805,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pinNotSet => 'Not set';
 
   @override
+  String get pinRecord => 'Pin to top';
+
+  @override
   String get pinSaved => 'PIN saved';
 
   @override
@@ -466,6 +815,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pinTooShort => 'PIN must be at least 4 digits';
+
+  @override
+  String get plaintextExportConfirm =>
+      'The exported file is unencrypted and contains sensitive information such as ID numbers and passwords. Continue?';
+
+  @override
+  String get plaintextExportConfirmTitle => 'Unencrypted Export';
+
+  @override
+  String get presentAutoBrightnessSubtitle => 'Easier to read or scan';
+
+  @override
+  String get presentAutoBrightnessTitle => 'Boost brightness';
+
+  @override
+  String get presentBrightness => 'Brightness';
+
+  @override
+  String get presentDocument => 'Show document';
+
+  @override
+  String get presentIdDocument => 'Present ID';
+
+  @override
+  String get privacyPolicy => 'Privacy Policy';
 
   @override
   String get probeInvalidConfig => 'Configuration incomplete';
@@ -495,12 +869,57 @@ class AppLocalizationsEn extends AppLocalizations {
   String get probeUnreachable => 'Cannot reach the server';
 
   @override
+  String get quickAccessAdded => 'Added to quick access';
+
+  @override
+  String get quickAccessHint => 'Long-press any record to set as quick access';
+
+  @override
+  String get quickAccessLimitReached => 'Maximum 6 quick access items allowed';
+
+  @override
+  String get quickAccessRemoved => 'Removed from quick access';
+
+  @override
+  String get quickAccessTitle => 'Quick access';
+
+  @override
+  String get quickAdd => 'Quick add';
+
+  @override
+  String get quickAddressCopied => 'Address copied to clipboard';
+
+  @override
+  String get quickPasswordCopied => 'Password copied to clipboard';
+
+  @override
+  String get recentlyUsed => 'Recently used';
+
+  @override
   String recordCount(int count) {
     return '$count records';
   }
 
   @override
   String get recordDeleted => 'Moved to trash';
+
+  @override
+  String get recordTitleContact => 'Contact record';
+
+  @override
+  String get recordTitleIdDocument => 'ID Document';
+
+  @override
+  String get recordTitleIdea => 'Idea record';
+
+  @override
+  String get recordTitleNote => 'Note record';
+
+  @override
+  String get recordTitlePassword => 'Password record';
+
+  @override
+  String get recordTitleTodo => 'To-do record';
 
   @override
   String get recordsEmpty => 'No info saved yet';
@@ -577,6 +996,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rename => 'Rename';
 
   @override
+  String get renameCategory => 'Rename';
+
+  @override
+  String get reportIssue => 'Feedback / Report Issue';
+
+  @override
   String get resolveSuccess => 'Conflict resolved';
 
   @override
@@ -584,6 +1009,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get restore => 'Restore';
+
+  @override
+  String get restoreBackup => 'Restore Backup';
+
+  @override
+  String get restoreBackupSubtitle => 'Supports encrypted and JSON backups';
 
   @override
   String get retry => 'Retry';
@@ -595,7 +1026,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get saveFailed => 'Save failed, tap to retry';
 
   @override
+  String get savePhotoFailed => 'Save failed, please try again';
+
+  @override
+  String get saveToGallery => 'Save to gallery';
+
+  @override
   String get saved => 'Saved';
+
+  @override
+  String get savedToGallery => 'Saved to gallery';
 
   @override
   String get saving => 'Saving…';
@@ -613,7 +1053,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchHint => 'Search title, content, supports pinyin';
 
   @override
+  String get searchPromptEmpty => 'Enter keywords to search all records';
+
+  @override
   String get security => 'Security';
+
+  @override
+  String get securityAndPrivacy => 'Security & privacy';
 
   @override
   String get securityNotImplemented =>
@@ -640,13 +1086,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get setPin => 'Set PIN';
 
   @override
+  String get setQuickAccess => 'Set as quick access';
+
+  @override
   String get settings => 'Settings';
+
+  @override
+  String get sharePhoto => 'Share photo';
+
+  @override
+  String get showNumberAction => 'Show number';
 
   @override
   String get showPassword => 'Show password';
 
   @override
   String get smartRecommend => 'Smart suggestion';
+
+  @override
+  String get sniffSaveAccount => 'Save as website account';
+
+  @override
+  String get sniffSaveAddress => 'Save as address';
+
+  @override
+  String get sniffSaveId => 'Save as ID document';
 
   @override
   String get sortRecentlyCreated => 'Recently created';
@@ -659,6 +1123,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sortTitleAZ => 'Title A–Z';
+
+  @override
+  String get speedDialAddress => 'Address';
+
+  @override
+  String get speedDialBlank => 'Blank note';
+
+  @override
+  String get speedDialId => 'ID document';
+
+  @override
+  String get speedDialPassword => 'Password';
 
   @override
   String get startRecovery => 'Start recovery';
@@ -713,6 +1189,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get synced => 'Synced';
 
   @override
+  String syncedRecordCount(int synced, int total) {
+    return 'Synced $synced / $total records';
+  }
+
+  @override
   String get tagName => 'Tag Name';
 
   @override
@@ -720,6 +1201,50 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tagsEmpty => 'No tags yet';
+
+  @override
+  String get takePhoto => 'Take photo';
+
+  @override
+  String get templateBlank => 'Blank note';
+
+  @override
+  String get templateBlankDesc => 'Start from a blank note';
+
+  @override
+  String get templateContact => 'Contact';
+
+  @override
+  String get templateContactDesc => 'Name, phone, email and address';
+
+  @override
+  String get templateIdDocument => 'ID Document';
+
+  @override
+  String get templateIdDocumentDesc =>
+      'ID cards, driver licenses with photos and auto-masked numbers';
+
+  @override
+  String get templateIdea => 'Quick idea';
+
+  @override
+  String get templateIdeaDesc => 'Idea, source and next action';
+
+  @override
+  String get templatePassword => 'Save a password';
+
+  @override
+  String get templatePasswordDesc =>
+      'Website, username and password with auto-masked password';
+
+  @override
+  String get templateSheetTitle => 'Choose a template';
+
+  @override
+  String get templateTodo => 'To-do list';
+
+  @override
+  String get templateTodoDesc => 'Checklist with checkbox items';
 
   @override
   String get testConnection => 'Test Connection';
@@ -737,6 +1262,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get themeSystem => 'System';
 
   @override
+  String timeToday(String time) {
+    return 'Today $time';
+  }
+
+  @override
+  String get timeYesterday => 'Yesterday';
+
+  @override
   String get timeout1Min => '1 minute';
 
   @override
@@ -746,15 +1279,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get timeoutImmediately => 'Immediately';
 
   @override
-  String timeToday(String time) {
-    return 'Today $time';
-  }
-
-  @override
-  String get timeYesterday => 'Yesterday';
-
-  @override
   String get titleHint => 'Title (optional)';
+
+  @override
+  String get today => 'Today';
+
+  @override
+  String todoProgress(int done, int total) {
+    return '$done of $total done';
+  }
 
   @override
   String get trash => 'Trash';
@@ -772,10 +1305,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get unfavorite => 'Unfavorite';
 
   @override
+  String get unlockAndJoin => 'Unlock & Join';
+
+  @override
   String get unlockApp => 'Unlock SuiVault';
 
   @override
-  String get unlockAndJoin => 'Unlock & Join';
+  String get unlockKeyPrompt => 'Unlock Key';
+
+  @override
+  String get unpinRecord => 'Unpin';
+
+  @override
+  String get unsetQuickAccess => 'Remove from quick access';
 
   @override
   String get untitledRecord => 'Untitled';
@@ -810,7 +1352,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get version => 'Version';
 
   @override
+  String get viewAction => 'View';
+
+  @override
   String get viewConflicts => 'View conflicts';
+
+  @override
+  String get viewPhoto => 'View photo';
 
   @override
   String get webdavConnectionSettings => 'WebDAV connection settings';
@@ -883,450 +1431,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get wrongPin => 'Wrong PIN, try again';
 
   @override
-  String get existingVaultJoined =>
-      'An existing sync vault was found and joined';
-
-  @override
-  String lockedKeysNotice(int count) {
-    return '$count keys are still locked; some content is temporarily unavailable';
-  }
-
-  @override
-  String get migrationTitle => 'Old protocol vault found';
-
-  @override
-  String get migrationBody =>
-      'The legacy directory will be kept as a backup; migration is a one-time copy. After migrating, append-only sync with protocol v2 will be used.';
-
-  @override
-  String get migrationBackupAndMigrate => 'Backup and Migrate';
-
-  @override
-  String get passwordChangeDeferred =>
-      'Password change is not available yet; normal sync is unaffected';
-
-  @override
-  String get unlockKeyPrompt => 'Unlock Key';
-
-  @override
-  String get enterKeyPassword => 'Enter password to unlock keys';
-
-  @override
-  String get templateSheetTitle => 'Choose a template';
-
-  @override
-  String get templateBlank => 'Blank note';
-
-  @override
-  String get templateBlankDesc => 'Start from a blank note';
-
-  @override
-  String get templatePassword => 'Save a password';
-
-  @override
-  String get templatePasswordDesc =>
-      'Website, username and password with auto-masked password';
-
-  @override
-  String get templateIdea => 'Quick idea';
-
-  @override
-  String get templateIdeaDesc => 'Idea, source and next action';
-
-  @override
-  String get templateTodo => 'To-do list';
-
-  @override
-  String get templateTodoDesc => 'Checklist with checkbox items';
-
-  @override
-  String get templateContact => 'Contact';
-
-  @override
-  String get templateContactDesc => 'Name, phone, email and address';
-
-  @override
-  String get templateIdDocument => 'ID Document';
-
-  @override
-  String get templateIdDocumentDesc =>
-      'ID cards, driver licenses with photos and auto-masked numbers';
-
-  @override
-  String get passwordCopied => 'Password copied';
-
-  @override
-  String get pinRecord => 'Pin to top';
-
-  @override
-  String get unpinRecord => 'Unpin';
-
-  @override
-  String get deleteRecordTitle => 'Delete this record?';
-
-  @override
-  String get deleteRecordConfirm =>
-      'You can restore it from Trash after deletion.';
-
-  @override
-  String get formatCheckbox => 'Checkbox';
-
-  @override
-  String get formatHeading => 'Heading';
-
-  @override
-  String get formatBold => 'Bold';
-
-  @override
-  String get formatBullet => 'Bulleted list';
-
-  @override
-  String get defaultCategoryWork => 'Work';
-
-  @override
-  String get defaultCategoryStudy => 'Study';
-
-  @override
-  String get defaultCategoryLife => 'Life';
-
-  @override
-  String get defaultCategoryIdeas => 'Ideas';
-
-  @override
-  String get defaultCategoryTodo => 'To Do';
-
-  @override
-  String get recordTitlePassword => 'Password record';
-
-  @override
-  String get recordTitleIdea => 'Idea record';
-
-  @override
-  String get recordTitleTodo => 'To-do record';
-
-  @override
-  String todoProgress(int done, int total) {
-    return '$done of $total done';
-  }
-
-  @override
-  String get copied => 'Copied';
-
-  @override
-  String get notFilled => 'Not set';
-
-  @override
-  String get today => 'Today';
-
-  @override
   String get yesterday => 'Yesterday';
 
   @override
-  String get copy => 'Copy';
-
-  @override
-  String get fieldNotes => 'Notes';
-
-  @override
-  String get fieldPassword => 'Password';
-
-  @override
-  String get fieldUsername => 'Username / Email';
-
-  @override
-  String get fieldWebsite => 'Website / App';
-
-  @override
-  String get fieldIdea => 'Idea';
-
-  @override
-  String get fieldSource => 'Source';
-
-  @override
-  String get fieldNextAction => 'Next action';
-
-  @override
-  String get recordTitleContact => 'Contact record';
-
-  @override
-  String get recordTitleNote => 'Note record';
-
-  @override
-  String get fieldName => 'Name';
-
-  @override
-  String get fieldPhone => 'Phone';
-
-  @override
-  String get fieldEmail => 'Email';
-
-  @override
-  String get fieldAddress => 'Address';
-
-  @override
-  String get recordTitleIdDocument => 'ID Document';
-
-  @override
-  String get fieldDocType => 'Document type';
-
-  @override
-  String get fieldDocName => 'Name';
-
-  @override
-  String get fieldDocNumber => 'Document number';
-
-  @override
-  String get fieldValidUntil => 'Valid until';
-
-  @override
-  String get fieldPhotoFront => 'ID photo front';
-
-  @override
-  String get fieldPhotoBack => 'ID photo back';
-
-  @override
-  String get docTypeIdCard => 'ID Card';
-
-  @override
-  String get docTypeDriverLicense => 'Driver License';
-
-  @override
-  String get docTypeVehicleLicense => 'Vehicle License';
-
-  @override
-  String get docTypePassport => 'Passport';
-
-  @override
-  String get docTypeHmtPermit => 'Exit-Entry Permit (HK/Macau)';
-
-  @override
-  String get docTypeSocialCard => 'Social Security Card';
-
-  @override
-  String get docTypePropertyCert => 'Property Certificate';
-
-  @override
-  String get docTypeOther => 'Other';
-
-  @override
-  String get docTypeCustomHint => 'Enter document type';
-
-  @override
-  String get takePhoto => 'Take photo';
-
-  @override
-  String get chooseFromGallery => 'Choose from gallery';
-
-  @override
-  String get viewPhoto => 'View photo';
-
-  @override
-  String get privacyPolicy => 'Privacy Policy';
-
-  @override
-  String get clearAllData => 'Clear all data';
-
-  @override
-  String get clearAllDataWarningTitle => 'Clear all data?';
-
-  @override
-  String get clearAllDataWarningContent =>
-      'This will delete all records, categories, tags, and ID photos. This action cannot be undone.';
-
-  @override
-  String get continueAction => 'Continue';
-
-  @override
-  String get clearAllDataConfirmTitle => 'Final confirmation';
-
-  @override
-  String get clearAllDataConfirmContent =>
-      'This action cannot be undone. All local records and ID photos will be permanently deleted.';
-
-  @override
-  String get confirmClearAllData => 'I confirm to delete all data';
-
-  @override
-  String get clearAllDataSuccess => 'All data cleared successfully';
-
-  @override
-  String get cameraRationaleTitle => 'Camera Permission';
-
-  @override
-  String get cameraRationaleMessage =>
-      'Taking photos is used to capture ID photos, which are saved only to this app\'s private storage';
-
-  @override
-  String get sharePhoto => 'Share photo';
-
-  @override
-  String get saveToGallery => 'Save to gallery';
-
-  @override
-  String get savedToGallery => 'Saved to gallery';
-
-  @override
-  String get savePhotoFailed => 'Save failed, please try again';
-
-  @override
-  String get galleryPermissionTitle => 'Gallery Permission';
-
-  @override
-  String get galleryPermissionMessage =>
-      'Saving ID photos to the system gallery requires gallery permission. Photos are saved to the local gallery only';
-
-  @override
-  String get clipboardSniffTitle => 'Clipboard detection';
-
-  @override
-  String get clipboardSniffSubtitle =>
-      'Detect IDs, addresses and links when tapping +';
-
-  @override
-  String get setQuickAccess => 'Set as quick access';
-
-  @override
-  String get unsetQuickAccess => 'Remove from quick access';
-
-  @override
-  String get quickAccessAdded => 'Added to quick access';
-
-  @override
-  String get quickAccessRemoved => 'Removed from quick access';
-
-  @override
-  String get quickAccessLimitReached => 'Maximum 6 quick access items allowed';
-
-  @override
-  String get searchPromptEmpty => 'Enter keywords to search all records';
-
-  @override
-  String get manageCategories => 'Manage categories';
-
-  @override
-  String get quickAdd => 'Quick add';
-
-  @override
-  String get backupAndSync => 'Backup & sync';
-
-  @override
-  String get backupAndExport => 'Backup and export';
-
-  @override
-  String get securityAndPrivacy => 'Security & privacy';
-
-  @override
-  String get appLockStatusEnabled => 'Enabled';
-
-  @override
-  String get appLockStatusDisabled => 'Disabled';
-
-  @override
-  String get dangerousOperations => 'Dangerous operations';
-
-  @override
-  String get onboardingClipboardTitle => 'Enable Clipboard Recognition?';
-
-  @override
-  String get onboardingClipboardBody =>
-      'After copying ID numbers, addresses, or links, SuiVault can suggest one-tap saving when tapping \"+\". Processed locally only, never uploaded.';
-
-  @override
-  String get onboardingClipboardEnable => 'Enable';
-
-  @override
-  String get onboardingClipboardNotNow => 'Not Now';
-
-  @override
-  String get onboardingClipboardFooter =>
-      'You can change this anytime in Settings › Security & Privacy';
-
-  @override
-  String get presentAutoBrightnessTitle => 'Boost brightness';
-
-  @override
-  String get presentAutoBrightnessSubtitle => 'Easier to read or scan';
-
-  @override
-  String get presentBrightness => 'Brightness';
-
-  @override
-  String get presentIdDocument => 'Present ID';
-
-  @override
-  String get presentDocument => 'Show document';
-
-  @override
-  String idCardValidUntil(String date) {
-    return 'Valid until $date';
-  }
-
-  @override
-  String get idCardHintFlip => 'Tap to flip · Long-press to copy number';
-
-  @override
-  String get idCardHintNoFlip => 'Long-press to copy number';
-
-  @override
-  String get idCardTapToReveal => 'Tap to reveal';
-
-  @override
-  String get idCardFlipBack => 'Flip back';
-
-  @override
-  String get idCardBackPhoto => 'Back photo';
-
-  @override
-  String get idCardFrontPhoto => 'Front photo';
-
-  @override
-  String get idCardMoreActions => 'More actions';
-
-  @override
-  String get idNumberCopied => 'Document number copied';
-
-  @override
-  String get choosePhotoSide => 'Choose photo';
-
-  @override
-  String get plaintextExportConfirmTitle => 'Unencrypted Export';
-
-  @override
-  String get plaintextExportConfirm =>
-      'The exported file is unencrypted and contains sensitive information such as ID numbers and passwords. Continue?';
-
-  @override
-  String get fullBackup => 'Full Backup';
-
-  @override
-  String get exportEncryptedBackupRecommended =>
-      'Export Encrypted Backup (Recommended)';
-
-  @override
-  String get exportEncryptedBackupSubtitle =>
-      'Password required; use when restoring on another device';
-
-  @override
-  String get restoreBackup => 'Restore Backup';
-
-  @override
-  String get restoreBackupSubtitle => 'Supports encrypted and JSON backups';
-
-  @override
-  String get exportOtherFormats => 'Export in Other Formats';
-
-  @override
-  String get exportJsonUnencrypted => 'Export JSON (Unencrypted)';
-
-  @override
-  String get exportJsonSubtitle => 'Plaintext, readable by anyone';
-
-  @override
-  String get importSectionTitle => 'Import';
-
-  @override
-  String get importMarkdownOrTxt => 'Import Markdown / TXT';
-
-  @override
-  String get reportIssue => 'Feedback / Report Issue';
+  String get zoomInAction => 'Zoom in';
 }

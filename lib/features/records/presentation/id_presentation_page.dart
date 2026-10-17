@@ -298,14 +298,16 @@ class _IdPresentationPageState extends State<IdPresentationPage>
     final num = _docNumber?.trim() ?? '';
     if (num.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('未记录证件号码')),
+        SnackBar(
+            content: Text(AppLocalizations.of(context).noIdNumberRecorded)),
       );
       return;
     }
     await Clipboard.setData(ClipboardData(text: num));
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('证件号码已复制到剪贴板')),
+      SnackBar(
+          content: Text(AppLocalizations.of(context).idNumberCopiedMsg)),
     );
   }
 
@@ -344,7 +346,9 @@ class _IdPresentationPageState extends State<IdPresentationPage>
     );
     final sideText = _photoItems.isEmpty
         ? ''
-        : (_photoItems[_currentPage].isFront ? '正面' : '背面');
+        : (_photoItems[_currentPage].isFront
+            ? l10n.frontSide
+            : l10n.backSide);
     final headerTitle = sideText.isNotEmpty ? '$title · $sideText' : title;
 
     return PopScope(
@@ -377,7 +381,7 @@ class _IdPresentationPageState extends State<IdPresentationPage>
                       children: [
                         IconButton(
                           icon: const Icon(Icons.close, color: Colors.white, size: 26),
-                          tooltip: '关闭',
+                          tooltip: l10n.closeAction,
                           onPressed: _handleExit,
                         ),
                         const SizedBox(width: 8),
@@ -431,10 +435,10 @@ class _IdPresentationPageState extends State<IdPresentationPage>
                                             _largeTextMode = !_largeTextMode;
                                           });
                                         },
-                                        child: Text(
+                                          child: Text(
                                           _docNumber != null && _docNumber!.isNotEmpty
                                               ? _formatNumber(_docNumber!)
-                                              : '暂无证件照片与号码',
+                                              : l10n.noPhotoOrNumber,
                                           style: TextStyle(
                                             color: Colors.white,
                                             fontSize: _largeTextMode ? 24 : 16,
@@ -589,31 +593,33 @@ class _IdPresentationPageState extends State<IdPresentationPage>
                       children: [
                         _ActionButton(
                           icon: Icons.screen_rotation_outlined,
-                          label: '横屏',
+                          label: l10n.landscapeAction,
                           onTap: _toggleOrientation,
                         ),
                         _ActionButton(
                           icon: _isHighBrightness
                               ? Icons.brightness_high
                               : Icons.brightness_high_outlined,
-                          label: '亮度',
+                          label: l10n.presentBrightness,
                           onTap: _toggleBrightness,
                         ),
                         _ActionButton(
                           icon: _obscureNumber
                               ? Icons.visibility_off_outlined
                               : Icons.visibility_outlined,
-                          label: _obscureNumber ? '显示号码' : '隐藏号码',
+                          label: _obscureNumber
+                              ? l10n.showNumberAction
+                              : l10n.hideNumberAction,
                           onTap: _toggleNumberVisibility,
                         ),
                         _ActionButton(
                           icon: Icons.copy_rounded,
-                          label: '复制号码',
+                          label: l10n.copyNumberAction,
                           onTap: _copyNumber,
                         ),
                         _ActionButton(
                           icon: Icons.zoom_in_rounded,
-                          label: '放大',
+                          label: l10n.zoomInAction,
                           onTap: _toggleZoom,
                         ),
                       ],

@@ -104,6 +104,12 @@ abstract class AppLocalizations {
   /// **'关于'**
   String get about;
 
+  /// No description provided for @accountPasswordLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'账号密码'**
+  String get accountPasswordLabel;
+
   /// No description provided for @addCategory.
   ///
   /// In zh, this message translates to:
@@ -128,6 +134,12 @@ abstract class AppLocalizations {
   /// **'添加标签'**
   String get addTags;
 
+  /// No description provided for @addressInfoLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'地址信息'**
+  String get addressInfoLabel;
+
   /// No description provided for @all.
   ///
   /// In zh, this message translates to:
@@ -139,6 +151,18 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'应用锁'**
   String get appLock;
+
+  /// No description provided for @appLockStatusDisabled.
+  ///
+  /// In zh, this message translates to:
+  /// **'未开启'**
+  String get appLockStatusDisabled;
+
+  /// No description provided for @appLockStatusEnabled.
+  ///
+  /// In zh, this message translates to:
+  /// **'已开启'**
+  String get appLockStatusEnabled;
 
   /// No description provided for @appLocked.
   ///
@@ -170,6 +194,12 @@ abstract class AppLocalizations {
   /// **'自动保存，无需手动点击保存。'**
   String get autoSaveHint;
 
+  /// No description provided for @backSide.
+  ///
+  /// In zh, this message translates to:
+  /// **'背面'**
+  String get backSide;
+
   /// No description provided for @backToSync.
   ///
   /// In zh, this message translates to:
@@ -181,6 +211,18 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'备份'**
   String get backup;
+
+  /// No description provided for @backupAndExport.
+  ///
+  /// In zh, this message translates to:
+  /// **'备份与导出'**
+  String get backupAndExport;
+
+  /// No description provided for @backupAndSync.
+  ///
+  /// In zh, this message translates to:
+  /// **'备份与同步'**
+  String get backupAndSync;
 
   /// No description provided for @backupPassword.
   ///
@@ -223,6 +265,18 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'正文较长（超过 1 MiB），建议拆分'**
   String get bodyLimit;
+
+  /// No description provided for @cameraRationaleMessage.
+  ///
+  /// In zh, this message translates to:
+  /// **'拍照用于拍摄证件照片，仅保存到本应用私有目录'**
+  String get cameraRationaleMessage;
+
+  /// No description provided for @cameraRationaleTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'相机权限说明'**
+  String get cameraRationaleTitle;
 
   /// No description provided for @cancel.
   ///
@@ -272,11 +326,83 @@ abstract class AppLocalizations {
   /// **'修改 PIN'**
   String get changePin;
 
+  /// No description provided for @chooseFromGallery.
+  ///
+  /// In zh, this message translates to:
+  /// **'从相册选择'**
+  String get chooseFromGallery;
+
+  /// No description provided for @choosePhotoSide.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择照片'**
+  String get choosePhotoSide;
+
+  /// No description provided for @clearAllData.
+  ///
+  /// In zh, this message translates to:
+  /// **'清除全部数据'**
+  String get clearAllData;
+
+  /// No description provided for @clearAllDataConfirmContent.
+  ///
+  /// In zh, this message translates to:
+  /// **'此操作无法撤销，所有本地记录及证件照片将被彻底删除。'**
+  String get clearAllDataConfirmContent;
+
+  /// No description provided for @clearAllDataConfirmTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'最终确认'**
+  String get clearAllDataConfirmTitle;
+
+  /// No description provided for @clearAllDataSuccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'已清除全部数据'**
+  String get clearAllDataSuccess;
+
+  /// No description provided for @clearAllDataWarningContent.
+  ///
+  /// In zh, this message translates to:
+  /// **'将删除所有记录、分类、标签及证件照片，不可恢复。'**
+  String get clearAllDataWarningContent;
+
+  /// No description provided for @clearAllDataWarningTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'清除全部数据？'**
+  String get clearAllDataWarningTitle;
+
   /// No description provided for @clearFilter.
   ///
   /// In zh, this message translates to:
   /// **'清除筛选'**
   String get clearFilter;
+
+  /// No description provided for @clearRecentSearches.
+  ///
+  /// In zh, this message translates to:
+  /// **'清空最近搜索'**
+  String get clearRecentSearches;
+
+  /// No description provided for @clipboardSniffSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'点击 + 时识别证件号、地址、链接'**
+  String get clipboardSniffSubtitle;
+
+  /// No description provided for @clipboardSniffTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'剪贴板识别'**
+  String get clipboardSniffTitle;
+
+  /// No description provided for @closeAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'关闭'**
+  String get closeAction;
 
   /// No description provided for @configSaved.
   ///
@@ -290,6 +416,12 @@ abstract class AppLocalizations {
   /// **'确认'**
   String get confirm;
 
+  /// No description provided for @confirmClearAllData.
+  ///
+  /// In zh, this message translates to:
+  /// **'我确认要删除全部数据'**
+  String get confirmClearAllData;
+
   /// No description provided for @confirmPassword.
   ///
   /// In zh, this message translates to:
@@ -301,12 +433,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'确认加密密码'**
   String get confirmVaultPassword;
-
-  /// No description provided for @copyRecoveryKey.
-  ///
-  /// In zh, this message translates to:
-  /// **'复制'**
-  String get copyRecoveryKey;
 
   /// No description provided for @conflictCount.
   ///
@@ -368,6 +494,42 @@ abstract class AppLocalizations {
   /// **'连接成功'**
   String get connectionSuccess;
 
+  /// No description provided for @continueAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'继续'**
+  String get continueAction;
+
+  /// No description provided for @copied.
+  ///
+  /// In zh, this message translates to:
+  /// **'已复制'**
+  String get copied;
+
+  /// No description provided for @copiedToClipboardMsg.
+  ///
+  /// In zh, this message translates to:
+  /// **'已复制到剪贴板'**
+  String get copiedToClipboardMsg;
+
+  /// No description provided for @copy.
+  ///
+  /// In zh, this message translates to:
+  /// **'复制'**
+  String get copy;
+
+  /// No description provided for @copyNumberAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'复制号码'**
+  String get copyNumberAction;
+
+  /// No description provided for @copyRecoveryKey.
+  ///
+  /// In zh, this message translates to:
+  /// **'复制'**
+  String get copyRecoveryKey;
+
   /// No description provided for @createNewVault.
   ///
   /// In zh, this message translates to:
@@ -380,11 +542,47 @@ abstract class AppLocalizations {
   /// **'创建于'**
   String get createdAtPrefix;
 
+  /// No description provided for @dangerousOperations.
+  ///
+  /// In zh, this message translates to:
+  /// **'危险操作'**
+  String get dangerousOperations;
+
   /// No description provided for @data.
   ///
   /// In zh, this message translates to:
   /// **'数据'**
   String get data;
+
+  /// No description provided for @defaultCategoryIdeas.
+  ///
+  /// In zh, this message translates to:
+  /// **'灵感'**
+  String get defaultCategoryIdeas;
+
+  /// No description provided for @defaultCategoryLife.
+  ///
+  /// In zh, this message translates to:
+  /// **'生活'**
+  String get defaultCategoryLife;
+
+  /// No description provided for @defaultCategoryStudy.
+  ///
+  /// In zh, this message translates to:
+  /// **'学习'**
+  String get defaultCategoryStudy;
+
+  /// No description provided for @defaultCategoryTodo.
+  ///
+  /// In zh, this message translates to:
+  /// **'待办'**
+  String get defaultCategoryTodo;
+
+  /// No description provided for @defaultCategoryWork.
+  ///
+  /// In zh, this message translates to:
+  /// **'工作'**
+  String get defaultCategoryWork;
 
   /// No description provided for @delete.
   ///
@@ -403,6 +601,18 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'删除后，该分类下的记录将转为未分类。确认删除吗？'**
   String get deleteCategoryConfirm;
+
+  /// No description provided for @deleteRecordConfirm.
+  ///
+  /// In zh, this message translates to:
+  /// **'删除后可在回收站找回。'**
+  String get deleteRecordConfirm;
+
+  /// No description provided for @deleteRecordTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'删除这条记录？'**
+  String get deleteRecordTitle;
 
   /// No description provided for @deleteTag.
   ///
@@ -433,6 +643,60 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'关闭同步将停止网络任务，本地数据保留。确认吗？'**
   String get disableSyncConfirm;
+
+  /// No description provided for @docTypeCustomHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入证件类型'**
+  String get docTypeCustomHint;
+
+  /// No description provided for @docTypeDriverLicense.
+  ///
+  /// In zh, this message translates to:
+  /// **'驾驶证'**
+  String get docTypeDriverLicense;
+
+  /// No description provided for @docTypeHmtPermit.
+  ///
+  /// In zh, this message translates to:
+  /// **'港澳通行证'**
+  String get docTypeHmtPermit;
+
+  /// No description provided for @docTypeIdCard.
+  ///
+  /// In zh, this message translates to:
+  /// **'身份证'**
+  String get docTypeIdCard;
+
+  /// No description provided for @docTypeOther.
+  ///
+  /// In zh, this message translates to:
+  /// **'其他'**
+  String get docTypeOther;
+
+  /// No description provided for @docTypePassport.
+  ///
+  /// In zh, this message translates to:
+  /// **'护照'**
+  String get docTypePassport;
+
+  /// No description provided for @docTypePropertyCert.
+  ///
+  /// In zh, this message translates to:
+  /// **'房产证'**
+  String get docTypePropertyCert;
+
+  /// No description provided for @docTypeSocialCard.
+  ///
+  /// In zh, this message translates to:
+  /// **'社保卡'**
+  String get docTypeSocialCard;
+
+  /// No description provided for @docTypeVehicleLicense.
+  ///
+  /// In zh, this message translates to:
+  /// **'行驶证'**
+  String get docTypeVehicleLicense;
 
   /// No description provided for @duplicateName.
   ///
@@ -506,11 +770,23 @@ abstract class AppLocalizations {
   /// **'数据库使用随机密钥加密，密钥保存在系统安全存储'**
   String get encryptionOnDesc;
 
+  /// No description provided for @enterKeyPassword.
+  ///
+  /// In zh, this message translates to:
+  /// **'输入密钥加密密码'**
+  String get enterKeyPassword;
+
   /// No description provided for @enterPin.
   ///
   /// In zh, this message translates to:
   /// **'输入 PIN 解锁'**
   String get enterPin;
+
+  /// No description provided for @existingVaultJoined.
+  ///
+  /// In zh, this message translates to:
+  /// **'检测到已有同步库，已为你加入'**
+  String get existingVaultJoined;
 
   /// No description provided for @export.
   ///
@@ -524,6 +800,18 @@ abstract class AppLocalizations {
   /// **'导出加密备份'**
   String get exportEncryptedBackup;
 
+  /// No description provided for @exportEncryptedBackupRecommended.
+  ///
+  /// In zh, this message translates to:
+  /// **'导出加密备份（推荐）'**
+  String get exportEncryptedBackupRecommended;
+
+  /// No description provided for @exportEncryptedBackupSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'需设置密码，换设备恢复时使用'**
+  String get exportEncryptedBackupSubtitle;
+
   /// No description provided for @exportFailed.
   ///
   /// In zh, this message translates to:
@@ -536,11 +824,29 @@ abstract class AppLocalizations {
   /// **'导出 JSON 备份'**
   String get exportJson;
 
+  /// No description provided for @exportJsonSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'明文，任何人可读取'**
+  String get exportJsonSubtitle;
+
+  /// No description provided for @exportJsonUnencrypted.
+  ///
+  /// In zh, this message translates to:
+  /// **'导出 JSON（未加密）'**
+  String get exportJsonUnencrypted;
+
   /// No description provided for @exportMarkdownZip.
   ///
   /// In zh, this message translates to:
   /// **'导出 Markdown ZIP'**
   String get exportMarkdownZip;
+
+  /// No description provided for @exportOtherFormats.
+  ///
+  /// In zh, this message translates to:
+  /// **'导出为其他格式'**
+  String get exportOtherFormats;
 
   /// No description provided for @exportSuccess.
   ///
@@ -572,6 +878,108 @@ abstract class AppLocalizations {
   /// **'收藏'**
   String get favorites;
 
+  /// No description provided for @fieldAddress.
+  ///
+  /// In zh, this message translates to:
+  /// **'地址'**
+  String get fieldAddress;
+
+  /// No description provided for @fieldDocName.
+  ///
+  /// In zh, this message translates to:
+  /// **'姓名'**
+  String get fieldDocName;
+
+  /// No description provided for @fieldDocNumber.
+  ///
+  /// In zh, this message translates to:
+  /// **'证件号码'**
+  String get fieldDocNumber;
+
+  /// No description provided for @fieldDocType.
+  ///
+  /// In zh, this message translates to:
+  /// **'证件类型'**
+  String get fieldDocType;
+
+  /// No description provided for @fieldEmail.
+  ///
+  /// In zh, this message translates to:
+  /// **'邮箱'**
+  String get fieldEmail;
+
+  /// No description provided for @fieldIdea.
+  ///
+  /// In zh, this message translates to:
+  /// **'灵感'**
+  String get fieldIdea;
+
+  /// No description provided for @fieldName.
+  ///
+  /// In zh, this message translates to:
+  /// **'姓名'**
+  String get fieldName;
+
+  /// No description provided for @fieldNextAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'下一步行动'**
+  String get fieldNextAction;
+
+  /// No description provided for @fieldNotes.
+  ///
+  /// In zh, this message translates to:
+  /// **'备注'**
+  String get fieldNotes;
+
+  /// No description provided for @fieldPassword.
+  ///
+  /// In zh, this message translates to:
+  /// **'密码'**
+  String get fieldPassword;
+
+  /// No description provided for @fieldPhone.
+  ///
+  /// In zh, this message translates to:
+  /// **'电话'**
+  String get fieldPhone;
+
+  /// No description provided for @fieldPhotoBack.
+  ///
+  /// In zh, this message translates to:
+  /// **'证件照片反面'**
+  String get fieldPhotoBack;
+
+  /// No description provided for @fieldPhotoFront.
+  ///
+  /// In zh, this message translates to:
+  /// **'证件照片正面'**
+  String get fieldPhotoFront;
+
+  /// No description provided for @fieldSource.
+  ///
+  /// In zh, this message translates to:
+  /// **'来源'**
+  String get fieldSource;
+
+  /// No description provided for @fieldUsername.
+  ///
+  /// In zh, this message translates to:
+  /// **'用户名 / 邮箱'**
+  String get fieldUsername;
+
+  /// No description provided for @fieldValidUntil.
+  ///
+  /// In zh, this message translates to:
+  /// **'有效期至'**
+  String get fieldValidUntil;
+
+  /// No description provided for @fieldWebsite.
+  ///
+  /// In zh, this message translates to:
+  /// **'网站 / 应用'**
+  String get fieldWebsite;
+
   /// No description provided for @filterEmpty.
   ///
   /// In zh, this message translates to:
@@ -584,6 +992,66 @@ abstract class AppLocalizations {
   /// **'试试其他分类，或清除筛选条件'**
   String get filterEmptyHint;
 
+  /// No description provided for @formatBold.
+  ///
+  /// In zh, this message translates to:
+  /// **'加粗'**
+  String get formatBold;
+
+  /// No description provided for @formatBullet.
+  ///
+  /// In zh, this message translates to:
+  /// **'无序列表'**
+  String get formatBullet;
+
+  /// No description provided for @formatCheckbox.
+  ///
+  /// In zh, this message translates to:
+  /// **'勾选框'**
+  String get formatCheckbox;
+
+  /// No description provided for @formatHeading.
+  ///
+  /// In zh, this message translates to:
+  /// **'标题'**
+  String get formatHeading;
+
+  /// No description provided for @frontSide.
+  ///
+  /// In zh, this message translates to:
+  /// **'正面'**
+  String get frontSide;
+
+  /// No description provided for @fullBackup.
+  ///
+  /// In zh, this message translates to:
+  /// **'完整备份'**
+  String get fullBackup;
+
+  /// No description provided for @galleryPermissionMessage.
+  ///
+  /// In zh, this message translates to:
+  /// **'保存证件照片到系统相册需要相册权限，照片仅保存到本地相册'**
+  String get galleryPermissionMessage;
+
+  /// No description provided for @galleryPermissionTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'相册权限说明'**
+  String get galleryPermissionTitle;
+
+  /// No description provided for @goToWebdavSettings.
+  ///
+  /// In zh, this message translates to:
+  /// **'前往 WebDAV 设置'**
+  String get goToWebdavSettings;
+
+  /// No description provided for @hideNumberAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'隐藏号码'**
+  String get hideNumberAction;
+
   /// No description provided for @hidePassword.
   ///
   /// In zh, this message translates to:
@@ -595,6 +1063,78 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'我已妥善保存加密密码'**
   String get iHaveSavedPassword;
+
+  /// No description provided for @idCardBackPhoto.
+  ///
+  /// In zh, this message translates to:
+  /// **'背面照片'**
+  String get idCardBackPhoto;
+
+  /// No description provided for @idCardFlipBack.
+  ///
+  /// In zh, this message translates to:
+  /// **'翻回正面'**
+  String get idCardFlipBack;
+
+  /// No description provided for @idCardFrontPhoto.
+  ///
+  /// In zh, this message translates to:
+  /// **'正面照片'**
+  String get idCardFrontPhoto;
+
+  /// No description provided for @idCardHintFlip.
+  ///
+  /// In zh, this message translates to:
+  /// **'点击卡片翻面 · 长按复制号码'**
+  String get idCardHintFlip;
+
+  /// No description provided for @idCardHintNoFlip.
+  ///
+  /// In zh, this message translates to:
+  /// **'长按卡片复制号码'**
+  String get idCardHintNoFlip;
+
+  /// No description provided for @idCardMoreActions.
+  ///
+  /// In zh, this message translates to:
+  /// **'更多操作'**
+  String get idCardMoreActions;
+
+  /// No description provided for @idCardTapToReveal.
+  ///
+  /// In zh, this message translates to:
+  /// **'点击查看'**
+  String get idCardTapToReveal;
+
+  /// No description provided for @idCardValidUntil.
+  ///
+  /// In zh, this message translates to:
+  /// **'有效期至 {date}'**
+  String idCardValidUntil(String date);
+
+  /// No description provided for @idDocumentInfo.
+  ///
+  /// In zh, this message translates to:
+  /// **'证件信息'**
+  String get idDocumentInfo;
+
+  /// No description provided for @idNumberCopied.
+  ///
+  /// In zh, this message translates to:
+  /// **'证件号码已复制'**
+  String get idNumberCopied;
+
+  /// No description provided for @idNumberCopiedMsg.
+  ///
+  /// In zh, this message translates to:
+  /// **'证件号码已复制到剪贴板'**
+  String get idNumberCopiedMsg;
+
+  /// No description provided for @idNumberLastDigits.
+  ///
+  /// In zh, this message translates to:
+  /// **'尾号 {digits}'**
+  String idNumberLastDigits(String digits);
 
   /// No description provided for @importData.
   ///
@@ -626,11 +1166,23 @@ abstract class AppLocalizations {
   /// **'导入 Markdown/TXT'**
   String get importMarkdown;
 
+  /// No description provided for @importMarkdownOrTxt.
+  ///
+  /// In zh, this message translates to:
+  /// **'导入 Markdown / TXT'**
+  String get importMarkdownOrTxt;
+
   /// No description provided for @importPreview.
   ///
   /// In zh, this message translates to:
   /// **'即将导入 {count} 条记录'**
   String importPreview(int count);
+
+  /// No description provided for @importSectionTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'导入'**
+  String get importSectionTitle;
 
   /// No description provided for @importSuccess.
   ///
@@ -692,23 +1244,17 @@ abstract class AppLocalizations {
   /// **'关键词'**
   String get keywords;
 
-  /// No description provided for @manageKeywords.
-  ///
-  /// In zh, this message translates to:
-  /// **'管理关键词'**
-  String get manageKeywords;
-
-  /// No description provided for @renameCategory.
-  ///
-  /// In zh, this message translates to:
-  /// **'重命名'**
-  String get renameCategory;
-
   /// No description provided for @keywordsEmpty.
   ///
   /// In zh, this message translates to:
   /// **'暂无关键词，添加后可自动推荐分类'**
   String get keywordsEmpty;
+
+  /// No description provided for @landscapeAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'横屏'**
+  String get landscapeAction;
 
   /// No description provided for @lastSuccess.
   ///
@@ -727,6 +1273,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'上次同步'**
   String get lastSync;
+
+  /// No description provided for @lastSyncTime.
+  ///
+  /// In zh, this message translates to:
+  /// **'上次同步时间：{time}'**
+  String lastSyncTime(String time);
 
   /// No description provided for @lastSyncToday.
   ///
@@ -752,6 +1304,12 @@ abstract class AppLocalizations {
   /// **'后台锁定超时'**
   String get lockTimeout;
 
+  /// No description provided for @lockedKeysNotice.
+  ///
+  /// In zh, this message translates to:
+  /// **'有 {count} 把密钥未解锁，部分内容暂时无法显示'**
+  String lockedKeysNotice(int count);
+
   /// No description provided for @lockoutTryLater.
   ///
   /// In zh, this message translates to:
@@ -764,6 +1322,18 @@ abstract class AppLocalizations {
   /// **'管理'**
   String get manage;
 
+  /// No description provided for @manageCategories.
+  ///
+  /// In zh, this message translates to:
+  /// **'管理分类'**
+  String get manageCategories;
+
+  /// No description provided for @manageKeywords.
+  ///
+  /// In zh, this message translates to:
+  /// **'管理关键词'**
+  String get manageKeywords;
+
   /// No description provided for @manualMerge.
   ///
   /// In zh, this message translates to:
@@ -775,6 +1345,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'最多添加 10 个标签'**
   String get maxTagsReached;
+
+  /// No description provided for @memoNoteLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'备忘笔记'**
+  String get memoNoteLabel;
 
   /// No description provided for @mergeBodyHint.
   ///
@@ -794,11 +1370,35 @@ abstract class AppLocalizations {
   /// **'合并后的标题'**
   String get mergeTitleHint;
 
+  /// No description provided for @migrationBackupAndMigrate.
+  ///
+  /// In zh, this message translates to:
+  /// **'备份并迁移'**
+  String get migrationBackupAndMigrate;
+
+  /// No description provided for @migrationBody.
+  ///
+  /// In zh, this message translates to:
+  /// **'旧目录原样保留作备份，迁移为一次性拷贝。迁移后可使用新协议进行无冲突追加同步。'**
+  String get migrationBody;
+
+  /// No description provided for @migrationTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'发现旧协议同步库'**
+  String get migrationTitle;
+
   /// No description provided for @modified.
   ///
   /// In zh, this message translates to:
   /// **'修改于 {time}'**
   String modified(String time);
+
+  /// No description provided for @multiSelectActions.
+  ///
+  /// In zh, this message translates to:
+  /// **'多选操作'**
+  String get multiSelectActions;
 
   /// No description provided for @myRecords.
   ///
@@ -824,6 +1424,24 @@ abstract class AppLocalizations {
   /// **'新库加密密码'**
   String get newVaultPassword;
 
+  /// No description provided for @noIdNumberRecorded.
+  ///
+  /// In zh, this message translates to:
+  /// **'未记录证件号码'**
+  String get noIdNumberRecorded;
+
+  /// No description provided for @noPhotoOrNumber.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无证件照片与号码'**
+  String get noPhotoOrNumber;
+
+  /// No description provided for @notFilled.
+  ///
+  /// In zh, this message translates to:
+  /// **'未填写'**
+  String get notFilled;
+
   /// No description provided for @notYetInput.
   ///
   /// In zh, this message translates to:
@@ -836,11 +1454,53 @@ abstract class AppLocalizations {
   /// **'确定'**
   String get ok;
 
+  /// No description provided for @onboardingClipboardBody.
+  ///
+  /// In zh, this message translates to:
+  /// **'复制证件号、地址或网址后，点「+」时随存会提示你一键保存。内容只在本机识别，不会上传。'**
+  String get onboardingClipboardBody;
+
+  /// No description provided for @onboardingClipboardEnable.
+  ///
+  /// In zh, this message translates to:
+  /// **'开启'**
+  String get onboardingClipboardEnable;
+
+  /// No description provided for @onboardingClipboardFooter.
+  ///
+  /// In zh, this message translates to:
+  /// **'可随时在 设置 › 安全与隐私 中更改'**
+  String get onboardingClipboardFooter;
+
+  /// No description provided for @onboardingClipboardNotNow.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂不'**
+  String get onboardingClipboardNotNow;
+
+  /// No description provided for @onboardingClipboardTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'开启剪贴板识别？'**
+  String get onboardingClipboardTitle;
+
   /// No description provided for @password.
   ///
   /// In zh, this message translates to:
   /// **'密码'**
   String get password;
+
+  /// No description provided for @passwordChangeDeferred.
+  ///
+  /// In zh, this message translates to:
+  /// **'密码修改功能暂未开放，普通同步不受影响'**
+  String get passwordChangeDeferred;
+
+  /// No description provided for @passwordCopied.
+  ///
+  /// In zh, this message translates to:
+  /// **'密码已复制'**
+  String get passwordCopied;
 
   /// No description provided for @passwordMismatch.
   ///
@@ -890,12 +1550,6 @@ abstract class AppLocalizations {
   /// **'待上传'**
   String get pendingUpload;
 
-  /// No description provided for @syncedRecordCount.
-  ///
-  /// In zh, this message translates to:
-  /// **'已同步 {synced} / 共 {total} 条记录'**
-  String syncedRecordCount(int synced, int total);
-
   /// No description provided for @permanentDelete.
   ///
   /// In zh, this message translates to:
@@ -920,6 +1574,12 @@ abstract class AppLocalizations {
   /// **'未设置'**
   String get pinNotSet;
 
+  /// No description provided for @pinRecord.
+  ///
+  /// In zh, this message translates to:
+  /// **'置顶'**
+  String get pinRecord;
+
   /// No description provided for @pinSaved.
   ///
   /// In zh, this message translates to:
@@ -937,6 +1597,54 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'PIN 至少 4 位'**
   String get pinTooShort;
+
+  /// No description provided for @plaintextExportConfirm.
+  ///
+  /// In zh, this message translates to:
+  /// **'导出的文件未加密，包含证件号和密码等敏感信息。确定继续？'**
+  String get plaintextExportConfirm;
+
+  /// No description provided for @plaintextExportConfirmTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'未加密导出确认'**
+  String get plaintextExportConfirmTitle;
+
+  /// No description provided for @presentAutoBrightnessSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'方便他人查看或扫码'**
+  String get presentAutoBrightnessSubtitle;
+
+  /// No description provided for @presentAutoBrightnessTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'出示时调高亮度'**
+  String get presentAutoBrightnessTitle;
+
+  /// No description provided for @presentBrightness.
+  ///
+  /// In zh, this message translates to:
+  /// **'亮度'**
+  String get presentBrightness;
+
+  /// No description provided for @presentDocument.
+  ///
+  /// In zh, this message translates to:
+  /// **'出示证件'**
+  String get presentDocument;
+
+  /// No description provided for @presentIdDocument.
+  ///
+  /// In zh, this message translates to:
+  /// **'出示证件'**
+  String get presentIdDocument;
+
+  /// No description provided for @privacyPolicy.
+  ///
+  /// In zh, this message translates to:
+  /// **'隐私政策'**
+  String get privacyPolicy;
 
   /// No description provided for @probeInvalidConfig.
   ///
@@ -992,6 +1700,60 @@ abstract class AppLocalizations {
   /// **'无法连接到服务器'**
   String get probeUnreachable;
 
+  /// No description provided for @quickAccessAdded.
+  ///
+  /// In zh, this message translates to:
+  /// **'已设为常用'**
+  String get quickAccessAdded;
+
+  /// No description provided for @quickAccessHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'长按任意记录可设为常用'**
+  String get quickAccessHint;
+
+  /// No description provided for @quickAccessLimitReached.
+  ///
+  /// In zh, this message translates to:
+  /// **'常用最多只能添加 6 个'**
+  String get quickAccessLimitReached;
+
+  /// No description provided for @quickAccessRemoved.
+  ///
+  /// In zh, this message translates to:
+  /// **'已取消常用'**
+  String get quickAccessRemoved;
+
+  /// No description provided for @quickAccessTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'常用'**
+  String get quickAccessTitle;
+
+  /// No description provided for @quickAdd.
+  ///
+  /// In zh, this message translates to:
+  /// **'快速添加'**
+  String get quickAdd;
+
+  /// No description provided for @quickAddressCopied.
+  ///
+  /// In zh, this message translates to:
+  /// **'已复制地址到剪贴板'**
+  String get quickAddressCopied;
+
+  /// No description provided for @quickPasswordCopied.
+  ///
+  /// In zh, this message translates to:
+  /// **'已复制密码到剪贴板'**
+  String get quickPasswordCopied;
+
+  /// No description provided for @recentlyUsed.
+  ///
+  /// In zh, this message translates to:
+  /// **'最近使用'**
+  String get recentlyUsed;
+
   /// No description provided for @recordCount.
   ///
   /// In zh, this message translates to:
@@ -1003,6 +1765,42 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'已移至回收站'**
   String get recordDeleted;
+
+  /// No description provided for @recordTitleContact.
+  ///
+  /// In zh, this message translates to:
+  /// **'联系人记录'**
+  String get recordTitleContact;
+
+  /// No description provided for @recordTitleIdDocument.
+  ///
+  /// In zh, this message translates to:
+  /// **'证件记录'**
+  String get recordTitleIdDocument;
+
+  /// No description provided for @recordTitleIdea.
+  ///
+  /// In zh, this message translates to:
+  /// **'灵感记录'**
+  String get recordTitleIdea;
+
+  /// No description provided for @recordTitleNote.
+  ///
+  /// In zh, this message translates to:
+  /// **'备忘记录'**
+  String get recordTitleNote;
+
+  /// No description provided for @recordTitlePassword.
+  ///
+  /// In zh, this message translates to:
+  /// **'密码记录'**
+  String get recordTitlePassword;
+
+  /// No description provided for @recordTitleTodo.
+  ///
+  /// In zh, this message translates to:
+  /// **'待办记录'**
+  String get recordTitleTodo;
 
   /// No description provided for @recordsEmpty.
   ///
@@ -1130,6 +1928,18 @@ abstract class AppLocalizations {
   /// **'改名'**
   String get rename;
 
+  /// No description provided for @renameCategory.
+  ///
+  /// In zh, this message translates to:
+  /// **'重命名'**
+  String get renameCategory;
+
+  /// No description provided for @reportIssue.
+  ///
+  /// In zh, this message translates to:
+  /// **'反馈问题'**
+  String get reportIssue;
+
   /// No description provided for @resolveSuccess.
   ///
   /// In zh, this message translates to:
@@ -1147,6 +1957,18 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'恢复'**
   String get restore;
+
+  /// No description provided for @restoreBackup.
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复备份'**
+  String get restoreBackup;
+
+  /// No description provided for @restoreBackupSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'支持加密备份与 JSON 备份'**
+  String get restoreBackupSubtitle;
 
   /// No description provided for @retry.
   ///
@@ -1166,11 +1988,29 @@ abstract class AppLocalizations {
   /// **'保存失败，点击重试'**
   String get saveFailed;
 
+  /// No description provided for @savePhotoFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'保存失败，请重试'**
+  String get savePhotoFailed;
+
+  /// No description provided for @saveToGallery.
+  ///
+  /// In zh, this message translates to:
+  /// **'保存到相册'**
+  String get saveToGallery;
+
   /// No description provided for @saved.
   ///
   /// In zh, this message translates to:
   /// **'已保存'**
   String get saved;
+
+  /// No description provided for @savedToGallery.
+  ///
+  /// In zh, this message translates to:
+  /// **'已保存到相册'**
+  String get savedToGallery;
 
   /// No description provided for @saving.
   ///
@@ -1202,11 +2042,23 @@ abstract class AppLocalizations {
   /// **'搜索标题、内容，支持拼音首字母'**
   String get searchHint;
 
+  /// No description provided for @searchPromptEmpty.
+  ///
+  /// In zh, this message translates to:
+  /// **'输入关键词搜索全部记录'**
+  String get searchPromptEmpty;
+
   /// No description provided for @security.
   ///
   /// In zh, this message translates to:
   /// **'安全'**
   String get security;
+
+  /// No description provided for @securityAndPrivacy.
+  ///
+  /// In zh, this message translates to:
+  /// **'安全与隐私'**
+  String get securityAndPrivacy;
 
   /// No description provided for @securityNotImplemented.
   ///
@@ -1250,11 +2102,29 @@ abstract class AppLocalizations {
   /// **'设置 PIN'**
   String get setPin;
 
+  /// No description provided for @setQuickAccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'设为常用'**
+  String get setQuickAccess;
+
   /// No description provided for @settings.
   ///
   /// In zh, this message translates to:
   /// **'设置'**
   String get settings;
+
+  /// No description provided for @sharePhoto.
+  ///
+  /// In zh, this message translates to:
+  /// **'分享照片'**
+  String get sharePhoto;
+
+  /// No description provided for @showNumberAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'显示号码'**
+  String get showNumberAction;
 
   /// No description provided for @showPassword.
   ///
@@ -1267,6 +2137,24 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'智能推荐'**
   String get smartRecommend;
+
+  /// No description provided for @sniffSaveAccount.
+  ///
+  /// In zh, this message translates to:
+  /// **'存为网站账号'**
+  String get sniffSaveAccount;
+
+  /// No description provided for @sniffSaveAddress.
+  ///
+  /// In zh, this message translates to:
+  /// **'存为地址'**
+  String get sniffSaveAddress;
+
+  /// No description provided for @sniffSaveId.
+  ///
+  /// In zh, this message translates to:
+  /// **'存为证件'**
+  String get sniffSaveId;
 
   /// No description provided for @sortRecentlyCreated.
   ///
@@ -1291,6 +2179,30 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'标题 A–Z'**
   String get sortTitleAZ;
+
+  /// No description provided for @speedDialAddress.
+  ///
+  /// In zh, this message translates to:
+  /// **'地址'**
+  String get speedDialAddress;
+
+  /// No description provided for @speedDialBlank.
+  ///
+  /// In zh, this message translates to:
+  /// **'空白速记'**
+  String get speedDialBlank;
+
+  /// No description provided for @speedDialId.
+  ///
+  /// In zh, this message translates to:
+  /// **'证件'**
+  String get speedDialId;
+
+  /// No description provided for @speedDialPassword.
+  ///
+  /// In zh, this message translates to:
+  /// **'密码'**
+  String get speedDialPassword;
 
   /// No description provided for @startRecovery.
   ///
@@ -1394,6 +2306,12 @@ abstract class AppLocalizations {
   /// **'已同步'**
   String get synced;
 
+  /// No description provided for @syncedRecordCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'已同步 {synced} / 共 {total} 条记录'**
+  String syncedRecordCount(int synced, int total);
+
   /// No description provided for @tagName.
   ///
   /// In zh, this message translates to:
@@ -1411,6 +2329,90 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'还没有标签'**
   String get tagsEmpty;
+
+  /// No description provided for @takePhoto.
+  ///
+  /// In zh, this message translates to:
+  /// **'拍照'**
+  String get takePhoto;
+
+  /// No description provided for @templateBlank.
+  ///
+  /// In zh, this message translates to:
+  /// **'空白笔记'**
+  String get templateBlank;
+
+  /// No description provided for @templateBlankDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'从空白开始自由记录'**
+  String get templateBlankDesc;
+
+  /// No description provided for @templateContact.
+  ///
+  /// In zh, this message translates to:
+  /// **'联系人'**
+  String get templateContact;
+
+  /// No description provided for @templateContactDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'姓名、电话、邮箱与地址'**
+  String get templateContactDesc;
+
+  /// No description provided for @templateIdDocument.
+  ///
+  /// In zh, this message translates to:
+  /// **'证件'**
+  String get templateIdDocument;
+
+  /// No description provided for @templateIdDocumentDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'身份证、驾驶证等证件照与号码，号码自动掩码'**
+  String get templateIdDocumentDesc;
+
+  /// No description provided for @templateIdea.
+  ///
+  /// In zh, this message translates to:
+  /// **'灵感速记'**
+  String get templateIdea;
+
+  /// No description provided for @templateIdeaDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'灵感、来源与下一步行动'**
+  String get templateIdeaDesc;
+
+  /// No description provided for @templatePassword.
+  ///
+  /// In zh, this message translates to:
+  /// **'记密码'**
+  String get templatePassword;
+
+  /// No description provided for @templatePasswordDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'网站、账号与密码，密码自动掩码'**
+  String get templatePasswordDesc;
+
+  /// No description provided for @templateSheetTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择模版'**
+  String get templateSheetTitle;
+
+  /// No description provided for @templateTodo.
+  ///
+  /// In zh, this message translates to:
+  /// **'待办清单'**
+  String get templateTodo;
+
+  /// No description provided for @templateTodoDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'复选框式待办事项'**
+  String get templateTodoDesc;
 
   /// No description provided for @testConnection.
   ///
@@ -1442,6 +2444,18 @@ abstract class AppLocalizations {
   /// **'跟随系统'**
   String get themeSystem;
 
+  /// No description provided for @timeToday.
+  ///
+  /// In zh, this message translates to:
+  /// **'今天 {time}'**
+  String timeToday(String time);
+
+  /// No description provided for @timeYesterday.
+  ///
+  /// In zh, this message translates to:
+  /// **'昨天'**
+  String get timeYesterday;
+
   /// No description provided for @timeout1Min.
   ///
   /// In zh, this message translates to:
@@ -1460,23 +2474,23 @@ abstract class AppLocalizations {
   /// **'立即'**
   String get timeoutImmediately;
 
-  /// No description provided for @timeToday.
-  ///
-  /// In zh, this message translates to:
-  /// **'今天 {time}'**
-  String timeToday(String time);
-
-  /// No description provided for @timeYesterday.
-  ///
-  /// In zh, this message translates to:
-  /// **'昨天'**
-  String get timeYesterday;
-
   /// No description provided for @titleHint.
   ///
   /// In zh, this message translates to:
   /// **'标题（可选）'**
   String get titleHint;
+
+  /// No description provided for @today.
+  ///
+  /// In zh, this message translates to:
+  /// **'今天'**
+  String get today;
+
+  /// No description provided for @todoProgress.
+  ///
+  /// In zh, this message translates to:
+  /// **'已完成 {done} / {total}'**
+  String todoProgress(int done, int total);
 
   /// No description provided for @trash.
   ///
@@ -1508,17 +2522,35 @@ abstract class AppLocalizations {
   /// **'取消收藏'**
   String get unfavorite;
 
+  /// No description provided for @unlockAndJoin.
+  ///
+  /// In zh, this message translates to:
+  /// **'解锁并加入'**
+  String get unlockAndJoin;
+
   /// No description provided for @unlockApp.
   ///
   /// In zh, this message translates to:
   /// **'解锁随存'**
   String get unlockApp;
 
-  /// No description provided for @unlockAndJoin.
+  /// No description provided for @unlockKeyPrompt.
   ///
   /// In zh, this message translates to:
-  /// **'解锁并加入'**
-  String get unlockAndJoin;
+  /// **'解锁密钥'**
+  String get unlockKeyPrompt;
+
+  /// No description provided for @unpinRecord.
+  ///
+  /// In zh, this message translates to:
+  /// **'取消置顶'**
+  String get unpinRecord;
+
+  /// No description provided for @unsetQuickAccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'取消常用'**
+  String get unsetQuickAccess;
 
   /// No description provided for @untitledRecord.
   ///
@@ -1580,11 +2612,23 @@ abstract class AppLocalizations {
   /// **'版本'**
   String get version;
 
+  /// No description provided for @viewAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看'**
+  String get viewAction;
+
   /// No description provided for @viewConflicts.
   ///
   /// In zh, this message translates to:
   /// **'查看冲突'**
   String get viewConflicts;
+
+  /// No description provided for @viewPhoto.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看大图'**
+  String get viewPhoto;
 
   /// No description provided for @webdavConnectionSettings.
   ///
@@ -1712,857 +2756,17 @@ abstract class AppLocalizations {
   /// **'PIN 错误，请重试'**
   String get wrongPin;
 
-  /// No description provided for @existingVaultJoined.
-  ///
-  /// In zh, this message translates to:
-  /// **'检测到已有同步库，已为你加入'**
-  String get existingVaultJoined;
-
-  /// No description provided for @lockedKeysNotice.
-  ///
-  /// In zh, this message translates to:
-  /// **'有 {count} 把密钥未解锁，部分内容暂时无法显示'**
-  String lockedKeysNotice(int count);
-
-  /// No description provided for @migrationTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'发现旧协议同步库'**
-  String get migrationTitle;
-
-  /// No description provided for @migrationBody.
-  ///
-  /// In zh, this message translates to:
-  /// **'旧目录原样保留作备份，迁移为一次性拷贝。迁移后可使用新协议进行无冲突追加同步。'**
-  String get migrationBody;
-
-  /// No description provided for @migrationBackupAndMigrate.
-  ///
-  /// In zh, this message translates to:
-  /// **'备份并迁移'**
-  String get migrationBackupAndMigrate;
-
-  /// No description provided for @passwordChangeDeferred.
-  ///
-  /// In zh, this message translates to:
-  /// **'密码修改功能暂未开放，普通同步不受影响'**
-  String get passwordChangeDeferred;
-
-  /// No description provided for @unlockKeyPrompt.
-  ///
-  /// In zh, this message translates to:
-  /// **'解锁密钥'**
-  String get unlockKeyPrompt;
-
-  /// No description provided for @enterKeyPassword.
-  ///
-  /// In zh, this message translates to:
-  /// **'输入密钥加密密码'**
-  String get enterKeyPassword;
-
-  /// No description provided for @templateSheetTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'选择模版'**
-  String get templateSheetTitle;
-
-  /// No description provided for @templateBlank.
-  ///
-  /// In zh, this message translates to:
-  /// **'空白笔记'**
-  String get templateBlank;
-
-  /// No description provided for @templateBlankDesc.
-  ///
-  /// In zh, this message translates to:
-  /// **'从空白开始自由记录'**
-  String get templateBlankDesc;
-
-  /// No description provided for @templatePassword.
-  ///
-  /// In zh, this message translates to:
-  /// **'记密码'**
-  String get templatePassword;
-
-  /// No description provided for @templatePasswordDesc.
-  ///
-  /// In zh, this message translates to:
-  /// **'网站、账号与密码，密码自动掩码'**
-  String get templatePasswordDesc;
-
-  /// No description provided for @templateIdea.
-  ///
-  /// In zh, this message translates to:
-  /// **'灵感速记'**
-  String get templateIdea;
-
-  /// No description provided for @templateIdeaDesc.
-  ///
-  /// In zh, this message translates to:
-  /// **'灵感、来源与下一步行动'**
-  String get templateIdeaDesc;
-
-  /// No description provided for @templateTodo.
-  ///
-  /// In zh, this message translates to:
-  /// **'待办清单'**
-  String get templateTodo;
-
-  /// No description provided for @templateTodoDesc.
-  ///
-  /// In zh, this message translates to:
-  /// **'复选框式待办事项'**
-  String get templateTodoDesc;
-
-  /// No description provided for @templateContact.
-  ///
-  /// In zh, this message translates to:
-  /// **'联系人'**
-  String get templateContact;
-
-  /// No description provided for @templateContactDesc.
-  ///
-  /// In zh, this message translates to:
-  /// **'姓名、电话、邮箱与地址'**
-  String get templateContactDesc;
-
-  /// No description provided for @templateIdDocument.
-  ///
-  /// In zh, this message translates to:
-  /// **'证件'**
-  String get templateIdDocument;
-
-  /// No description provided for @templateIdDocumentDesc.
-  ///
-  /// In zh, this message translates to:
-  /// **'身份证、驾驶证等证件照与号码，号码自动掩码'**
-  String get templateIdDocumentDesc;
-
-  /// No description provided for @passwordCopied.
-  ///
-  /// In zh, this message translates to:
-  /// **'密码已复制'**
-  String get passwordCopied;
-
-  /// No description provided for @pinRecord.
-  ///
-  /// In zh, this message translates to:
-  /// **'置顶'**
-  String get pinRecord;
-
-  /// No description provided for @unpinRecord.
-  ///
-  /// In zh, this message translates to:
-  /// **'取消置顶'**
-  String get unpinRecord;
-
-  /// No description provided for @deleteRecordTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'删除这条记录？'**
-  String get deleteRecordTitle;
-
-  /// No description provided for @deleteRecordConfirm.
-  ///
-  /// In zh, this message translates to:
-  /// **'删除后可在回收站找回。'**
-  String get deleteRecordConfirm;
-
-  /// No description provided for @formatCheckbox.
-  ///
-  /// In zh, this message translates to:
-  /// **'勾选框'**
-  String get formatCheckbox;
-
-  /// No description provided for @formatHeading.
-  ///
-  /// In zh, this message translates to:
-  /// **'标题'**
-  String get formatHeading;
-
-  /// No description provided for @formatBold.
-  ///
-  /// In zh, this message translates to:
-  /// **'加粗'**
-  String get formatBold;
-
-  /// No description provided for @formatBullet.
-  ///
-  /// In zh, this message translates to:
-  /// **'无序列表'**
-  String get formatBullet;
-
-  /// No description provided for @defaultCategoryWork.
-  ///
-  /// In zh, this message translates to:
-  /// **'工作'**
-  String get defaultCategoryWork;
-
-  /// No description provided for @defaultCategoryStudy.
-  ///
-  /// In zh, this message translates to:
-  /// **'学习'**
-  String get defaultCategoryStudy;
-
-  /// No description provided for @defaultCategoryLife.
-  ///
-  /// In zh, this message translates to:
-  /// **'生活'**
-  String get defaultCategoryLife;
-
-  /// No description provided for @defaultCategoryIdeas.
-  ///
-  /// In zh, this message translates to:
-  /// **'灵感'**
-  String get defaultCategoryIdeas;
-
-  /// No description provided for @defaultCategoryTodo.
-  ///
-  /// In zh, this message translates to:
-  /// **'待办'**
-  String get defaultCategoryTodo;
-
-  /// No description provided for @recordTitlePassword.
-  ///
-  /// In zh, this message translates to:
-  /// **'密码记录'**
-  String get recordTitlePassword;
-
-  /// No description provided for @recordTitleIdea.
-  ///
-  /// In zh, this message translates to:
-  /// **'灵感记录'**
-  String get recordTitleIdea;
-
-  /// No description provided for @recordTitleTodo.
-  ///
-  /// In zh, this message translates to:
-  /// **'待办记录'**
-  String get recordTitleTodo;
-
-  /// No description provided for @todoProgress.
-  ///
-  /// In zh, this message translates to:
-  /// **'已完成 {done} / {total}'**
-  String todoProgress(int done, int total);
-
-  /// No description provided for @copied.
-  ///
-  /// In zh, this message translates to:
-  /// **'已复制'**
-  String get copied;
-
-  /// No description provided for @notFilled.
-  ///
-  /// In zh, this message translates to:
-  /// **'未填写'**
-  String get notFilled;
-
-  /// No description provided for @today.
-  ///
-  /// In zh, this message translates to:
-  /// **'今天'**
-  String get today;
-
   /// No description provided for @yesterday.
   ///
   /// In zh, this message translates to:
   /// **'昨天'**
   String get yesterday;
 
-  /// No description provided for @copy.
+  /// No description provided for @zoomInAction.
   ///
   /// In zh, this message translates to:
-  /// **'复制'**
-  String get copy;
-
-  /// No description provided for @fieldNotes.
-  ///
-  /// In zh, this message translates to:
-  /// **'备注'**
-  String get fieldNotes;
-
-  /// No description provided for @fieldPassword.
-  ///
-  /// In zh, this message translates to:
-  /// **'密码'**
-  String get fieldPassword;
-
-  /// No description provided for @fieldUsername.
-  ///
-  /// In zh, this message translates to:
-  /// **'用户名 / 邮箱'**
-  String get fieldUsername;
-
-  /// No description provided for @fieldWebsite.
-  ///
-  /// In zh, this message translates to:
-  /// **'网站 / 应用'**
-  String get fieldWebsite;
-
-  /// No description provided for @fieldIdea.
-  ///
-  /// In zh, this message translates to:
-  /// **'灵感'**
-  String get fieldIdea;
-
-  /// No description provided for @fieldSource.
-  ///
-  /// In zh, this message translates to:
-  /// **'来源'**
-  String get fieldSource;
-
-  /// No description provided for @fieldNextAction.
-  ///
-  /// In zh, this message translates to:
-  /// **'下一步行动'**
-  String get fieldNextAction;
-
-  /// No description provided for @recordTitleContact.
-  ///
-  /// In zh, this message translates to:
-  /// **'联系人记录'**
-  String get recordTitleContact;
-
-  /// No description provided for @recordTitleNote.
-  ///
-  /// In zh, this message translates to:
-  /// **'备忘记录'**
-  String get recordTitleNote;
-
-  /// No description provided for @fieldName.
-  ///
-  /// In zh, this message translates to:
-  /// **'姓名'**
-  String get fieldName;
-
-  /// No description provided for @fieldPhone.
-  ///
-  /// In zh, this message translates to:
-  /// **'电话'**
-  String get fieldPhone;
-
-  /// No description provided for @fieldEmail.
-  ///
-  /// In zh, this message translates to:
-  /// **'邮箱'**
-  String get fieldEmail;
-
-  /// No description provided for @fieldAddress.
-  ///
-  /// In zh, this message translates to:
-  /// **'地址'**
-  String get fieldAddress;
-
-  /// No description provided for @recordTitleIdDocument.
-  ///
-  /// In zh, this message translates to:
-  /// **'证件记录'**
-  String get recordTitleIdDocument;
-
-  /// No description provided for @fieldDocType.
-  ///
-  /// In zh, this message translates to:
-  /// **'证件类型'**
-  String get fieldDocType;
-
-  /// No description provided for @fieldDocName.
-  ///
-  /// In zh, this message translates to:
-  /// **'姓名'**
-  String get fieldDocName;
-
-  /// No description provided for @fieldDocNumber.
-  ///
-  /// In zh, this message translates to:
-  /// **'证件号码'**
-  String get fieldDocNumber;
-
-  /// No description provided for @fieldValidUntil.
-  ///
-  /// In zh, this message translates to:
-  /// **'有效期至'**
-  String get fieldValidUntil;
-
-  /// No description provided for @fieldPhotoFront.
-  ///
-  /// In zh, this message translates to:
-  /// **'证件照片正面'**
-  String get fieldPhotoFront;
-
-  /// No description provided for @fieldPhotoBack.
-  ///
-  /// In zh, this message translates to:
-  /// **'证件照片反面'**
-  String get fieldPhotoBack;
-
-  /// No description provided for @docTypeIdCard.
-  ///
-  /// In zh, this message translates to:
-  /// **'身份证'**
-  String get docTypeIdCard;
-
-  /// No description provided for @docTypeDriverLicense.
-  ///
-  /// In zh, this message translates to:
-  /// **'驾驶证'**
-  String get docTypeDriverLicense;
-
-  /// No description provided for @docTypeVehicleLicense.
-  ///
-  /// In zh, this message translates to:
-  /// **'行驶证'**
-  String get docTypeVehicleLicense;
-
-  /// No description provided for @docTypePassport.
-  ///
-  /// In zh, this message translates to:
-  /// **'护照'**
-  String get docTypePassport;
-
-  /// No description provided for @docTypeHmtPermit.
-  ///
-  /// In zh, this message translates to:
-  /// **'港澳通行证'**
-  String get docTypeHmtPermit;
-
-  /// No description provided for @docTypeSocialCard.
-  ///
-  /// In zh, this message translates to:
-  /// **'社保卡'**
-  String get docTypeSocialCard;
-
-  /// No description provided for @docTypePropertyCert.
-  ///
-  /// In zh, this message translates to:
-  /// **'房产证'**
-  String get docTypePropertyCert;
-
-  /// No description provided for @docTypeOther.
-  ///
-  /// In zh, this message translates to:
-  /// **'其他'**
-  String get docTypeOther;
-
-  /// No description provided for @docTypeCustomHint.
-  ///
-  /// In zh, this message translates to:
-  /// **'请输入证件类型'**
-  String get docTypeCustomHint;
-
-  /// No description provided for @takePhoto.
-  ///
-  /// In zh, this message translates to:
-  /// **'拍照'**
-  String get takePhoto;
-
-  /// No description provided for @chooseFromGallery.
-  ///
-  /// In zh, this message translates to:
-  /// **'从相册选择'**
-  String get chooseFromGallery;
-
-  /// No description provided for @viewPhoto.
-  ///
-  /// In zh, this message translates to:
-  /// **'查看大图'**
-  String get viewPhoto;
-
-  /// No description provided for @privacyPolicy.
-  ///
-  /// In zh, this message translates to:
-  /// **'隐私政策'**
-  String get privacyPolicy;
-
-  /// No description provided for @clearAllData.
-  ///
-  /// In zh, this message translates to:
-  /// **'清除全部数据'**
-  String get clearAllData;
-
-  /// No description provided for @clearAllDataWarningTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'清除全部数据？'**
-  String get clearAllDataWarningTitle;
-
-  /// No description provided for @clearAllDataWarningContent.
-  ///
-  /// In zh, this message translates to:
-  /// **'将删除所有记录、分类、标签及证件照片，不可恢复。'**
-  String get clearAllDataWarningContent;
-
-  /// No description provided for @continueAction.
-  ///
-  /// In zh, this message translates to:
-  /// **'继续'**
-  String get continueAction;
-
-  /// No description provided for @clearAllDataConfirmTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'最终确认'**
-  String get clearAllDataConfirmTitle;
-
-  /// No description provided for @clearAllDataConfirmContent.
-  ///
-  /// In zh, this message translates to:
-  /// **'此操作无法撤销，所有本地记录及证件照片将被彻底删除。'**
-  String get clearAllDataConfirmContent;
-
-  /// No description provided for @confirmClearAllData.
-  ///
-  /// In zh, this message translates to:
-  /// **'我确认要删除全部数据'**
-  String get confirmClearAllData;
-
-  /// No description provided for @clearAllDataSuccess.
-  ///
-  /// In zh, this message translates to:
-  /// **'已清除全部数据'**
-  String get clearAllDataSuccess;
-
-  /// No description provided for @cameraRationaleTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'相机权限说明'**
-  String get cameraRationaleTitle;
-
-  /// No description provided for @cameraRationaleMessage.
-  ///
-  /// In zh, this message translates to:
-  /// **'拍照用于拍摄证件照片，仅保存到本应用私有目录'**
-  String get cameraRationaleMessage;
-
-  /// No description provided for @sharePhoto.
-  ///
-  /// In zh, this message translates to:
-  /// **'分享照片'**
-  String get sharePhoto;
-
-  /// No description provided for @saveToGallery.
-  ///
-  /// In zh, this message translates to:
-  /// **'保存到相册'**
-  String get saveToGallery;
-
-  /// No description provided for @savedToGallery.
-  ///
-  /// In zh, this message translates to:
-  /// **'已保存到相册'**
-  String get savedToGallery;
-
-  /// No description provided for @savePhotoFailed.
-  ///
-  /// In zh, this message translates to:
-  /// **'保存失败，请重试'**
-  String get savePhotoFailed;
-
-  /// No description provided for @galleryPermissionTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'相册权限说明'**
-  String get galleryPermissionTitle;
-
-  /// No description provided for @galleryPermissionMessage.
-  ///
-  /// In zh, this message translates to:
-  /// **'保存证件照片到系统相册需要相册权限，照片仅保存到本地相册'**
-  String get galleryPermissionMessage;
-
-  /// No description provided for @clipboardSniffTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'剪贴板识别'**
-  String get clipboardSniffTitle;
-
-  /// No description provided for @clipboardSniffSubtitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'点击 + 时识别证件号、地址、链接'**
-  String get clipboardSniffSubtitle;
-
-  /// No description provided for @setQuickAccess.
-  ///
-  /// In zh, this message translates to:
-  /// **'设为常用'**
-  String get setQuickAccess;
-
-  /// No description provided for @unsetQuickAccess.
-  ///
-  /// In zh, this message translates to:
-  /// **'取消常用'**
-  String get unsetQuickAccess;
-
-  /// No description provided for @quickAccessAdded.
-  ///
-  /// In zh, this message translates to:
-  /// **'已设为常用'**
-  String get quickAccessAdded;
-
-  /// No description provided for @quickAccessRemoved.
-  ///
-  /// In zh, this message translates to:
-  /// **'已取消常用'**
-  String get quickAccessRemoved;
-
-  /// No description provided for @quickAccessLimitReached.
-  ///
-  /// In zh, this message translates to:
-  /// **'常用最多只能添加 6 个'**
-  String get quickAccessLimitReached;
-
-  /// No description provided for @searchPromptEmpty.
-  ///
-  /// In zh, this message translates to:
-  /// **'输入关键词搜索全部记录'**
-  String get searchPromptEmpty;
-
-  /// No description provided for @manageCategories.
-  ///
-  /// In zh, this message translates to:
-  /// **'管理分类'**
-  String get manageCategories;
-
-  /// No description provided for @quickAdd.
-  ///
-  /// In zh, this message translates to:
-  /// **'快速添加'**
-  String get quickAdd;
-
-  /// No description provided for @backupAndSync.
-  ///
-  /// In zh, this message translates to:
-  /// **'备份与同步'**
-  String get backupAndSync;
-
-  /// No description provided for @backupAndExport.
-  ///
-  /// In zh, this message translates to:
-  /// **'备份与导出'**
-  String get backupAndExport;
-
-  /// No description provided for @securityAndPrivacy.
-  ///
-  /// In zh, this message translates to:
-  /// **'安全与隐私'**
-  String get securityAndPrivacy;
-
-  /// No description provided for @appLockStatusEnabled.
-  ///
-  /// In zh, this message translates to:
-  /// **'已开启'**
-  String get appLockStatusEnabled;
-
-  /// No description provided for @appLockStatusDisabled.
-  ///
-  /// In zh, this message translates to:
-  /// **'未开启'**
-  String get appLockStatusDisabled;
-
-  /// No description provided for @dangerousOperations.
-  ///
-  /// In zh, this message translates to:
-  /// **'危险操作'**
-  String get dangerousOperations;
-
-  /// No description provided for @onboardingClipboardTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'开启剪贴板识别？'**
-  String get onboardingClipboardTitle;
-
-  /// No description provided for @onboardingClipboardBody.
-  ///
-  /// In zh, this message translates to:
-  /// **'复制证件号、地址或网址后，点「+」时随存会提示你一键保存。内容只在本机识别，不会上传。'**
-  String get onboardingClipboardBody;
-
-  /// No description provided for @onboardingClipboardEnable.
-  ///
-  /// In zh, this message translates to:
-  /// **'开启'**
-  String get onboardingClipboardEnable;
-
-  /// No description provided for @onboardingClipboardNotNow.
-  ///
-  /// In zh, this message translates to:
-  /// **'暂不'**
-  String get onboardingClipboardNotNow;
-
-  /// No description provided for @onboardingClipboardFooter.
-  ///
-  /// In zh, this message translates to:
-  /// **'可随时在 设置 › 安全与隐私 中更改'**
-  String get onboardingClipboardFooter;
-
-  /// No description provided for @presentAutoBrightnessTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'出示时调高亮度'**
-  String get presentAutoBrightnessTitle;
-
-  /// No description provided for @presentAutoBrightnessSubtitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'方便他人查看或扫码'**
-  String get presentAutoBrightnessSubtitle;
-
-  /// No description provided for @presentBrightness.
-  ///
-  /// In zh, this message translates to:
-  /// **'亮度'**
-  String get presentBrightness;
-
-  /// No description provided for @presentIdDocument.
-  ///
-  /// In zh, this message translates to:
-  /// **'出示证件'**
-  String get presentIdDocument;
-
-  /// No description provided for @presentDocument.
-  ///
-  /// In zh, this message translates to:
-  /// **'出示证件'**
-  String get presentDocument;
-
-  /// No description provided for @idCardValidUntil.
-  ///
-  /// In zh, this message translates to:
-  /// **'有效期至 {date}'**
-  String idCardValidUntil(String date);
-
-  /// No description provided for @idCardHintFlip.
-  ///
-  /// In zh, this message translates to:
-  /// **'点击卡片翻面 · 长按复制号码'**
-  String get idCardHintFlip;
-
-  /// No description provided for @idCardHintNoFlip.
-  ///
-  /// In zh, this message translates to:
-  /// **'长按卡片复制号码'**
-  String get idCardHintNoFlip;
-
-  /// No description provided for @idCardTapToReveal.
-  ///
-  /// In zh, this message translates to:
-  /// **'点击查看'**
-  String get idCardTapToReveal;
-
-  /// No description provided for @idCardFlipBack.
-  ///
-  /// In zh, this message translates to:
-  /// **'翻回正面'**
-  String get idCardFlipBack;
-
-  /// No description provided for @idCardBackPhoto.
-  ///
-  /// In zh, this message translates to:
-  /// **'背面照片'**
-  String get idCardBackPhoto;
-
-  /// No description provided for @idCardFrontPhoto.
-  ///
-  /// In zh, this message translates to:
-  /// **'正面照片'**
-  String get idCardFrontPhoto;
-
-  /// No description provided for @idCardMoreActions.
-  ///
-  /// In zh, this message translates to:
-  /// **'更多操作'**
-  String get idCardMoreActions;
-
-  /// No description provided for @idNumberCopied.
-  ///
-  /// In zh, this message translates to:
-  /// **'证件号码已复制'**
-  String get idNumberCopied;
-
-  /// No description provided for @choosePhotoSide.
-  ///
-  /// In zh, this message translates to:
-  /// **'选择照片'**
-  String get choosePhotoSide;
-
-  /// No description provided for @plaintextExportConfirmTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'未加密导出确认'**
-  String get plaintextExportConfirmTitle;
-
-  /// No description provided for @plaintextExportConfirm.
-  ///
-  /// In zh, this message translates to:
-  /// **'导出的文件未加密，包含证件号和密码等敏感信息。确定继续？'**
-  String get plaintextExportConfirm;
-
-  /// No description provided for @fullBackup.
-  ///
-  /// In zh, this message translates to:
-  /// **'完整备份'**
-  String get fullBackup;
-
-  /// No description provided for @exportEncryptedBackupRecommended.
-  ///
-  /// In zh, this message translates to:
-  /// **'导出加密备份（推荐）'**
-  String get exportEncryptedBackupRecommended;
-
-  /// No description provided for @exportEncryptedBackupSubtitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'需设置密码，换设备恢复时使用'**
-  String get exportEncryptedBackupSubtitle;
-
-  /// No description provided for @restoreBackup.
-  ///
-  /// In zh, this message translates to:
-  /// **'恢复备份'**
-  String get restoreBackup;
-
-  /// No description provided for @restoreBackupSubtitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'支持加密备份与 JSON 备份'**
-  String get restoreBackupSubtitle;
-
-  /// No description provided for @exportOtherFormats.
-  ///
-  /// In zh, this message translates to:
-  /// **'导出为其他格式'**
-  String get exportOtherFormats;
-
-  /// No description provided for @exportJsonUnencrypted.
-  ///
-  /// In zh, this message translates to:
-  /// **'导出 JSON（未加密）'**
-  String get exportJsonUnencrypted;
-
-  /// No description provided for @exportJsonSubtitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'明文，任何人可读取'**
-  String get exportJsonSubtitle;
-
-  /// No description provided for @importSectionTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'导入'**
-  String get importSectionTitle;
-
-  /// No description provided for @importMarkdownOrTxt.
-  ///
-  /// In zh, this message translates to:
-  /// **'导入 Markdown / TXT'**
-  String get importMarkdownOrTxt;
-
-  /// No description provided for @reportIssue.
-  ///
-  /// In zh, this message translates to:
-  /// **'反馈问题'**
-  String get reportIssue;
+  /// **'放大'**
+  String get zoomInAction;
 }
 
 class _AppLocalizationsDelegate

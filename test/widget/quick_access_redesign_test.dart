@@ -15,6 +15,7 @@ import 'package:suicun/features/records/presentation/id_presentation_page.dart';
 import 'package:suicun/features/records/presentation/quick_access_panel.dart';
 import 'package:suicun/features/sync/sync_contract.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
+import 'package:suicun/l10n/generated/app_localizations_zh.dart';
 import 'package:suicun/main.dart';
 
 Future<void> pumpApp(
@@ -254,6 +255,7 @@ void main() {
 
   group('P0-1 & P0-2：常用面板截断修复与尾号副标题', () {
     test('getQuickSubtitle idDocument 尾号显示与短数字保护', () {
+      final l10n = AppLocalizationsZh();
       final now = DateTime.now().toUtc();
       // >= 8 位纯数字
       final rec1 = RecordDetail(
@@ -267,7 +269,7 @@ void main() {
         ),
         tags: const [],
       );
-      expect(getQuickSubtitle(rec1, QuickRecordType.idDocument), '尾号 4829');
+      expect(getQuickSubtitle(rec1, QuickRecordType.idDocument, l10n), '尾号 4829');
 
       // 带 X
       final rec2 = RecordDetail(
@@ -281,7 +283,7 @@ void main() {
         ),
         tags: const [],
       );
-      expect(getQuickSubtitle(rec2, QuickRecordType.idDocument), '尾号 234X');
+      expect(getQuickSubtitle(rec2, QuickRecordType.idDocument, l10n), '尾号 234X');
 
       // <= 6 位短数字
       final rec3 = RecordDetail(
@@ -295,7 +297,7 @@ void main() {
         ),
         tags: const [],
       );
-      expect(getQuickSubtitle(rec3, QuickRecordType.idDocument), '******');
+      expect(getQuickSubtitle(rec3, QuickRecordType.idDocument, l10n), '******');
     });
 
     testWidgets('count == 0 时可点击 × 关闭按钮隐藏引导条', (tester) async {

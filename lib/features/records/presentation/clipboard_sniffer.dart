@@ -11,8 +11,6 @@ class SniffedClipboardData {
     required this.type,
     required this.rawText,
     required this.previewText,
-    required this.bannerLabel,
-    required this.actionLabel,
     required this.templateId,
     required this.initialBody,
   });
@@ -20,8 +18,6 @@ class SniffedClipboardData {
   final SniffedType type;
   final String rawText;
   final String previewText;
-  final String bannerLabel;
-  final String actionLabel;
   final String templateId;
   final String initialBody;
 }
@@ -44,7 +40,10 @@ final _addressKeywordRegExp = RegExp(
 /// 3. HTTP(S) URL link
 ///
 /// Returns [SniffedClipboardData] if matched, or `null` otherwise.
-SniffedClipboardData? sniffClipboardText(String rawText) {
+/// When [isEnglish] is true, [SniffedClipboardData.initialBody] uses English
+/// field labels (template_detector.dart parses both).
+SniffedClipboardData? sniffClipboardText(String rawText,
+    {bool isEnglish = false}) {
   final text = rawText.trim();
   if (text.isEmpty || text.length < 5) return null;
 
@@ -59,10 +58,10 @@ SniffedClipboardData? sniffClipboardText(String rawText) {
       type: SniffedType.idDocument,
       rawText: text,
       previewText: masked,
-      bannerLabel: '检测到证件号',
-      actionLabel: '存为证件',
       templateId: 'id_document',
-      initialBody: '证件类型：身份证\n证件号码：$idNumber\n姓名：',
+      initialBody: isEnglish
+          ? 'Document type: ID card\nDocument number: $idNumber\nName: '
+          : '证件类型：身份证\n证件号码：$idNumber\n姓名：',
     );
   }
 
@@ -80,16 +79,20 @@ SniffedClipboardData? sniffClipboardText(String rawText) {
 
     final preview = text.length > 16 ? '${text.substring(0, 16)}…' : text;
     final bodyBuffer = StringBuffer();
-    bodyBuffer.writeln('姓名：');
-    bodyBuffer.writeln('电话：${phone ?? ''}');
-    bodyBuffer.writeln('地址：$cleanAddress');
+    if (isEnglish) {
+      bodyBuffer.writeln('Name: ');
+      bodyBuffer.writeln('Phone: ${phone ?? ''}');
+      bodyBuffer.writeln('Address: $cleanAddress');
+    } else {
+      bodyBuffer.writeln('姓名：');
+      bodyBuffer.writeln('电话：${phone ?? ''}');
+      bodyBuffer.writeln('地址：$cleanAddress');
+    }
 
     return SniffedClipboardData(
       type: SniffedType.address,
       rawText: text,
       previewText: preview,
-      bannerLabel: '检测到地址',
-      actionLabel: '存为地址',
       templateId: 'address',
       initialBody: bodyBuffer.toString(),
     );
@@ -105,10 +108,10 @@ SniffedClipboardData? sniffClipboardText(String rawText) {
       type: SniffedType.link,
       rawText: text,
       previewText: host,
-      bannerLabel: '检测到链接',
-      actionLabel: '存为网站账号',
       templateId: 'password',
-      initialBody: '网站/应用：$url\n用户名：\n密码：',
+      initialBody: isEnglish
+          ? 'Website/App: $url\nUsername: \nPassword: '
+          : '网站/应用：$url\n用户名：\n密码：',
     );
   }
 
