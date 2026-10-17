@@ -32,6 +32,8 @@ class IdCardView extends StatefulWidget {
     this.validUntil,
     this.frontPhoto,
     this.backPhoto,
+    this.frontPhotoMissing = false,
+    this.backPhotoMissing = false,
     this.issuingCountry,
     this.expiryDate,
     this.noExpiry = false,
@@ -51,6 +53,11 @@ class IdCardView extends StatefulWidget {
   /// Resolved photo files (null when the record has no photo on that side).
   final Uint8List? frontPhoto;
   final Uint8List? backPhoto;
+
+  /// True when a photo path is set but the file is missing on this device
+  /// (e.g. synced from another device). Shows a placeholder instead.
+  final bool frontPhotoMissing;
+  final bool backPhotoMissing;
 
   /// ISO 3166-1 alpha-2 country code (e.g. 'US'). Shown top-right when set.
   final String? issuingCountry;
@@ -370,6 +377,8 @@ class _IdCardViewState extends State<IdCardView>
     final rawNumber = widget.docNumber?.trim() ?? '';
     final validUntil = widget.validUntil?.trim() ?? '';
     final hasFrontPhoto = widget.frontPhoto != null;
+    final showFrontPhotoArea =
+        hasFrontPhoto || widget.frontPhotoMissing;
     final hasBackPhoto = widget.backPhoto != null;
     final isCjk = _cjkRegex.hasMatch(name);
 
@@ -477,16 +486,19 @@ class _IdCardViewState extends State<IdCardView>
         ),
       ),
       // Right, 46 from top: front photo (64×80), blurred by default.
-      if (hasFrontPhoto)
+      // If the photo file is missing on this device, show a placeholder.
+      if (showFrontPhotoArea)
         Positioned(
           right: 18,
           top: 46,
-          child: _buildPhotoThumb(
-            bytes: widget.frontPhoto!,
-            revealed: _frontRevealed,
-            onTap: () => _togglePhotoReveal(true),
-            l10n: l10n,
-          ),
+          child: hasFrontPhoto
+              ? _buildPhotoThumb(
+                  bytes: widget.frontPhoto!,
+                  revealed: _frontRevealed,
+                  onTap: () => _togglePhotoReveal(true),
+                  l10n: l10n,
+                )
+              : _buildMissingPhotoPlaceholder(l10n),
         ),
       // Bottom-left: document number + eye toggle + expiry pill.
       if (rawNumber.isNotEmpty)
@@ -691,6 +703,42 @@ class _IdCardViewState extends State<IdCardView>
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildMissingPhotoPlaceholder(AppLocalizations l10n) {
+    return Container(
+      width: 64,
+      height: 80,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.35),
+          width: 1.5,
+        ),
+        color: Colors.white.withValues(alpha: 0.08),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(
+            Icons.image_not_supported_outlined,
+            size: 20,
+            color: Colors.white70,
+          ),
+          const SizedBox(height: 4),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Text(
+              l10n.photoNotOnThisDevice,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 9, color: Colors.white70),
+            ),
+          ),
+        ],
       ),
     );
   }

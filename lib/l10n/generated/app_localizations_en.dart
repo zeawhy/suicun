@@ -87,6 +87,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get backupReminderText =>
+      'Your data is stored only on this phone. Turn on encrypted backup or sync to keep it safe.';
+
+  @override
   String get batchCategorize => 'Categorize';
 
   @override
@@ -113,6 +117,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cancel => 'Cancel';
+
+  @override
+  String get cantReadData => 'Can\'t read data on this device';
+
+  @override
+  String get cantReadDataDesc =>
+      'This usually happens after switching phones, resetting your phone, or a system data transfer. You can start over, then restore from an encrypted backup or WebDAV sync.';
 
   @override
   String get categories => 'Categories';
@@ -218,6 +229,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get connectAndSync => 'Connect & sync';
+
+  @override
+  String get connectWebdavSync => 'Connect WebDAV sync';
 
   @override
   String connectionFailed(String error) {
@@ -730,6 +744,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get landscapeAction => 'Landscape';
 
   @override
+  String lastBackup(String time) {
+    return 'Last backup: $time';
+  }
+
+  @override
   String lastSuccess(String time) {
     return 'Last success: $time';
   }
@@ -749,6 +768,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String lastSyncToday(String time) {
     return 'Today $time';
   }
+
+  @override
+  String get later => 'Later';
 
   @override
   String get linkCopied => 'Link copied';
@@ -833,6 +855,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noPhotoOrNumber => 'No photo or number available';
 
   @override
+  String get notBackedUpYet => 'Not backed up yet';
+
+  @override
   String get notFilled => 'Not set';
 
   @override
@@ -904,6 +929,9 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get permanentDeleteConfirm =>
       'This cannot be undone. Delete permanently?';
+
+  @override
+  String get photoNotOnThisDevice => 'Photo not on this device';
 
   @override
   String get pinLabel => 'PIN';
@@ -1124,6 +1152,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get restoreBackupSubtitle => 'Supports encrypted and JSON backups';
 
   @override
+  String get restoreDataTitle => 'Restore your data?';
+
+  @override
   String get retry => 'Retry';
 
   @override
@@ -1196,6 +1227,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get setQuickAccess => 'Set as quick access';
 
   @override
+  String get setUp => 'Set up';
+
+  @override
   String get settings => 'Settings';
 
   @override
@@ -1244,6 +1278,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get speedDialPassword => 'Password';
 
   @override
+  String get startOver => 'Start over';
+
+  @override
+  String get startOverConfirm =>
+      'The unreadable data on this device will be erased. This can\'t be undone.';
+
+  @override
   String get startRecovery => 'Start recovery';
 
   @override
@@ -1251,6 +1292,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get startSyncSetup => 'Start sync setup';
+
+  @override
+  String get startupFailed => 'Couldn\'t start';
 
   @override
   String get sync => 'Sync';
@@ -1311,6 +1355,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get takePhoto => 'Take photo';
+
+  @override
+  String get technicalDetails => 'Technical details';
 
   @override
   String get templateBlank => 'Blank note';

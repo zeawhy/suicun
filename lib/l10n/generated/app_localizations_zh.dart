@@ -86,6 +86,9 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get backupReminderText => '你的数据只保存在这台手机上，建议开启加密备份或同步。';
+
+  @override
   String get batchCategorize => '批量分类';
 
   @override
@@ -111,6 +114,13 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get cancel => '取消';
+
+  @override
+  String get cantReadData => '无法读取本机数据';
+
+  @override
+  String get cantReadDataDesc =>
+      '这通常发生在换机、刷机或系统数据迁移之后。你可以重新开始，然后从加密备份或 WebDAV 同步恢复数据。';
 
   @override
   String get categories => '分类';
@@ -212,6 +222,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get connectAndSync => '连接并同步';
+
+  @override
+  String get connectWebdavSync => '连接 WebDAV 同步';
 
   @override
   String connectionFailed(String error) {
@@ -712,6 +725,11 @@ class AppLocalizationsZh extends AppLocalizations {
   String get landscapeAction => '横屏';
 
   @override
+  String lastBackup(String time) {
+    return '上次备份：$time';
+  }
+
+  @override
   String lastSuccess(String time) {
     return '上次成功：$time';
   }
@@ -731,6 +749,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String lastSyncToday(String time) {
     return '今天 $time';
   }
+
+  @override
+  String get later => '稍后';
 
   @override
   String get linkCopied => '已复制链接';
@@ -814,6 +835,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get noPhotoOrNumber => '暂无证件照片与号码';
 
   @override
+  String get notBackedUpYet => '尚未备份';
+
+  @override
   String get notFilled => '未填写';
 
   @override
@@ -881,6 +905,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get permanentDeleteConfirm => '彻底删除后无法恢复。确认吗？';
+
+  @override
+  String get photoNotOnThisDevice => '照片未保存在此设备';
 
   @override
   String get pinLabel => 'PIN';
@@ -1099,6 +1126,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get restoreBackupSubtitle => '支持加密备份与 JSON 备份';
 
   @override
+  String get restoreDataTitle => '要恢复数据吗？';
+
+  @override
   String get retry => '重试';
 
   @override
@@ -1170,6 +1200,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get setQuickAccess => '设为常用';
 
   @override
+  String get setUp => '去设置';
+
+  @override
   String get settings => '设置';
 
   @override
@@ -1218,6 +1251,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get speedDialPassword => '密码';
 
   @override
+  String get startOver => '重新开始';
+
+  @override
+  String get startOverConfirm => '本机无法读取的数据将被清除，无法撤销。';
+
+  @override
   String get startRecovery => '开始恢复';
 
   @override
@@ -1225,6 +1264,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get startSyncSetup => '开始同步设置';
+
+  @override
+  String get startupFailed => '启动失败';
 
   @override
   String get sync => '同步';
@@ -1284,6 +1326,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get takePhoto => '拍照';
+
+  @override
+  String get technicalDetails => '技术详情';
 
   @override
   String get templateBlank => '空白笔记';

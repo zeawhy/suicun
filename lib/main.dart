@@ -1,12 +1,16 @@
 import 'package:country_picker/country_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:suicun/core/crypto/database_encryption_service.dart';
 import 'package:suicun/core/database/app_database.dart';
 import 'package:suicun/core/database/providers.dart';
 import 'package:suicun/core/router/app_router.dart';
 import 'package:suicun/features/records/data/id_doc_body_migration.dart';
 import 'package:suicun/features/security/presentation/app_lock_gate.dart';
+import 'package:suicun/features/security/presentation/startup_recovery_page.dart';
 import 'package:suicun/features/sync/sync_contract.dart';
 import 'package:suicun/features/sync/sync_providers.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
@@ -24,7 +28,12 @@ import 'package:suicun/shared/theme/theme_providers.dart';
 /// with a plaintext database. There is no silent fallback.
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await runStartup();
+}
 
+/// Re-runnable startup flow (§2.6). Called once from main(), and again
+/// after a recovery reset or a manual retry from the recovery page.
+Future<void> runStartup() async {
   late final AppDatabase db;
   try {
     final connection =
@@ -33,10 +42,14 @@ Future<void> main() async {
     // Run a cheap query to confirm the migrated schema is usable.
     await db.customSelect('SELECT count(*) AS n FROM sqlite_master;').get();
   } on DatabaseEncryptionError catch (e) {
-    runApp(_StartupFailureApp(message: e.message));
+    _showRecovery(dataUnreadable: true, details: e.toString());
+    return;
+  } on PlatformException catch (e) {
+    // Secure storage failure (e.g. keystore unavailable after device change).
+    _showRecovery(dataUnreadable: true, details: e.toString());
     return;
   } catch (e) {
-    runApp(_StartupFailureApp(message: 'unexpected startup error: $e'));
+    _showRecovery(dataUnreadable: false, details: e.toString());
     return;
   }
 
@@ -59,73 +72,68 @@ Future<void> main() async {
   // bodies to the structured format. Fire-and-forget; never blocks startup.
   runIdDocBodyMigration(container);
 
+  // After a recovery reset, show the one-time restore prompt.
+  final prefs = await SharedPreferences.getInstance();
+  final showRestorePrompt =
+      prefs.getBool('show_restore_prompt_after_recovery') ?? false;
+  if (showRestorePrompt) {
+    await prefs.remove('show_restore_prompt_after_recovery');
+  }
+
   // The container lives for the whole process lifetime; the OS reclaims it on
   // exit (UncontrolledProviderScope does not dispose it).
   runApp(
     UncontrolledProviderScope(
       container: container,
-      child: const AppLockGate(child: SuicunApp()),
+      child: AppLockGate(
+        child: SuicunApp(showRestorePrompt: showRestorePrompt),
+      ),
     ),
   );
 }
 
-/// Shown when the encrypted database cannot be opened. The app refuses to
-/// run rather than falling back to plaintext.
-class _StartupFailureApp extends StatelessWidget {
-  const _StartupFailureApp({required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Icon(Icons.error_outline, size: 48, color: Colors.red),
-                const SizedBox(height: 16),
-                const Text(
-                  '无法打开加密数据库',
-                  style: TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Database could not be opened. The app will not run '
-                  'without encryption.',
-                  style: TextStyle(fontSize: 14, color: Colors.grey),
-                ),
-                const SizedBox(height: 8),
-                SelectableText(message,
-                    style: const TextStyle(fontSize: 13)),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+/// Shows the recoverable startup failure page.
+void _showRecovery({required bool dataUnreadable, required String details}) {
+  runApp(
+    StartupRecoveryApp(
+      dataUnreadable: dataUnreadable,
+      technicalDetails: details,
+      onRetry: () => runStartup(),
+      onStartOver: () async {
+        await DatabaseEncryptionService().resetForRecovery();
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('show_restore_prompt_after_recovery', true);
+        await runStartup();
+      },
+    ),
+  );
 }
 
-class SuicunApp extends ConsumerWidget {
-  const SuicunApp({super.key, this.locale});
+class SuicunApp extends ConsumerStatefulWidget {
+  const SuicunApp({super.key, this.locale, this.showRestorePrompt = false});
 
   final Locale? locale;
 
+  /// When true, shows the one-time "restore your data?" dialog after startup
+  /// (§2.6, shown after a recovery reset).
+  final bool showRestorePrompt;
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SuicunApp> createState() => _SuicunAppState();
+}
+
+class _SuicunAppState extends ConsumerState<SuicunApp> {
+  bool _restorePromptShown = false;
+
+  @override
+  Widget build(BuildContext context) {
     final router = ref.watch(appRouterProvider);
     final currentThemeMode = ref.watch(resolvedThemeModeProvider);
 
     return MaterialApp.router(
       onGenerateTitle: (context) => AppLocalizations.of(context).appName,
       debugShowCheckedModeBanner: false,
-      locale: locale,
+      locale: widget.locale,
       themeMode: currentThemeMode,
       theme: AppTheme.lightTheme(),
       darkTheme: AppTheme.darkTheme(),
@@ -136,6 +144,46 @@ class SuicunApp extends ConsumerWidget {
       ],
       supportedLocales: AppLocalizations.supportedLocales,
       routerConfig: router,
+      builder: (context, child) {
+        if (widget.showRestorePrompt && !_restorePromptShown) {
+          _restorePromptShown = true;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) _showRestoreDialog(context, router);
+          });
+        }
+        return child!;
+      },
+    );
+  }
+
+  void _showRestoreDialog(BuildContext context, GoRouter router) {
+    final l10n = AppLocalizations.of(context);
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.restoreDataTitle),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              router.go('/settings/backup');
+            },
+            child: Text(l10n.importEncryptedBackup),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              router.go('/settings/webdav');
+            },
+            child: Text(l10n.connectWebdavSync),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.later),
+          ),
+        ],
+      ),
     );
   }
 }

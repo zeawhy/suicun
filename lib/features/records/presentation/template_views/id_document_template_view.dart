@@ -190,6 +190,11 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
           validUntil: _formatValidUntil(l10n),
           frontPhoto: _cardFrontBytes,
           backPhoto: _cardBackBytes,
+          // §2.5: photo referenced but file missing on this device.
+          frontPhotoMissing: (data.photoFront?.isNotEmpty ?? false) &&
+              _cardFrontBytes == null,
+          backPhotoMissing: (data.photoBack?.isNotEmpty ?? false) &&
+              _cardBackBytes == null,
           issuingCountry: data.issuingCountry,
           expiryDate: data.expiryDate,
           noExpiry: data.noExpiry,

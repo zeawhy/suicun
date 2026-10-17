@@ -248,6 +248,12 @@ abstract class AppLocalizations {
   /// **'备份包含 {count} 张证件照片，文件约 {size}'**
   String backupPhotoSizeWarn(int count, String size);
 
+  /// No description provided for @backupReminderText.
+  ///
+  /// In zh, this message translates to:
+  /// **'你的数据只保存在这台手机上，建议开启加密备份或同步。'**
+  String get backupReminderText;
+
   /// No description provided for @batchCategorize.
   ///
   /// In zh, this message translates to:
@@ -301,6 +307,18 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'取消'**
   String get cancel;
+
+  /// No description provided for @cantReadData.
+  ///
+  /// In zh, this message translates to:
+  /// **'无法读取本机数据'**
+  String get cantReadData;
+
+  /// No description provided for @cantReadDataDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'这通常发生在换机、刷机或系统数据迁移之后。你可以重新开始，然后从加密备份或 WebDAV 同步恢复数据。'**
+  String get cantReadDataDesc;
 
   /// No description provided for @categories.
   ///
@@ -499,6 +517,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'连接并同步'**
   String get connectAndSync;
+
+  /// No description provided for @connectWebdavSync.
+  ///
+  /// In zh, this message translates to:
+  /// **'连接 WebDAV 同步'**
+  String get connectWebdavSync;
 
   /// No description provided for @connectionFailed.
   ///
@@ -1460,6 +1484,12 @@ abstract class AppLocalizations {
   /// **'横屏'**
   String get landscapeAction;
 
+  /// No description provided for @lastBackup.
+  ///
+  /// In zh, this message translates to:
+  /// **'上次备份：{time}'**
+  String lastBackup(String time);
+
   /// No description provided for @lastSuccess.
   ///
   /// In zh, this message translates to:
@@ -1489,6 +1519,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'今天 {time}'**
   String lastSyncToday(String time);
+
+  /// No description provided for @later.
+  ///
+  /// In zh, this message translates to:
+  /// **'稍后'**
+  String get later;
 
   /// No description provided for @linkCopied.
   ///
@@ -1640,6 +1676,12 @@ abstract class AppLocalizations {
   /// **'暂无证件照片与号码'**
   String get noPhotoOrNumber;
 
+  /// No description provided for @notBackedUpYet.
+  ///
+  /// In zh, this message translates to:
+  /// **'尚未备份'**
+  String get notBackedUpYet;
+
   /// No description provided for @notFilled.
   ///
   /// In zh, this message translates to:
@@ -1771,6 +1813,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'彻底删除后无法恢复。确认吗？'**
   String get permanentDeleteConfirm;
+
+  /// No description provided for @photoNotOnThisDevice.
+  ///
+  /// In zh, this message translates to:
+  /// **'照片未保存在此设备'**
+  String get photoNotOnThisDevice;
 
   /// No description provided for @pinLabel.
   ///
@@ -2180,6 +2228,12 @@ abstract class AppLocalizations {
   /// **'支持加密备份与 JSON 备份'**
   String get restoreBackupSubtitle;
 
+  /// No description provided for @restoreDataTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'要恢复数据吗？'**
+  String get restoreDataTitle;
+
   /// No description provided for @retry.
   ///
   /// In zh, this message translates to:
@@ -2318,6 +2372,12 @@ abstract class AppLocalizations {
   /// **'设为常用'**
   String get setQuickAccess;
 
+  /// No description provided for @setUp.
+  ///
+  /// In zh, this message translates to:
+  /// **'去设置'**
+  String get setUp;
+
   /// No description provided for @settings.
   ///
   /// In zh, this message translates to:
@@ -2414,6 +2474,18 @@ abstract class AppLocalizations {
   /// **'密码'**
   String get speedDialPassword;
 
+  /// No description provided for @startOver.
+  ///
+  /// In zh, this message translates to:
+  /// **'重新开始'**
+  String get startOver;
+
+  /// No description provided for @startOverConfirm.
+  ///
+  /// In zh, this message translates to:
+  /// **'本机无法读取的数据将被清除，无法撤销。'**
+  String get startOverConfirm;
+
   /// No description provided for @startRecovery.
   ///
   /// In zh, this message translates to:
@@ -2431,6 +2503,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'开始同步设置'**
   String get startSyncSetup;
+
+  /// No description provided for @startupFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'启动失败'**
+  String get startupFailed;
 
   /// No description provided for @sync.
   ///
@@ -2545,6 +2623,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'拍照'**
   String get takePhoto;
+
+  /// No description provided for @technicalDetails.
+  ///
+  /// In zh, this message translates to:
+  /// **'技术详情'**
+  String get technicalDetails;
 
   /// No description provided for @templateBlank.
   ///

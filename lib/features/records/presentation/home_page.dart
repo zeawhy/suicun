@@ -10,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:suicun/core/database/providers.dart';
 import 'package:suicun/features/categories/domain/category_model.dart';
 import 'package:suicun/features/categories/presentation/categories_notifier.dart';
@@ -786,6 +787,10 @@ class _HomePageState extends ConsumerState<HomePage>
                 physics: const AlwaysScrollableScrollPhysics(),
                 slivers: [
                   _buildSliverAppBar(l10n, colorScheme),
+                  // §2.7: one-time backup reminder banner.
+                  const SliverToBoxAdapter(
+                    child: _BackupReminderBanner(),
+                  ),
                   if (showQuickAndRecent)
                     SliverToBoxAdapter(
                       child: Column(
@@ -2160,6 +2165,113 @@ class _EmptyState extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// §2.7: one-time banner reminding the user to enable encrypted backup or sync.
+///
+/// Shows when (first ID doc saved OR >=3 records) AND (never exported an
+/// encrypted backup) AND (WebDAV sync not enabled) AND (not dismissed in
+/// the last 30 days).
+class _BackupReminderBanner extends ConsumerStatefulWidget {
+  const _BackupReminderBanner();
+
+  @override
+  ConsumerState<_BackupReminderBanner> createState() =>
+      _BackupReminderBannerState();
+}
+
+class _BackupReminderBannerState extends ConsumerState<_BackupReminderBanner> {
+  bool _dismissed = false;
+
+  Future<bool> _shouldShow(int recordCount, bool syncEnabled) async {
+    if (_dismissed) return false;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final dismissedAt = prefs.getInt('backup_reminder_dismissed_at');
+      if (dismissedAt != null &&
+          DateTime.now().millisecondsSinceEpoch - dismissedAt <
+              const Duration(days: 30).inMilliseconds) {
+        return false;
+      }
+      if (prefs.getInt('last_encrypted_backup_at') != null) return false;
+      if (syncEnabled) return false;
+      final idDocSaved = prefs.getBool('id_doc_saved_once') ?? false;
+      return idDocSaved || recordCount >= 3;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<void> _dismiss() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt('backup_reminder_dismissed_at',
+          DateTime.now().millisecondsSinceEpoch);
+    } catch (_) {}
+    if (mounted) setState(() => _dismissed = true);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final recordsAsync = ref.watch(recordsListProvider);
+    final syncOverviewAsync = ref.watch(syncOverviewProvider);
+    final recordCount = recordsAsync.value?.length ?? 0;
+    final syncEnabled = syncOverviewAsync.value?.enabled ?? false;
+
+    return FutureBuilder<bool>(
+      future: _shouldShow(recordCount, syncEnabled),
+      builder: (context, snapshot) {
+        if (snapshot.data != true) return const SizedBox.shrink();
+        return Container(
+          margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: colorScheme.tertiaryContainer,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.backup_outlined,
+                  color: colorScheme.onTertiaryContainer, size: 20),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.backupReminderText,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onTertiaryContainer,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    InkWell(
+                      onTap: () => context.go('/settings/backup'),
+                      child: Text(
+                        l10n.setUp,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colorScheme.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.close, size: 18),
+                onPressed: _dismiss,
+                tooltip: MaterialLocalizations.of(context).closeButtonLabel,
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
