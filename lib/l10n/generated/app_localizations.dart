@@ -63,7 +63,7 @@ import 'app_localizations_zh.dart';
 /// property.
 abstract class AppLocalizations {
   AppLocalizations(String locale)
-      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -86,16 +86,16 @@ abstract class AppLocalizations {
   /// of delegates is preferred or required.
   static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
       <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('zh'),
-    Locale('en')
+    Locale('en'),
   ];
 
   /// No description provided for @about.
@@ -1118,6 +1118,24 @@ abstract class AppLocalizations {
   /// **'证件信息'**
   String get idDocumentInfo;
 
+  /// No description provided for @idExpired.
+  ///
+  /// In zh, this message translates to:
+  /// **'已过期'**
+  String get idExpired;
+
+  /// No description provided for @idExpiringSoon.
+  ///
+  /// In zh, this message translates to:
+  /// **'即将到期'**
+  String get idExpiringSoon;
+
+  /// No description provided for @idNoExpiry.
+  ///
+  /// In zh, this message translates to:
+  /// **'长期有效'**
+  String get idNoExpiry;
+
   /// No description provided for @idNumberCopied.
   ///
   /// In zh, this message translates to:
@@ -1135,6 +1153,72 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'尾号 {digits}'**
   String idNumberLastDigits(String digits);
+
+  /// No description provided for @idTypeCnResidentId.
+  ///
+  /// In zh, this message translates to:
+  /// **'中国居民身份证'**
+  String get idTypeCnResidentId;
+
+  /// No description provided for @idTypeDriverLicense.
+  ///
+  /// In zh, this message translates to:
+  /// **'驾驶证'**
+  String get idTypeDriverLicense;
+
+  /// No description provided for @idTypeHealthInsurance.
+  ///
+  /// In zh, this message translates to:
+  /// **'医保卡'**
+  String get idTypeHealthInsurance;
+
+  /// No description provided for @idTypeHkMoPermit.
+  ///
+  /// In zh, this message translates to:
+  /// **'港澳通行证'**
+  String get idTypeHkMoPermit;
+
+  /// No description provided for @idTypeNationalId.
+  ///
+  /// In zh, this message translates to:
+  /// **'身份证'**
+  String get idTypeNationalId;
+
+  /// No description provided for @idTypeOther.
+  ///
+  /// In zh, this message translates to:
+  /// **'其他证件'**
+  String get idTypeOther;
+
+  /// No description provided for @idTypePassport.
+  ///
+  /// In zh, this message translates to:
+  /// **'护照'**
+  String get idTypePassport;
+
+  /// No description provided for @idTypeResidencePermit.
+  ///
+  /// In zh, this message translates to:
+  /// **'居留卡'**
+  String get idTypeResidencePermit;
+
+  /// No description provided for @idTypeSocialSecurity.
+  ///
+  /// In zh, this message translates to:
+  /// **'社保卡'**
+  String get idTypeSocialSecurity;
+
+  /// No description provided for @idTypeStudentId.
+  ///
+  /// In zh, this message translates to:
+  /// **'学生证'**
+  String get idTypeStudentId;
+
+  /// No description provided for @idTypeTwPermit.
+  ///
+  /// In zh, this message translates to:
+  /// **'台湾通行证'**
+  String get idTypeTwPermit;
 
   /// No description provided for @importData.
   ///
@@ -2964,8 +3048,9 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   }
 
   throw FlutterError(
-      'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-      'an issue with the localizations generation tool. Please file an issue '
-      'on GitHub with a reproducible sample app and the gen-l10n configuration '
-      'that was used.');
+    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+    'an issue with the localizations generation tool. Please file an issue '
+    'on GitHub with a reproducible sample app and the gen-l10n configuration '
+    'that was used.',
+  );
 }

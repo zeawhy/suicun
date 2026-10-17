@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -527,6 +528,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get idDocumentInfo => '证件信息';
 
   @override
+  String get idExpired => '已过期';
+
+  @override
+  String get idExpiringSoon => '即将到期';
+
+  @override
+  String get idNoExpiry => '长期有效';
+
+  @override
   String get idNumberCopied => '证件号码已复制';
 
   @override
@@ -536,6 +546,39 @@ class AppLocalizationsZh extends AppLocalizations {
   String idNumberLastDigits(String digits) {
     return '尾号 $digits';
   }
+
+  @override
+  String get idTypeCnResidentId => '中国居民身份证';
+
+  @override
+  String get idTypeDriverLicense => '驾驶证';
+
+  @override
+  String get idTypeHealthInsurance => '医保卡';
+
+  @override
+  String get idTypeHkMoPermit => '港澳通行证';
+
+  @override
+  String get idTypeNationalId => '身份证';
+
+  @override
+  String get idTypeOther => '其他证件';
+
+  @override
+  String get idTypePassport => '护照';
+
+  @override
+  String get idTypeResidencePermit => '居留卡';
+
+  @override
+  String get idTypeSocialSecurity => '社保卡';
+
+  @override
+  String get idTypeStudentId => '学生证';
+
+  @override
+  String get idTypeTwPermit => '台湾通行证';
 
   @override
   String get importData => '导入';
