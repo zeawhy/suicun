@@ -16,6 +16,7 @@ import 'package:suicun/features/records/presentation/template_views/template_det
 import 'package:suicun/features/records/presentation/template_views/template_header_card.dart';
 import 'package:suicun/features/records/presentation/template_views/updated_at_text.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
+import 'package:suicun/shared/utils/display_title.dart';
 
 enum IdDocTypeKey {
   idCard,
@@ -500,8 +501,10 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
     final validUntil = widget.data.validUntil;
     final notes = widget.data.notes;
 
-    final title = widget.record?.title.isNotEmpty == true
-        ? widget.record!.title
+    final title = widget.record != null
+        ? displayTitleFor(widget.record!,
+            untitled: l10n.untitledRecord,
+            defaultDocType: l10n.templateIdDocument)
         : l10n.untitledRecord;
 
     final hasFront = _photoFrontRel != null && _photoFrontRel!.isNotEmpty;

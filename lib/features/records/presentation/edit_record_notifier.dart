@@ -4,6 +4,8 @@ import 'package:suicun/core/database/providers.dart';
 import 'package:suicun/features/records/data/autosave_service.dart';
 import 'package:suicun/features/records/domain/record_model.dart';
 import 'package:suicun/features/records/presentation/records_notifier.dart';
+import 'package:suicun/features/records/presentation/template_views/template_detector.dart';
+import 'package:suicun/shared/utils/display_title.dart';
 
 part 'edit_record_notifier.g.dart';
 
@@ -105,6 +107,12 @@ class EditRecordNotifier extends _$EditRecordNotifier {
     bool? isFavorite,
     List<String>? tagIds,
   }) {
+    final effectiveTitle = (title != null &&
+            title.trim().isEmpty &&
+            body != null &&
+            isIdDocumentTemplate(body))
+        ? displayTitleFrom(title: '', body: body, untitled: '')
+        : title;
     return _serialize(() async {
       state = state.copyWith(saveState: SaveState.saving);
       final repo = ref.read(recordRepositoryProvider);
@@ -112,7 +120,7 @@ class EditRecordNotifier extends _$EditRecordNotifier {
         if (state.record == null) {
           // Create new
           final newRecord = await repo.createRecord(
-            title: title ?? '',
+            title: effectiveTitle ?? '',
             body: body ?? '',
             categoryId: categoryId,
             isFavorite: isFavorite ?? false,
@@ -123,7 +131,7 @@ class EditRecordNotifier extends _$EditRecordNotifier {
           // Update existing
           final updatedRecord = await repo.updateRecord(
             state.record!.id,
-            title: title,
+            title: effectiveTitle,
             body: body,
             categoryId: categoryId,
             clearCategoryId: clearCategory,

@@ -10,6 +10,8 @@ import 'package:suicun/features/records/domain/record_model.dart';
 import 'package:suicun/features/records/presentation/template_views/id_photo_storage.dart';
 import 'package:suicun/features/records/presentation/template_views/template_detector.dart';
 import 'package:suicun/features/settings/data/privacy_prefs.dart';
+import 'package:suicun/l10n/generated/app_localizations.dart';
+import 'package:suicun/shared/utils/display_title.dart';
 
 class _IdPhotoItem {
   const _IdPhotoItem({
@@ -333,7 +335,12 @@ class _IdPresentationPageState extends State<IdPresentationPage>
 
   @override
   Widget build(BuildContext context) {
-    final title = widget.record.title.isNotEmpty ? widget.record.title : '证件出示';
+    final l10n = AppLocalizations.of(context);
+    final title = displayTitleFor(
+      widget.record,
+      untitled: l10n.untitledRecord,
+      defaultDocType: l10n.templateIdDocument,
+    );
     final sideText = _photoItems.isEmpty
         ? ''
         : (_photoItems[_currentPage].isFront ? '正面' : '背面');

@@ -942,6 +942,8 @@ class _HomePageState extends ConsumerState<HomePage>
                           },
                           onFavoriteToggle: () => _toggleFavorite(r),
                           isQuickAccess: quickIds.contains(r.id),
+                          showQuickAccessMark:
+                              !showQuickAndRecent && quickIds.contains(r.id),
                           onQuickAccessToggle: () => _toggleQuickAccess(r),
                           onAnySlideAction: () {
                             ref.read(swipeHintSeenProvider.notifier).markSeen();
@@ -972,19 +974,56 @@ class _HomePageState extends ConsumerState<HomePage>
                               ),
                             ),
                             const SizedBox(height: 12),
-                            Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
+                            GridView.count(
+                              crossAxisCount: 4,
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              childAspectRatio: 0.9,
+                              padding: EdgeInsets.zero,
                               children: [
                                 for (final item in _getSpeedDialItems(
                                   context,
                                   theme.brightness == Brightness.dark,
                                 ))
-                                  _TemplateChip(
-                                    item: item,
-                                    isDark: theme.brightness == Brightness.dark,
-                                    inkWellKey: Key('quick_add_item_${item.id}'),
+                                  InkWell(
+                                    key: Key('quick_add_item_${item.id}'),
+                                    borderRadius: BorderRadius.circular(12),
                                     onTap: () => context.push(item.route),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Container(
+                                          width: 40,
+                                          height: 40,
+                                          decoration: BoxDecoration(
+                                            color: item.accentColor.withValues(
+                                              alpha: theme.brightness ==
+                                                      Brightness.dark
+                                                  ? 0.2
+                                                  : 0.12,
+                                            ),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Icon(
+                                            item.icon,
+                                            size: 20,
+                                            color: item.accentColor,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Text(
+                                          item.label,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                            color: colorScheme.onSurface,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                               ],
                             ),

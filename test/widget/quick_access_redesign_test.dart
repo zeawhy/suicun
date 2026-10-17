@@ -14,6 +14,7 @@ import 'package:suicun/features/records/domain/record_model.dart';
 import 'package:suicun/features/records/presentation/id_presentation_page.dart';
 import 'package:suicun/features/records/presentation/quick_access_panel.dart';
 import 'package:suicun/features/sync/sync_contract.dart';
+import 'package:suicun/l10n/generated/app_localizations.dart';
 import 'package:suicun/main.dart';
 
 Future<void> pumpApp(
@@ -153,6 +154,8 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: IdPresentationPage(record: sampleRecord),
         ),
       );
@@ -317,6 +320,8 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
               body: SizedBox(
                 width: 400,
@@ -344,6 +349,8 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
               body: SizedBox(
                 width: 400,
@@ -372,6 +379,8 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
               body: SizedBox(
                 width: 400,
