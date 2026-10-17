@@ -62,7 +62,8 @@ import 'app_localizations_zh.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale)
+      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -70,7 +71,8 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -82,7 +84,8 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
     delegate,
     GlobalMaterialLocalizations.delegate,
     GlobalCupertinoLocalizations.delegate,
@@ -2417,6 +2420,72 @@ abstract class AppLocalizations {
   /// **'出示证件'**
   String get presentIdDocument;
 
+  /// No description provided for @presentDocument.
+  ///
+  /// In zh, this message translates to:
+  /// **'出示证件'**
+  String get presentDocument;
+
+  /// No description provided for @idCardValidUntil.
+  ///
+  /// In zh, this message translates to:
+  /// **'有效期至 {date}'**
+  String idCardValidUntil(String date);
+
+  /// No description provided for @idCardHintFlip.
+  ///
+  /// In zh, this message translates to:
+  /// **'点击卡片翻面 · 长按复制号码'**
+  String get idCardHintFlip;
+
+  /// No description provided for @idCardHintNoFlip.
+  ///
+  /// In zh, this message translates to:
+  /// **'长按卡片复制号码'**
+  String get idCardHintNoFlip;
+
+  /// No description provided for @idCardTapToReveal.
+  ///
+  /// In zh, this message translates to:
+  /// **'点击查看'**
+  String get idCardTapToReveal;
+
+  /// No description provided for @idCardFlipBack.
+  ///
+  /// In zh, this message translates to:
+  /// **'翻回正面'**
+  String get idCardFlipBack;
+
+  /// No description provided for @idCardBackPhoto.
+  ///
+  /// In zh, this message translates to:
+  /// **'背面照片'**
+  String get idCardBackPhoto;
+
+  /// No description provided for @idCardFrontPhoto.
+  ///
+  /// In zh, this message translates to:
+  /// **'正面照片'**
+  String get idCardFrontPhoto;
+
+  /// No description provided for @idCardMoreActions.
+  ///
+  /// In zh, this message translates to:
+  /// **'更多操作'**
+  String get idCardMoreActions;
+
+  /// No description provided for @idNumberCopied.
+  ///
+  /// In zh, this message translates to:
+  /// **'证件号码已复制'**
+  String get idNumberCopied;
+
+  /// No description provided for @choosePhotoSide.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择照片'**
+  String get choosePhotoSide;
+
   /// No description provided for @plaintextExportConfirmTitle.
   ///
   /// In zh, this message translates to:
@@ -2496,7 +2565,8 @@ abstract class AppLocalizations {
   String get reportIssue;
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -2505,25 +2575,25 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['en', 'zh'].contains(locale.languageCode);
+  bool isSupported(Locale locale) =>
+      <String>['en', 'zh'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
-
-
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'en': return AppLocalizationsEn();
-    case 'zh': return AppLocalizationsZh();
+    case 'en':
+      return AppLocalizationsEn();
+    case 'zh':
+      return AppLocalizationsZh();
   }
 
   throw FlutterError(
-    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-    'an issue with the localizations generation tool. Please file an issue '
-    'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.'
-  );
+      'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+      'an issue with the localizations generation tool. Please file an issue '
+      'on GitHub with a reproducible sample app and the gen-l10n configuration '
+      'that was used.');
 }

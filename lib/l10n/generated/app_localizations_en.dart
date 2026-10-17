@@ -54,7 +54,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get backupPassword => 'Backup password';
 
   @override
-  String get backupPasswordHint => 'Needed to restore on a new device. Keep it safe.';
+  String get backupPasswordHint =>
+      'Needed to restore on a new device. Keep it safe.';
 
   @override
   String get batchCategorize => 'Categorize';
@@ -119,7 +120,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get conflictHistoryNote => 'The discarded version is kept in history and will not be deleted.';
+  String get conflictHistoryNote =>
+      'The discarded version is kept in history and will not be deleted.';
 
   @override
   String get conflictTypeCategory => 'Category';
@@ -163,13 +165,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteCategory => 'Delete Category';
 
   @override
-  String get deleteCategoryConfirm => 'Records in this category will become uncategorized. Delete?';
+  String get deleteCategoryConfirm =>
+      'Records in this category will become uncategorized. Delete?';
 
   @override
   String get deleteTag => 'Delete Tag';
 
   @override
-  String get deleteTagConfirm => 'Records with this tag will keep their content; the tag association will be removed. Delete?';
+  String get deleteTagConfirm =>
+      'Records with this tag will keep their content; the tag association will be removed. Delete?';
 
   @override
   String get directoryInvalid => 'Sync directory must start with /';
@@ -178,7 +182,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get disableSync => 'Disable sync';
 
   @override
-  String get disableSyncConfirm => 'Disabling sync stops network tasks; local data is kept. Confirm?';
+  String get disableSyncConfirm =>
+      'Disabling sync stops network tasks; local data is kept. Confirm?';
 
   @override
   String get duplicateName => 'Name already exists';
@@ -193,7 +198,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get e2eEncryption => 'End-to-end encryption';
 
   @override
-  String get e2eWipDialog => 'End-to-end encryption will be enabled with the sync engine (Stage C).';
+  String get e2eWipDialog =>
+      'End-to-end encryption will be enabled with the sync engine (Stage C).';
 
   @override
   String get editCategory => 'Edit Category';
@@ -214,7 +220,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get encryptionOn => 'Local database is encrypted';
 
   @override
-  String get encryptionOnDesc => 'Encrypted with a random key stored in system secure storage';
+  String get encryptionOnDesc =>
+      'Encrypted with a random key stored in system secure storage';
 
   @override
   String get enterPin => 'Enter PIN to unlock';
@@ -305,7 +312,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get keepLocal => 'Keep this version';
 
   @override
-  String get keepPasswordSafe => 'Keep your encryption password safe: it cannot be recovered if lost. Your WebDAV login cannot restore note contents.';
+  String get keepPasswordSafe =>
+      'Keep your encryption password safe: it cannot be recovered if lost. Your WebDAV login cannot restore note contents.';
 
   @override
   String get keepRemote => 'Keep other version';
@@ -328,7 +336,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get renameCategory => 'Rename';
 
   @override
-  String get keywordsEmpty => 'No keywords yet — add some to enable smart suggestions';
+  String get keywordsEmpty =>
+      'No keywords yet — add some to enable smart suggestions';
 
   @override
   String lastSuccess(String time) {
@@ -417,7 +426,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get passwordStrengthStrong => 'Strong';
 
   @override
-  String get passwordStrengthWeak => 'Weak (12+ characters with letters, numbers and symbols recommended)';
+  String get passwordStrengthWeak =>
+      'Weak (12+ characters with letters, numbers and symbols recommended)';
 
   @override
   String get passwordTooShort => 'Password must be at least 8 characters';
@@ -439,7 +449,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get permanentDelete => 'Delete Permanently';
 
   @override
-  String get permanentDeleteConfirm => 'This cannot be undone. Delete permanently?';
+  String get permanentDeleteConfirm =>
+      'This cannot be undone. Delete permanently?';
 
   @override
   String get pinLabel => 'PIN';
@@ -498,7 +509,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recordsEmptyHint => 'Tap \"+ New Info\" below to start saving';
 
   @override
-  String get recoverDesc => 'On a new device, download previously uploaded data from WebDAV and rebuild the local library. Only successfully uploaded data can be restored; offline edits that were never uploaded cannot be recovered.';
+  String get recoverDesc =>
+      'On a new device, download previously uploaded data from WebDAV and rebuild the local library. Only successfully uploaded data can be restored; offline edits that were never uploaded cannot be recovered.';
 
   @override
   String recoverFailedObjects(int count) {
@@ -548,7 +560,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recoveryKeyTitle => 'Recovery key';
 
   @override
-  String get recoveryKeyWarning => 'This is the only time the recovery key will be shown. Write it down or save it somewhere safe now — it cannot be shown again.';
+  String get recoveryKeyWarning =>
+      'This is the only time the recovery key will be shown. Write it down or save it somewhere safe now — it cannot be shown again.';
 
   @override
   String get remoteVersion => 'Other version';
@@ -557,7 +570,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get removeCredentials => 'Remove credentials';
 
   @override
-  String get removeCredentialsConfirm => 'Removing credentials disables sync and deletes the saved WebDAV login; local data is kept. Confirm?';
+  String get removeCredentialsConfirm =>
+      'Removing credentials disables sync and deletes the saved WebDAV login; local data is kept. Confirm?';
 
   @override
   String get rename => 'Rename';
@@ -602,7 +616,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get security => 'Security';
 
   @override
-  String get securityNotImplemented => 'Security features will be available in a future version';
+  String get securityNotImplemented =>
+      'Security features will be available in a future version';
 
   @override
   String get securityPageTitle => 'Security';
@@ -691,7 +706,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get syncStatusUnavailable => 'Sync status unavailable';
 
   @override
-  String get syncStatusUnavailableDesc => 'The sync engine is still being wired up. Please try again later.';
+  String get syncStatusUnavailableDesc =>
+      'The sync engine is still being wired up. Please try again later.';
 
   @override
   String get synced => 'Synced';
@@ -812,7 +828,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get webdavUrlRequired => 'WebDAV URL is required';
 
   @override
-  String get wizardConnectionDesc => 'Tests the connection to your WebDAV server and checks whether the directory already holds a vault.';
+  String get wizardConnectionDesc =>
+      'Tests the connection to your WebDAV server and checks whether the directory already holds a vault.';
 
   @override
   String get wizardCreating => 'Creating vault…';
@@ -821,10 +838,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get wizardDone => 'Sync setup complete';
 
   @override
-  String get wizardDoneDesc => 'Your encrypted vault is ready. You can start syncing now.';
+  String get wizardDoneDesc =>
+      'Your encrypted vault is ready. You can start syncing now.';
 
   @override
-  String get wizardHasVaultDesc => 'A vault already exists in this directory. Enter the encryption password or recovery key to join.';
+  String get wizardHasVaultDesc =>
+      'A vault already exists in this directory. Enter the encryption password or recovery key to join.';
 
   @override
   String get wizardJoining => 'Joining vault…';
@@ -835,10 +854,12 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get wizardMergeInfo => 'Your local data will never be directly replaced by the remote copy. Sync merges both sides; any conflicts can be resolved manually later.';
+  String get wizardMergeInfo =>
+      'Your local data will never be directly replaced by the remote copy. Sync merges both sides; any conflicts can be resolved manually later.';
 
   @override
-  String get wizardNoVaultDesc => 'No vault found in this directory. You can create a new encrypted vault.';
+  String get wizardNoVaultDesc =>
+      'No vault found in this directory. You can create a new encrypted vault.';
 
   @override
   String get wizardStepConnection => 'Connection test';
@@ -862,7 +883,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get wrongPin => 'Wrong PIN, try again';
 
   @override
-  String get existingVaultJoined => 'An existing sync vault was found and joined';
+  String get existingVaultJoined =>
+      'An existing sync vault was found and joined';
 
   @override
   String lockedKeysNotice(int count) {
@@ -873,13 +895,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get migrationTitle => 'Old protocol vault found';
 
   @override
-  String get migrationBody => 'The legacy directory will be kept as a backup; migration is a one-time copy. After migrating, append-only sync with protocol v2 will be used.';
+  String get migrationBody =>
+      'The legacy directory will be kept as a backup; migration is a one-time copy. After migrating, append-only sync with protocol v2 will be used.';
 
   @override
   String get migrationBackupAndMigrate => 'Backup and Migrate';
 
   @override
-  String get passwordChangeDeferred => 'Password change is not available yet; normal sync is unaffected';
+  String get passwordChangeDeferred =>
+      'Password change is not available yet; normal sync is unaffected';
 
   @override
   String get unlockKeyPrompt => 'Unlock Key';
@@ -900,7 +924,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get templatePassword => 'Save a password';
 
   @override
-  String get templatePasswordDesc => 'Website, username and password with auto-masked password';
+  String get templatePasswordDesc =>
+      'Website, username and password with auto-masked password';
 
   @override
   String get templateIdea => 'Quick idea';
@@ -924,7 +949,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get templateIdDocument => 'ID Document';
 
   @override
-  String get templateIdDocumentDesc => 'ID cards, driver licenses with photos and auto-masked numbers';
+  String get templateIdDocumentDesc =>
+      'ID cards, driver licenses with photos and auto-masked numbers';
 
   @override
   String get passwordCopied => 'Password copied';
@@ -939,7 +965,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteRecordTitle => 'Delete this record?';
 
   @override
-  String get deleteRecordConfirm => 'You can restore it from Trash after deletion.';
+  String get deleteRecordConfirm =>
+      'You can restore it from Trash after deletion.';
 
   @override
   String get formatCheckbox => 'Checkbox';
@@ -1103,7 +1130,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get clearAllDataWarningTitle => 'Clear all data?';
 
   @override
-  String get clearAllDataWarningContent => 'This will delete all records, categories, tags, and ID photos. This action cannot be undone.';
+  String get clearAllDataWarningContent =>
+      'This will delete all records, categories, tags, and ID photos. This action cannot be undone.';
 
   @override
   String get continueAction => 'Continue';
@@ -1112,7 +1140,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get clearAllDataConfirmTitle => 'Final confirmation';
 
   @override
-  String get clearAllDataConfirmContent => 'This action cannot be undone. All local records and ID photos will be permanently deleted.';
+  String get clearAllDataConfirmContent =>
+      'This action cannot be undone. All local records and ID photos will be permanently deleted.';
 
   @override
   String get confirmClearAllData => 'I confirm to delete all data';
@@ -1124,7 +1153,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cameraRationaleTitle => 'Camera Permission';
 
   @override
-  String get cameraRationaleMessage => 'Taking photos is used to capture ID photos, which are saved only to this app\'s private storage';
+  String get cameraRationaleMessage =>
+      'Taking photos is used to capture ID photos, which are saved only to this app\'s private storage';
 
   @override
   String get sharePhoto => 'Share photo';
@@ -1142,13 +1172,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get galleryPermissionTitle => 'Gallery Permission';
 
   @override
-  String get galleryPermissionMessage => 'Saving ID photos to the system gallery requires gallery permission. Photos are saved to the local gallery only';
+  String get galleryPermissionMessage =>
+      'Saving ID photos to the system gallery requires gallery permission. Photos are saved to the local gallery only';
 
   @override
   String get clipboardSniffTitle => 'Clipboard detection';
 
   @override
-  String get clipboardSniffSubtitle => 'Detect IDs, addresses and links when tapping +';
+  String get clipboardSniffSubtitle =>
+      'Detect IDs, addresses and links when tapping +';
 
   @override
   String get setQuickAccess => 'Set as quick access';
@@ -1196,7 +1228,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingClipboardTitle => 'Enable Clipboard Recognition?';
 
   @override
-  String get onboardingClipboardBody => 'After copying ID numbers, addresses, or links, SuiVault can suggest one-tap saving when tapping \"+\". Processed locally only, never uploaded.';
+  String get onboardingClipboardBody =>
+      'After copying ID numbers, addresses, or links, SuiVault can suggest one-tap saving when tapping \"+\". Processed locally only, never uploaded.';
 
   @override
   String get onboardingClipboardEnable => 'Enable';
@@ -1205,7 +1238,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingClipboardNotNow => 'Not Now';
 
   @override
-  String get onboardingClipboardFooter => 'You can change this anytime in Settings › Security & Privacy';
+  String get onboardingClipboardFooter =>
+      'You can change this anytime in Settings › Security & Privacy';
 
   @override
   String get presentAutoBrightnessTitle => 'Boost brightness';
@@ -1220,19 +1254,57 @@ class AppLocalizationsEn extends AppLocalizations {
   String get presentIdDocument => 'Present ID';
 
   @override
+  String get presentDocument => 'Show document';
+
+  @override
+  String idCardValidUntil(String date) {
+    return 'Valid until $date';
+  }
+
+  @override
+  String get idCardHintFlip => 'Tap to flip · Long-press to copy number';
+
+  @override
+  String get idCardHintNoFlip => 'Long-press to copy number';
+
+  @override
+  String get idCardTapToReveal => 'Tap to reveal';
+
+  @override
+  String get idCardFlipBack => 'Flip back';
+
+  @override
+  String get idCardBackPhoto => 'Back photo';
+
+  @override
+  String get idCardFrontPhoto => 'Front photo';
+
+  @override
+  String get idCardMoreActions => 'More actions';
+
+  @override
+  String get idNumberCopied => 'Document number copied';
+
+  @override
+  String get choosePhotoSide => 'Choose photo';
+
+  @override
   String get plaintextExportConfirmTitle => 'Unencrypted Export';
 
   @override
-  String get plaintextExportConfirm => 'The exported file is unencrypted and contains sensitive information such as ID numbers and passwords. Continue?';
+  String get plaintextExportConfirm =>
+      'The exported file is unencrypted and contains sensitive information such as ID numbers and passwords. Continue?';
 
   @override
   String get fullBackup => 'Full Backup';
 
   @override
-  String get exportEncryptedBackupRecommended => 'Export Encrypted Backup (Recommended)';
+  String get exportEncryptedBackupRecommended =>
+      'Export Encrypted Backup (Recommended)';
 
   @override
-  String get exportEncryptedBackupSubtitle => 'Password required; use when restoring on another device';
+  String get exportEncryptedBackupSubtitle =>
+      'Password required; use when restoring on another device';
 
   @override
   String get restoreBackup => 'Restore Backup';

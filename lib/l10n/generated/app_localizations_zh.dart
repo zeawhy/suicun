@@ -498,7 +498,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get recordsEmptyHint => '点击下方「＋ 新建信息」开始保存';
 
   @override
-  String get recoverDesc => '在新设备上从 WebDAV 下载已上传的数据，重建本地库。只能恢复已成功上传的数据；尚未上传的离线编辑无法找回。';
+  String get recoverDesc =>
+      '在新设备上从 WebDAV 下载已上传的数据，重建本地库。只能恢复已成功上传的数据；尚未上传的离线编辑无法找回。';
 
   @override
   String recoverFailedObjects(int count) {
@@ -557,7 +558,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get removeCredentials => '移除凭据';
 
   @override
-  String get removeCredentialsConfirm => '移除凭据将关闭同步并删除已保存的 WebDAV 账号密码，本地数据保留。确认吗？';
+  String get removeCredentialsConfirm =>
+      '移除凭据将关闭同步并删除已保存的 WebDAV 账号密码，本地数据保留。确认吗？';
 
   @override
   String get rename => '改名';
@@ -1196,7 +1198,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get onboardingClipboardTitle => '开启剪贴板识别？';
 
   @override
-  String get onboardingClipboardBody => '复制证件号、地址或网址后，点「+」时随存会提示你一键保存。内容只在本机识别，不会上传。';
+  String get onboardingClipboardBody =>
+      '复制证件号、地址或网址后，点「+」时随存会提示你一键保存。内容只在本机识别，不会上传。';
 
   @override
   String get onboardingClipboardEnable => '开启';
@@ -1218,6 +1221,41 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get presentIdDocument => '出示证件';
+
+  @override
+  String get presentDocument => '出示证件';
+
+  @override
+  String idCardValidUntil(String date) {
+    return '有效期至 $date';
+  }
+
+  @override
+  String get idCardHintFlip => '点击卡片翻面 · 长按复制号码';
+
+  @override
+  String get idCardHintNoFlip => '长按卡片复制号码';
+
+  @override
+  String get idCardTapToReveal => '点击查看';
+
+  @override
+  String get idCardFlipBack => '翻回正面';
+
+  @override
+  String get idCardBackPhoto => '背面照片';
+
+  @override
+  String get idCardFrontPhoto => '正面照片';
+
+  @override
+  String get idCardMoreActions => '更多操作';
+
+  @override
+  String get idNumberCopied => '证件号码已复制';
+
+  @override
+  String get choosePhotoSide => '选择照片';
 
   @override
   String get plaintextExportConfirmTitle => '未加密导出确认';

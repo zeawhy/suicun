@@ -64,18 +64,27 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        // 1. Verify field labels
-        expect(find.text('证件类型'), findsOneWidget);
+        // 1. Verify field labels (doc-type row removed in read mode)
+        expect(find.text('证件类型'), findsNothing);
         expect(find.text('姓名'), findsOneWidget);
         expect(find.text('证件号码'), findsOneWidget);
         expect(find.text('有效期至'), findsOneWidget);
         expect(find.text('备注'), findsOneWidget);
 
-        // 2. Verify non-sensitive text values rendered
+        // 2. Verify non-sensitive text values rendered. The localized type
+        // name now lives on the ID card (not in the fields card); the name
+        // appears both on the card and in the fields card.
         expect(find.text('身份证'), findsOneWidget);
-        expect(find.text('张三'), findsOneWidget);
+        expect(find.text('张三'), findsNWidgets(2));
         expect(find.text('2035-12-31'), findsOneWidget);
         expect(find.text('个人证件备注'), findsOneWidget);
+
+        // 2b. Read mode shows the ID card view with hint + present button,
+        // and no longer shows the photo card.
+        expect(find.text('长按卡片复制号码'), findsOneWidget);
+        expect(find.text('出示证件'), findsOneWidget);
+        expect(find.text('证件照片正面'), findsNothing);
+        expect(find.text('证件照片反面'), findsNothing);
 
         // 3. Document number masked by default
         expect(find.byKey(const Key('id_doc_number_masked_text')), findsOneWidget);
@@ -85,6 +94,8 @@ void main() {
         // 4. Tap eye toggle icon to show real document number
         final toggleFinder = find.byKey(const Key('id_doc_number_toggle_obscure'));
         expect(toggleFinder, findsOneWidget);
+        await tester.ensureVisible(toggleFinder);
+        await tester.pumpAndSettle();
         await tester.tap(toggleFinder);
         await tester.pumpAndSettle();
 
@@ -172,16 +183,23 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.text('Document type'), findsOneWidget);
+        expect(find.text('Document type'), findsNothing);
         expect(find.text('Name'), findsOneWidget);
         expect(find.text('Document number'), findsOneWidget);
         expect(find.text('Valid until'), findsOneWidget);
         expect(find.text('Notes'), findsOneWidget);
 
+        // Localized type name is shown on the ID card.
+        expect(find.text('Passport'), findsOneWidget);
+
         expect(find.text('••••••'), findsOneWidget);
         expect(find.text('E12345678'), findsNothing);
 
-        await tester.tap(find.byKey(const Key('id_doc_number_toggle_obscure')));
+        final enToggleFinder =
+            find.byKey(const Key('id_doc_number_toggle_obscure'));
+        await tester.ensureVisible(enToggleFinder);
+        await tester.pumpAndSettle();
+        await tester.tap(enToggleFinder);
         await tester.pumpAndSettle();
 
         expect(find.text('E12345678'), findsOneWidget);

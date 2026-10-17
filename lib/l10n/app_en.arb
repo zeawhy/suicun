@@ -569,6 +569,24 @@
   "presentAutoBrightnessSubtitle": "Easier to read or scan",
   "presentBrightness": "Brightness",
   "presentIdDocument": "Present ID",
+  "presentDocument": "Show document",
+  "idCardValidUntil": "Valid until {date}",
+  "@idCardValidUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "idCardHintFlip": "Tap to flip · Long-press to copy number",
+  "idCardHintNoFlip": "Long-press to copy number",
+  "idCardTapToReveal": "Tap to reveal",
+  "idCardFlipBack": "Flip back",
+  "idCardBackPhoto": "Back photo",
+  "idCardFrontPhoto": "Front photo",
+  "idCardMoreActions": "More actions",
+  "idNumberCopied": "Document number copied",
+  "choosePhotoSide": "Choose photo",
   "plaintextExportConfirmTitle": "Unencrypted Export",
   "plaintextExportConfirm": "The exported file is unencrypted and contains sensitive information such as ID numbers and passwords. Continue?",
   "fullBackup": "Full Backup",

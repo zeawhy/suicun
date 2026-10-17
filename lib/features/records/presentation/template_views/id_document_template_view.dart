@@ -11,63 +11,15 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:suicun/features/records/domain/record_model.dart';
+import 'package:suicun/features/records/presentation/id_presentation_page.dart';
+import 'package:suicun/features/records/presentation/template_views/id_card_view.dart';
+import 'package:suicun/features/records/presentation/template_views/id_doc_type.dart';
 import 'package:suicun/features/records/presentation/template_views/id_photo_storage.dart';
 import 'package:suicun/features/records/presentation/template_views/template_detector.dart';
 import 'package:suicun/features/records/presentation/template_views/template_header_card.dart';
 import 'package:suicun/features/records/presentation/template_views/updated_at_text.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
 import 'package:suicun/shared/utils/display_title.dart';
-
-enum IdDocTypeKey {
-  idCard,
-  driverLicense,
-  vehicleLicense,
-  passport,
-  hmtPermit,
-  socialCard,
-  propertyCert,
-  other,
-}
-
-const Map<IdDocTypeKey, String> _kDocTypeChineseLabels = {
-  IdDocTypeKey.idCard: '身份证',
-  IdDocTypeKey.driverLicense: '驾驶证',
-  IdDocTypeKey.vehicleLicense: '行驶证',
-  IdDocTypeKey.passport: '护照',
-  IdDocTypeKey.hmtPermit: '港澳通行证',
-  IdDocTypeKey.socialCard: '社保卡',
-  IdDocTypeKey.propertyCert: '房产证',
-  IdDocTypeKey.other: '其他',
-};
-
-const Map<IdDocTypeKey, String> _kDocTypeEnglishLabels = {
-  IdDocTypeKey.idCard: 'ID Card',
-  IdDocTypeKey.driverLicense: 'Driver License',
-  IdDocTypeKey.vehicleLicense: 'Vehicle License',
-  IdDocTypeKey.passport: 'Passport',
-  IdDocTypeKey.hmtPermit: 'Exit-Entry Permit (HK/Macau)',
-  IdDocTypeKey.socialCard: 'Social Security Card',
-  IdDocTypeKey.propertyCert: 'Property Certificate',
-  IdDocTypeKey.other: 'Other',
-};
-
-IdDocTypeKey _parseDocTypeKey(String? docType) {
-  if (docType == null || docType.trim().isEmpty) {
-    return IdDocTypeKey.idCard;
-  }
-  final dt = docType.trim();
-  final lower = dt.toLowerCase();
-  if (dt == '身份证' || lower == 'id card') return IdDocTypeKey.idCard;
-  if (dt == '驾驶证' || lower == 'driver license') return IdDocTypeKey.driverLicense;
-  if (dt == '行驶证' || lower == 'vehicle license') return IdDocTypeKey.vehicleLicense;
-  if (dt == '护照' || lower == 'passport') return IdDocTypeKey.passport;
-  if (dt == '港澳通行证' || lower.contains('exit-entry') || lower.contains('hmt')) {
-    return IdDocTypeKey.hmtPermit;
-  }
-  if (dt == '社保卡' || lower == 'social security card') return IdDocTypeKey.socialCard;
-  if (dt == '房产证' || lower == 'property certificate') return IdDocTypeKey.propertyCert;
-  return IdDocTypeKey.other;
-}
 
 class IdDocumentTemplateView extends StatefulWidget {
   const IdDocumentTemplateView({
@@ -113,10 +65,14 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
   String? _photoFrontRel;
   String? _photoBackRel;
 
+  /// Resolved photo files for the read-mode card view (null = no photo).
+  File? _cardFrontFile;
+  File? _cardBackFile;
+
   @override
   void initState() {
     super.initState();
-    _selectedDocTypeKey = _parseDocTypeKey(widget.data.docType);
+    _selectedDocTypeKey = parseDocTypeKey(widget.data.docType);
     final isCustomOther = _selectedDocTypeKey == IdDocTypeKey.other;
     final customInitialText = isCustomOther &&
             widget.data.docType != null &&
@@ -133,6 +89,18 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
     _notesController = TextEditingController(text: widget.data.notes ?? '');
     _photoFrontRel = widget.data.photoFront;
     _photoBackRel = widget.data.photoBack;
+    _resolveCardPhotos();
+  }
+
+  /// Resolves the stored relative photo paths to files for [IdCardView].
+  Future<void> _resolveCardPhotos() async {
+    final front = await resolveIdPhoto(_photoFrontRel ?? '');
+    final back = await resolveIdPhoto(_photoBackRel ?? '');
+    if (!mounted) return;
+    setState(() {
+      _cardFrontFile = front;
+      _cardBackFile = back;
+    });
   }
 
   @override
@@ -157,12 +125,14 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
       }
       if (widget.data.photoFront != _photoFrontRel) {
         _photoFrontRel = widget.data.photoFront;
+        _resolveCardPhotos();
       }
       if (widget.data.photoBack != _photoBackRel) {
         _photoBackRel = widget.data.photoBack;
+        _resolveCardPhotos();
       }
       if (widget.data.docType != null) {
-        final parsed = _parseDocTypeKey(widget.data.docType);
+        final parsed = parseDocTypeKey(widget.data.docType);
         if (parsed != _selectedDocTypeKey) {
           _selectedDocTypeKey = parsed;
           if (parsed == IdDocTypeKey.other) {
@@ -205,8 +175,8 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
       }
     } else {
       type = isEnglish
-          ? _kDocTypeEnglishLabels[_selectedDocTypeKey]!
-          : _kDocTypeChineseLabels[_selectedDocTypeKey]!;
+          ? kDocTypeEnglishLabels[_selectedDocTypeKey]!
+          : kDocTypeChineseLabels[_selectedDocTypeKey]!;
     }
 
     final name = _nameController.text;
@@ -495,7 +465,6 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    final docType = widget.data.docType;
     final name = widget.data.name;
     final docNumber = widget.data.docNumber;
     final validUntil = widget.data.validUntil;
@@ -504,11 +473,11 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
     final title = widget.record != null
         ? displayTitleFor(widget.record!,
             untitled: l10n.untitledRecord,
-            defaultDocType: l10n.templateIdDocument)
+            defaultDocType: l10n.templateIdDocument,
+            context: context)
         : l10n.untitledRecord;
 
-    final hasFront = _photoFrontRel != null && _photoFrontRel!.isNotEmpty;
-    final hasBack = _photoBackRel != null && _photoBackRel!.isNotEmpty;
+    final docTypeKey = parseDocTypeKey(widget.data.docType);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -523,10 +492,31 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
         ),
         const SizedBox(height: 16),
 
-        // 2. Field card (Surface container, rounded 16)
+        // 2. Read mode: ID card view (card + hint + present button inside).
+        if (!widget.isEditing) ...[
+          IdCardView(
+            docTypeKey: docTypeKey,
+            docTypeLabel:
+                localizedDocType(context, docTypeKey, widget.data.docType),
+            name: name,
+            docNumber: docNumber,
+            validUntil: validUntil,
+            frontPhoto: _cardFrontFile,
+            backPhoto: _cardBackFile,
+            onPresent: () {
+              final rec = widget.record;
+              if (rec != null) IdPresentationPage.show(context, rec);
+            },
+            onSharePhoto: _sharePhoto,
+            onSavePhoto: _savePhotoToGallery,
+          ),
+          const SizedBox(height: 16),
+        ],
+
+        // 3. Field card (Surface container, rounded 16; doc-type row is
+        // edit-mode only — the card already shows the type in read mode)
         _buildFieldsCard(
           context,
-          docType: docType,
           name: name,
           docNumber: docNumber,
           validUntil: validUntil,
@@ -535,8 +525,9 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
           l10n: l10n,
         ),
 
-        // 3. Photo card (front & back)
-        if (widget.isEditing || hasFront || hasBack) ...[
+        // 4. Photo card (front & back): edit mode only. In read mode the
+        // photos live on the card faces; share/save moved to the card ⋯ menu.
+        if (widget.isEditing) ...[
           const SizedBox(height: 16),
           _buildPhotosCard(
             context,
@@ -610,7 +601,6 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
 
   Widget _buildFieldsCard(
     BuildContext context, {
-    required String? docType,
     required String? name,
     required String? docNumber,
     required String? validUntil,
@@ -636,20 +626,21 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Field 1: Document Type
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.fieldDocType,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
+          // Field 1: Document Type (edit mode only; read mode shows it on
+          // the ID card).
+          if (widget.isEditing) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.fieldDocType,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                if (widget.isEditing) ...[
+                  const SizedBox(height: 4),
                   DropdownButtonFormField<IdDocTypeKey>(
                     key: const Key('id_doc_type_dropdown'),
                     initialValue: _selectedDocTypeKey,
@@ -701,25 +692,11 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
                       onChanged: (_) => _syncBody(),
                     ),
                   ],
-                ] else if (docType != null && docType.isNotEmpty)
-                  SelectableText(
-                    docType,
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color: colorScheme.onSurface,
-                    ),
-                  )
-                else
-                  Text(
-                    l10n.notFilled,
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color:
-                          colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
-                    ),
-                  ),
-              ],
+                ],
+              ),
             ),
-          ),
-          divider,
+            divider,
+          ],
 
           // Field 2: Name
           Padding(

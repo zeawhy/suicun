@@ -464,6 +464,7 @@ class _QuickAccessCapsule extends StatelessWidget {
       record,
       untitled: l10n.untitledRecord,
       defaultDocType: l10n.templateIdDocument,
+      context: context,
     );
 
     return SizedBox(
@@ -636,6 +637,7 @@ class _RecentItemChip extends StatelessWidget {
       record,
       untitled: l10n.untitledRecord,
       defaultDocType: l10n.templateIdDocument,
+      context: context,
     );
     final categoryColor = record.category != null
         ? theme.suiColors.colorForCategory(record.category!.name, record.category!.color)

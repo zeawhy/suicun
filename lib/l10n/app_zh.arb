@@ -569,6 +569,24 @@
   "presentAutoBrightnessSubtitle": "方便他人查看或扫码",
   "presentBrightness": "亮度",
   "presentIdDocument": "出示证件",
+  "presentDocument": "出示证件",
+  "idCardValidUntil": "有效期至 {date}",
+  "@idCardValidUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "idCardHintFlip": "点击卡片翻面 · 长按复制号码",
+  "idCardHintNoFlip": "长按卡片复制号码",
+  "idCardTapToReveal": "点击查看",
+  "idCardFlipBack": "翻回正面",
+  "idCardBackPhoto": "背面照片",
+  "idCardFrontPhoto": "正面照片",
+  "idCardMoreActions": "更多操作",
+  "idNumberCopied": "证件号码已复制",
+  "choosePhotoSide": "选择照片",
   "plaintextExportConfirmTitle": "未加密导出确认",
   "plaintextExportConfirm": "导出的文件未加密，包含证件号和密码等敏感信息。确定继续？",
   "fullBackup": "完整备份",
