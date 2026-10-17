@@ -758,10 +758,7 @@ class _HomePageState extends ConsumerState<HomePage>
         records.length < 3;
 
     final scaffoldContent = Scaffold(
-      floatingActionButton: (_isMultiSelect || _searchExpanded)
-          ? null
-          : _buildSpeedDialFab(context),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      // §2: FAB 已移出 Scaffold，见下方 mainContent Stack 中的 Positioned。
       body: SafeArea(
         child: GestureDetector(
           behavior: HitTestBehavior.translucent,
@@ -949,7 +946,15 @@ class _HomePageState extends ConsumerState<HomePage>
                     ),
                   ),
                   SliverPadding(
-                    padding: EdgeInsets.fromLTRB(16, 0, 16, showQuickAdd ? 16 : 80),
+                    // §2: 底部留白 = FAB 高度(56) + 上下间距(16+16) + 系统手势条高度，
+                    // 避免最后一张卡片被「+」挡住；不受键盘影响。
+                    padding: EdgeInsets.fromLTRB(
+                      16,
+                      0,
+                      16,
+                      (showQuickAdd ? 16 : 16 + 56 + 16) +
+                          MediaQuery.viewPaddingOf(context).bottom,
+                    ),
                     sliver: SliverList.separated(
                       itemCount: records.length,
                       separatorBuilder: (_, __) => const SizedBox(height: 8),
@@ -1078,6 +1083,13 @@ class _HomePageState extends ConsumerState<HomePage>
     final mainContent = Stack(
       children: [
         scaffoldContent,
+        // §2: FAB 移出 Scaffold 后在此定位。viewPadding 是系统手势条的物理高度，
+        // 不受键盘影响；与 _buildSpeedDialOverlay 同一 Stack，层级在列表上方、遮罩下方。
+        Positioned(
+          right: 16,
+          bottom: MediaQuery.viewPaddingOf(context).bottom + 16,
+          child: _buildMainFab(context),
+        ),
         if (!_isMultiSelect) _buildSpeedDialOverlay(context),
       ],
     );
@@ -1225,11 +1237,28 @@ class _HomePageState extends ConsumerState<HomePage>
     );
   }
 
+  // §2: FAB 常驻组件树，只做原位淡入淡出，不做任何位移/缩放动画。
+  Widget _buildMainFab(BuildContext context) {
+    final keyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
+    final visible = !_isMultiSelect && !_searchExpanded && !keyboardOpen;
+    return IgnorePointer(
+      ignoring: !visible,
+      child: AnimatedOpacity(
+        opacity: visible ? 1 : 0,
+        duration: const Duration(milliseconds: 160),
+        child: ExcludeSemantics(
+          excluding: !visible,
+          child: _buildSpeedDialFab(context),
+        ),
+      ),
+    );
+  }
+
   Widget _buildSpeedDialFab(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return FloatingActionButton(
       key: const Key('home_speed_dial_fab'),
-      heroTag: 'speedDialMainFab',
+      heroTag: null,
       elevation: 2,
       shape: const CircleBorder(),
       tooltip: l10n.newRecord,
@@ -1252,7 +1281,7 @@ class _HomePageState extends ConsumerState<HomePage>
         final theme = Theme.of(context);
         final isDark = theme.brightness == Brightness.dark;
         final items = _getSpeedDialItems(context, isDark);
-        final bottomPadding = MediaQuery.paddingOf(context).bottom + 16;
+        final bottomPadding = MediaQuery.viewPaddingOf(context).bottom + 16;
 
         return Positioned.fill(
           child: Stack(
