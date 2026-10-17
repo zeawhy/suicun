@@ -591,6 +591,8 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
     final isPinned = recordId != null && quickIds.contains(recordId);
     final isFull = !isPinned &&
         quickIds.length >= QuickAccessService.maxQuickAccessCount;
+    // 提前拿到 messenger，避免异步闭包里跨 async gap 用 context。
+    final messenger = ScaffoldMessenger.of(context);
 
     await showActionBubble(
       context: context,
@@ -605,8 +607,7 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
           onTap: () async {
             if (recordId == null) return;
             if (isFull) {
-              if (!mounted) return;
-              ScaffoldMessenger.of(context).showSnackBar(
+              messenger.showSnackBar(
                 SnackBar(content: Text(l10n.quickAccessFull)),
               );
               return;

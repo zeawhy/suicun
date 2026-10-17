@@ -11,12 +11,11 @@ import 'package:suicun/core/database/providers.dart';
 import 'package:suicun/features/records/data/quick_access_storage.dart';
 import 'package:suicun/features/sync/sync_contract.dart';
 import 'package:suicun/main.dart';
+import 'package:suicun/shared/widgets/action_bubble.dart';
 
-Future<void> pumpApp(WidgetTester tester, AppDatabase db,
-    {Map<String, Object> prefs = const {}}) async {
+Future<void> pumpApp(WidgetTester tester, AppDatabase db) async {
   SharedPreferences.setMockInitialValues({
     'onboarding_clipboard_asked': true,
-    ...prefs,
   });
   await tester.pumpWidget(
     ProviderScope(
@@ -140,21 +139,63 @@ void main() {
     expect(find.text('Add to quick access'), findsOneWidget);
   });
 
-  testWidgets('pin disabled with hint when quick access is full',
+  testWidgets('disabled bubble row is greyed but still tappable',
       (tester) async {
-    await pumpApp(tester, db, prefs: {
-      QuickAccessKeys.quickAccessRecordIds:
-          ['id1', 'id2', 'id3', 'id4', 'id5', 'id6'],
-    });
-    await createRecord(tester, 'Bubble D');
-    await openRecord(tester, 'Bubble D');
+    // 直接测 showActionBubble：disabled 行 40% 透明但可点击。
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Builder(
+            builder: (context) {
+              final key = GlobalKey();
+              return ElevatedButton(
+                key: key,
+                onPressed: () => showActionBubble(
+                  context: context,
+                  anchorKey: key,
+                  items: [
+                    ActionBubbleItem(
+                      icon: Icons.push_pin_outlined,
+                      label: 'Add to quick access',
+                      enabled: false,
+                      onTap: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content:
+                                  Text('Quick access is full (max 6)')),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+                child: const Text('open'),
+              );
+            },
+          ),
+        ),
+      ),
+    );
 
-    await tester.tap(find.byIcon(Icons.more_horiz));
+    await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
+    expect(find.text('Add to quick access'), findsOneWidget);
+    // 置灰
+    expect(
+      find.ancestor(
+        of: find.text('Add to quick access'),
+        matching: find.byWidgetPredicate(
+          (w) =>
+              w is Opacity &&
+              (w.opacity - 0.4).abs() < 0.01,
+        ),
+      ),
+      findsOneWidget,
+    );
 
-    // 置灰但仍可点出提示
+    // 点击置灰行：气泡关闭并执行 onTap（弹出提示）
     await tester.tap(find.text('Add to quick access'));
     await tester.pumpAndSettle();
+    expect(find.text('Add to quick access'), findsNothing);
     expect(find.text('Quick access is full (max 6)'), findsOneWidget);
   });
 
