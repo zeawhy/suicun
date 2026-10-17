@@ -541,7 +541,12 @@ class _IdDocFormState extends State<IdDocForm> {
     );
     if (source == null) return;
     final picker = ImagePicker();
-    final picked = await picker.pickImage(source: source, imageQuality: 85);
+    final picked = await picker.pickImage(
+      source: source,
+      maxWidth: 2000,
+      maxHeight: 2000,
+      imageQuality: 85,
+    );
     if (picked == null) return;
     final rel = await saveIdPhoto(picked,
         recordId: widget.recordId, isFront: isFront);

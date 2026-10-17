@@ -75,7 +75,12 @@
 
 ## 5. 已知局限（诚实记录）
 
-1. **明文升级残留**：从明文库 `sqlcipher_export` 迁移后，旧明文文件被删除但闪存物理块
+1. **系统备份已关闭**（2026-10-17，`android:allowBackup="false"` + `dataExtractionRules` 全 exclude）：
+   Google 云备份和 Android 12+ 设备间迁移都不会搬运本应用的任何数据。
+   原因：数据库密钥在 Android Keystore 中无法跨设备恢复，允许系统备份会导致
+   （a）`id_photos/` 以明文进入云备份，（b）数据库被搬到新手机但密钥搬不过去→启动失败。
+   换机唯一路径：**加密备份导出**（含照片，见 backup_service schema v2）或 **WebDAV 同步**。
+2. **明文升级残留**：从明文库 `sqlcipher_export` 迁移后，旧明文文件被删除但闪存物理块
    可能残留可恢复数据。这是 flash 存储的固有特性，应用层无法保证擦除。缓解：
    迁移后立即对新加密库做一次加密备份并建议用户妥善保存；未来版本可提示"旧设备出售前请恢复出厂设置"。
 2. **Keystore 可用性**：数据库密钥的 confidentiality 依赖 Android Keystore。

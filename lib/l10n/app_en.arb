@@ -1,5 +1,15 @@
 {
   "@@locale": "en",
+  "@backupPhotoSizeWarn": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
   "@conflictCount": {
     "placeholders": {
       "count": {
@@ -227,6 +237,7 @@
   "backupAndSync": "Backup & sync",
   "backupPassword": "Backup password",
   "backupPasswordHint": "Needed to restore on a new device. Keep it safe.",
+  "backupPhotoSizeWarn": "This backup includes {count} ID photos (about {size})",
   "batchCategorize": "Categorize",
   "batchDelete": "Delete",
   "batchFavorite": "Favorite",
@@ -330,6 +341,7 @@
   "exportJsonUnencrypted": "Export JSON (Unencrypted)",
   "exportMarkdownZip": "Export Markdown ZIP",
   "exportOtherFormats": "Export in Other Formats",
+  "exportPlainNoPhotos": "Plain exports don't include ID photos",
   "exportSuccess": "Export successful",
   "exportTxt": "Export TXT",
   "favorite": "Favorite",

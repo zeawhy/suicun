@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -80,6 +81,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get backupPasswordHint =>
       'Needed to restore on a new device. Keep it safe.';
+
+  @override
+  String backupPhotoSizeWarn(int count, String size) {
+    return 'This backup includes $count ID photos (about $size)';
+  }
 
   @override
   String get batchCategorize => 'Categorize';
@@ -409,6 +415,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exportOtherFormats => 'Export in Other Formats';
+
+  @override
+  String get exportPlainNoPhotos => 'Plain exports don\'t include ID photos';
 
   @override
   String get exportSuccess => 'Export successful';

@@ -1,6 +1,7 @@
 // lib/features/records/presentation/id_presentation_page.dart
 
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -17,11 +18,11 @@ import 'package:suicun/shared/utils/secure_flag.dart';
 class _IdPhotoItem {
   const _IdPhotoItem({
     required this.isFront,
-    required this.file,
+    required this.bytes,
   });
 
   final bool isFront;
-  final File file;
+  final Uint8List bytes;
 }
 
 /// Fullscreen presentation mode for ID/Photo records.
@@ -226,17 +227,17 @@ class _IdPresentationPageState extends State<IdPresentationPage>
     final backPath = idData?.photoBack;
 
     if (frontPath != null && frontPath.isNotEmpty) {
-      final frontFile = await resolveIdPhoto(frontPath);
-      if (frontFile != null && await frontFile.exists()) {
-        _photoItems.add(_IdPhotoItem(isFront: true, file: frontFile));
+      final frontBytes = await loadIdPhotoBytes(frontPath);
+      if (frontBytes != null) {
+        _photoItems.add(_IdPhotoItem(isFront: true, bytes: frontBytes));
         _transformControllers.add(TransformationController());
       }
     }
 
     if (backPath != null && backPath.isNotEmpty) {
-      final backFile = await resolveIdPhoto(backPath);
-      if (backFile != null && await backFile.exists()) {
-        _photoItems.add(_IdPhotoItem(isFront: false, file: backFile));
+      final backBytes = await loadIdPhotoBytes(backPath);
+      if (backBytes != null) {
+        _photoItems.add(_IdPhotoItem(isFront: false, bytes: backBytes));
         _transformControllers.add(TransformationController());
       }
     }
@@ -474,8 +475,8 @@ class _IdPresentationPageState extends State<IdPresentationPage>
                                       minScale: 1.0,
                                       maxScale: 5.0,
                                       child: Center(
-                                        child: Image.file(
-                                          item.file,
+                                        child: Image.memory(
+                                          item.bytes,
                                           fit: BoxFit.contain,
                                         ),
                                       ),

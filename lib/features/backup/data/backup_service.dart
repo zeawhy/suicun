@@ -11,6 +11,7 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 import 'package:suicun/core/crypto/backup_crypto.dart';
+import 'package:suicun/core/crypto/file_encryption_service.dart';
 import 'package:suicun/core/database/app_database.dart';
 import 'package:suicun/core/errors/app_errors.dart';
 import 'package:suicun/features/categories/data/category_repository.dart';
@@ -18,7 +19,11 @@ import 'package:suicun/features/records/data/record_repository.dart';
 import 'package:suicun/features/records/domain/record_model.dart';
 import 'package:suicun/features/tags/data/tag_repository.dart';
 
-const int _schemaVersion = 1;
+const int _schemaVersion = 2;
+
+// Attachment limits (spec §2.4)
+const int _maxAttachmentBytes = 15 * 1024 * 1024; // 15 MB per file
+const int _maxAttachmentCount = 2000;
 const int _maxImportRecords = 100000;
 const int _maxZipFiles = 10000;
 const int _maxZipTotalBytes = 500 * 1024 * 1024; // 500 MiB
@@ -40,7 +45,12 @@ class BackupService {
 
   /// Builds the full backup payload (schema_version, categories, tags,
   /// records, relationships). Shared by plaintext and encrypted exports.
-  Future<Map<String, dynamic>> buildBackupData() async {
+  ///
+  /// When [includeAttachments] is true (encrypted backups only, spec §2.4),
+  /// includes an `attachments` array with decrypted ID photo bytes
+  /// (base64). Plaintext exports never include photos.
+  Future<Map<String, dynamic>> buildBackupData(
+      {bool includeAttachments = false}) async {
     final categories = await categoryRepo.getAllCategories();
     final tags = await tagRepo.getAllTags();
     final records = await recordRepo.searchRecords(limit: _maxImportRecords);
@@ -52,7 +62,7 @@ class BackupService {
       tagsByRecord.putIfAbsent(rt.recordId, () => []).add(rt.tagId);
     }
 
-    return {
+    final payload = {
       'schema_version': _schemaVersion,
       'exported_at': DateTime.now().toUtc().toIso8601String(),
       'categories': categories
@@ -82,6 +92,66 @@ class BackupService {
               })
           .toList(),
     };
+
+    if (includeAttachments) {
+      payload['attachments'] = await _buildAttachments(records);
+    }
+
+    return payload;
+  }
+
+  /// Collects ID photo attachments for encrypted backups (spec §2.4).
+  ///
+  /// Finds `id_photos/` paths referenced by non-deleted ID records,
+  /// decrypts `.enc` files (reads `.jpg` legacy files directly), and
+  /// returns `[{"path", "record_id", "data_b64"}]`.
+  Future<List<Map<String, dynamic>>> _buildAttachments(
+      List<RecordDetail> records) async {
+    final attachments = <Map<String, dynamic>>[];
+    final seen = <String>{};
+    final encryption = FileEncryptionService();
+    final appDir = await getApplicationDocumentsDirectory();
+
+    final photoPathPattern = RegExp(r'id_photos/[A-Za-z0-9_\-\.]+\.(?:enc|jpg|jpeg|png)');
+
+    for (final r in records) {
+      for (final match in photoPathPattern.allMatches(r.body)) {
+        final relPath = match.group(0)!;
+        if (!seen.add(relPath)) continue; // dedupe
+
+        try {
+          final file = File(p.join(appDir.path, relPath));
+          if (!await file.exists()) continue;
+
+          Uint8List bytes;
+          if (relPath.endsWith('.enc')) {
+            bytes = await encryption.readDecrypted(file);
+          } else {
+            bytes = await file.readAsBytes();
+          }
+
+          attachments.add({
+            'path': relPath,
+            'record_id': r.id,
+            'data_b64': base64Encode(bytes),
+          });
+        } catch (_) {
+          // Skip unreadable photos; don't fail the whole backup.
+        }
+      }
+    }
+
+    return attachments;
+  }
+
+  /// Total size in bytes of the attachments array (for the 50MB warning).
+  static int attachmentsTotalBytes(List attachments) {
+    var total = 0;
+    for (final a in attachments) {
+      final b64 = (a as Map<String, dynamic>)['data_b64'] as String? ?? '';
+      total += (b64.length * 3) ~/ 4; // approximate decoded size
+    }
+    return total;
   }
 
   /// Exports all non-deleted records (+ categories, tags, relationships) as JSON.
@@ -114,7 +184,7 @@ class BackupService {
     BackupKdfParams kdfParams = const BackupKdfParams(),
   }) async {
     try {
-      final data = await buildBackupData();
+      final data = await buildBackupData(includeAttachments: true);
       final plaintext =
           const JsonEncoder.withIndent('  ').convert(data);
       final container = await BackupCrypto()
@@ -252,6 +322,19 @@ class BackupService {
     return recordList.length;
   }
 
+  /// Returns the number of photo attachments in an encrypted backup.
+  /// Returns 0 for schema 1 files or on any error.
+  Future<int> previewEncryptedImportPhotoCount(
+      File file, String password) async {
+    try {
+      final data = await _parseAndValidateEncrypted(file, password);
+      final attachments = data['attachments'] as List?;
+      return attachments?.length ?? 0;
+    } catch (_) {
+      return 0;
+    }
+  }
+
   /// Imports an encrypted backup in a single transaction. On failure rolls
   /// back. Returns the count of imported records.
   Future<int> importEncryptedBackup(File file, String password) async {
@@ -272,11 +355,33 @@ class BackupService {
   }
 
   /// Shared transactional import for validated backup payloads.
+  ///
+  /// Schema 2 attachments (spec §2.4): after records are imported in the
+  /// same transaction, each photo is re-encrypted with this device's photo
+  /// key and written to `id_photos/` (filename unchanged). On any file
+  /// write failure, the DB transaction rolls back and written files are
+  /// deleted.
   Future<int> _importValidatedData(Map<String, dynamic> data) async {
     final catList = data['categories'] as List;
     final tagList = data['tags'] as List;
     final recordList = data['records'] as List;
+    final attachments = (data['attachments'] as List?) ?? [];
 
+    // Validate attachment limits before starting (spec §2.4).
+    if (attachments.length > _maxAttachmentCount) {
+      throw ImportError(
+          'Too many photo attachments (${attachments.length} > $_maxAttachmentCount)');
+    }
+    for (final a in attachments) {
+      final b64 = (a as Map<String, dynamic>)['data_b64'] as String? ?? '';
+      final approxBytes = (b64.length * 3) ~/ 4;
+      if (approxBytes > _maxAttachmentBytes) {
+        throw ImportError(
+            'Photo attachment too large (${(approxBytes / 1024 / 1024).toStringAsFixed(1)} MB > 15 MB)');
+      }
+    }
+
+    final writtenFiles = <File>[];
     try {
       await db.transaction(() async {
         // Import categories
@@ -347,8 +452,50 @@ class BackupService {
         }
       });
 
+      // Import photo attachments (schema 2): re-encrypt with this device's
+      // photo key and write to id_photos/. On failure, delete written files
+      // (DB transaction already committed, so files must be cleaned manually).
+      if (attachments.isNotEmpty) {
+        final encryption = FileEncryptionService();
+        final appDir = await getApplicationDocumentsDirectory();
+        final photosDir = Directory(p.join(appDir.path, 'id_photos'));
+        if (!await photosDir.exists()) {
+          await photosDir.create(recursive: true);
+        }
+        try {
+          for (final a in attachments) {
+            final att = a as Map<String, dynamic>;
+            final relPath = att['path'] as String;
+            // Security: only allow id_photos/ relative paths, no traversal.
+            if (!relPath.startsWith('id_photos/') || relPath.contains('..')) {
+              throw ImportError('Invalid attachment path: $relPath');
+            }
+            final bytes = base64Decode(att['data_b64'] as String);
+            final target = File(p.join(appDir.path, relPath));
+            await encryption.writeEncrypted(target, bytes);
+            writtenFiles.add(target);
+          }
+        } catch (e) {
+          // Roll back written files.
+          for (final f in writtenFiles) {
+            try {
+              if (await f.exists()) await f.delete();
+            } catch (_) {}
+          }
+          if (e is ImportError) rethrow;
+          throw ImportError('Photo attachment import failed', e);
+        }
+      }
+
       return recordList.length;
     } catch (e) {
+      // Clean up any files written before the failure.
+      for (final f in writtenFiles) {
+        try {
+          if (await f.exists()) await f.delete();
+        } catch (_) {}
+      }
+      if (e is ImportError) rethrow;
       throw ImportError('JSON import transaction failed', e);
     }
   }
