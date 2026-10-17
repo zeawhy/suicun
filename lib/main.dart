@@ -117,7 +117,7 @@ class SuicunApp extends ConsumerWidget {
     final currentThemeMode = ref.watch(resolvedThemeModeProvider);
 
     return MaterialApp.router(
-      title: '随存',
+      onGenerateTitle: (context) => AppLocalizations.of(context).appName,
       debugShowCheckedModeBanner: false,
       locale: locale,
       themeMode: currentThemeMode,

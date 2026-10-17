@@ -449,7 +449,7 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
     if (!status.isGranted || !context.mounted) return;
 
     try {
-      await Gal.putImage(file.path, album: 'SuiVault');
+      await Gal.putImage(file.path, album: AppLocalizations.of(context).appName);
       messenger.hideCurrentSnackBar();
       messenger.showSnackBar(
         SnackBar(
