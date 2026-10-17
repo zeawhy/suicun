@@ -8,7 +8,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:suicun/core/database/app_database.dart';
 import 'package:suicun/core/database/providers.dart';
-import 'package:suicun/features/records/data/quick_access_storage.dart';
 import 'package:suicun/features/sync/sync_contract.dart';
 import 'package:suicun/main.dart';
 import 'package:suicun/shared/widgets/action_bubble.dart';

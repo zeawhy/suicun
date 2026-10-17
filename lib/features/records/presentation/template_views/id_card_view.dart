@@ -7,7 +7,6 @@
 // reveal it (auto re-blurs after 10s), ⋯ menu for share/save photo.
 
 import 'dart:async';
-import 'dart:io';
 import 'dart:math';
 import 'dart:ui' show ImageFilter;
 
