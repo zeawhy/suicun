@@ -23,13 +23,13 @@ class AppTheme {
   static const Color dangerColor = Color(0xFFC43D48);
 
   // ─── Switch（独立于 outline，保证关闭态清晰可见） ───
-  static const Color _switchOffTrackLight = Color(0xFFE2E8F0); // 轨道
-  static const Color _switchOffOutlineLight = Color(0xFF94A3B8); // 描边
-  static const Color _switchOffThumbLight = Color(0xFF64748B); // 滑块
+  static const Color _switchOffTrackLight = Color(0xFFEEF2F7); // 轨道
+  static const Color _switchOffOutlineLight = Color(0xFFB4BECC); // 描边
+  static const Color _switchOffThumbLight = Color(0xFF7D879A); // 滑块
 
-  static const Color _switchOffTrackDark = Color(0xFF2D3647);
-  static const Color _switchOffOutlineDark = Color(0xFF6B7689);
-  static const Color _switchOffThumbDark = Color(0xFF96A0B2);
+  static const Color _switchOffTrackDark = Color(0xFF262E3D);
+  static const Color _switchOffOutlineDark = Color(0xFF4A5568);
+  static const Color _switchOffThumbDark = Color(0xFF8A94A6);
 
   /// 浅色/深色共用的 Switch 主题：关闭态用独立配色（不依赖 outline），
   /// 避免关闭的开关在白色卡片上"消失"。
@@ -61,7 +61,7 @@ class AppTheme {
         }
         return offOutline;
       }),
-      trackOutlineWidth: const WidgetStatePropertyAll(2.0),
+      trackOutlineWidth: const WidgetStatePropertyAll(1.5),
     );
   }
 

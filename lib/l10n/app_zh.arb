@@ -296,6 +296,10 @@
   "continueAction": "继续",
   "copied": "已复制",
   "copiedToClipboardMsg": "已复制到剪贴板",
+  "docNumberCopied": "已复制证件号码",
+  "@docNumberCopied": {
+    "description": "Snackbar message after copying an ID document number from a record card"
+  },
   "copy": "复制",
   "copyNumberAction": "复制号码",
   "copyRecoveryKey": "复制",
@@ -303,6 +307,10 @@
   "createdAtPrefix": "创建于",
   "dangerousOperations": "危险操作",
   "data": "数据",
+  "settingsGroupIdDocuments": "证件",
+  "@settingsGroupIdDocuments": {
+    "description": "Settings section header for ID document related options"
+  },
   "defaultCategoryIdeas": "灵感",
   "defaultCategoryLife": "生活",
   "defaultCategoryStudy": "学习",
@@ -516,7 +524,7 @@
   "plaintextExportConfirm": "导出的文件未加密，包含证件号和密码等敏感信息。确定继续？",
   "plaintextExportConfirmTitle": "未加密导出确认",
   "presentAutoBrightnessSubtitle": "方便他人查看或扫码",
-  "presentAutoBrightnessTitle": "出示时调高亮度",
+  "presentAutoBrightnessTitle": "全屏查看时调高亮度",
   "presentBrightness": "亮度",
   "presentDocument": "出示证件",
   "presentIdDocument": "出示证件",
@@ -636,6 +644,14 @@
   "syncStatusUnavailable": "同步状态不可用",
   "syncStatusUnavailableDesc": "同步引擎正在接入，稍后再试。",
   "synced": "已同步",
+  "syncStatusOk": "同步正常",
+  "@syncStatusOk": {
+    "description": "Tooltip for home page sync badge when sync is healthy"
+  },
+  "syncStatusError": "同步出错",
+  "@syncStatusError": {
+    "description": "Tooltip for home page sync badge when last sync failed"
+  },
   "syncedRecordCount": "已同步 {synced} / 共 {total} 条记录",
   "tagName": "标签名称",
   "tags": "标签",

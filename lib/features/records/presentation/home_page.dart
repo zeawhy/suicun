@@ -1899,7 +1899,6 @@ class _SyncBadge extends ConsumerWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context);
-    final locale = Localizations.localeOf(context).toString();
     final syncOverviewAsync = ref.watch(syncOverviewProvider);
 
     return syncOverviewAsync.when(
@@ -1948,107 +1947,28 @@ class _SyncBadge extends ConsumerWidget {
           );
         }
 
-        if (o.lastSuccessAt != null) {
-          const greenColor = Color(0xFF4CAF50);
-          return _buildIconBadge(
-            context: context,
-            icon: Icons.cloud_done_outlined,
-            color: greenColor,
-            tooltip: l10n.synced,
-            onTap: () {
-              final formattedTime = DateFormat.yMMMd(locale)
-                  .add_Hms()
-                  .format(o.lastSuccessAt!.toLocal());
-              showModalBottomSheet<void>(
-                context: context,
-                builder: (sheetContext) {
-                  return SafeArea(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 20,
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                width: 36,
-                                height: 36,
-                                decoration: BoxDecoration(
-                                  color: greenColor.withValues(alpha: 0.15),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Icons.cloud_done_outlined,
-                                  color: greenColor,
-                                  size: 20,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      l10n.webdavSync,
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      l10n.lastSyncTime(formattedTime),
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        color: theme
-                                            .colorScheme.onSurfaceVariant,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 20),
-                          SizedBox(
-                            width: double.infinity,
-                            child: FilledButton.tonal(
-                              onPressed: () {
-                                Navigator.pop(sheetContext);
-                                context.push('/settings/webdav');
-                              },
-                              child: Text(l10n.goToWebdavSettings),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              );
-            },
-          );
+        // §4.2: WebDAV 未配置时不显示图标
+        if (!o.enabled) {
+          return const SizedBox.shrink();
         }
 
-        if (o.enabled) {
+        // 已配置 + 出错 → 警示色图标
+        if (o.lastError != null) {
           return _buildIconBadge(
             context: context,
-            icon: Icons.cloud_queue_outlined,
+            icon: Icons.cloud_off_outlined,
             color: Colors.orange,
-            tooltip: l10n.syncNever,
+            tooltip: l10n.syncStatusError,
             onTap: () => context.push('/settings/webdav'),
           );
         }
 
+        // 已配置 + 正常 → 普通云图标
         return _buildIconBadge(
           context: context,
-          icon: Icons.cloud_off_outlined,
-          color: colorScheme.onSurfaceVariant.withValues(alpha: 0.45),
-          tooltip: l10n.syncStatusDisabled,
+          icon: Icons.cloud_outlined,
+          color: colorScheme.onSurfaceVariant,
+          tooltip: l10n.syncStatusOk,
           onTap: () => context.push('/settings/webdav'),
         );
       },

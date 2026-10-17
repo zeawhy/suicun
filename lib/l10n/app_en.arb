@@ -296,6 +296,10 @@
   "continueAction": "Continue",
   "copied": "Copied",
   "copiedToClipboardMsg": "Copied to clipboard",
+  "docNumberCopied": "Document number copied",
+  "@docNumberCopied": {
+    "description": "Snackbar message after copying an ID document number from a record card"
+  },
   "copy": "Copy",
   "copyNumberAction": "Copy number",
   "copyRecoveryKey": "Copy",
@@ -303,6 +307,10 @@
   "createdAtPrefix": "Created",
   "dangerousOperations": "Dangerous operations",
   "data": "Data",
+  "settingsGroupIdDocuments": "ID documents",
+  "@settingsGroupIdDocuments": {
+    "description": "Settings section header for ID document related options"
+  },
   "defaultCategoryIdeas": "Ideas",
   "defaultCategoryLife": "Life",
   "defaultCategoryStudy": "Study",
@@ -516,7 +524,7 @@
   "plaintextExportConfirm": "The exported file is unencrypted and contains sensitive information such as ID numbers and passwords. Continue?",
   "plaintextExportConfirmTitle": "Unencrypted Export",
   "presentAutoBrightnessSubtitle": "Easier to read or scan",
-  "presentAutoBrightnessTitle": "Boost brightness",
+  "presentAutoBrightnessTitle": "Increase brightness in full screen view",
   "presentBrightness": "Brightness",
   "presentDocument": "Show document",
   "presentIdDocument": "Present ID",
@@ -636,6 +644,14 @@
   "syncStatusUnavailable": "Sync status unavailable",
   "syncStatusUnavailableDesc": "The sync engine is still being wired up. Please try again later.",
   "synced": "Synced",
+  "syncStatusOk": "Synced",
+  "@syncStatusOk": {
+    "description": "Tooltip for home page sync badge when sync is healthy"
+  },
+  "syncStatusError": "Sync error",
+  "@syncStatusError": {
+    "description": "Tooltip for home page sync badge when last sync failed"
+  },
   "syncedRecordCount": "Synced {synced} / {total} records",
   "tagName": "Tag Name",
   "tags": "Tags",

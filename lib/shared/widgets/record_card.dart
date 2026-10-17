@@ -155,15 +155,16 @@ class RecordCard extends StatelessWidget {
   Future<void> _handleCopy(
     BuildContext context,
     String text,
-    AppLocalizations l10n,
-  ) async {
+    AppLocalizations l10n, {
+    String? successMessage,
+  }) async {
     await HapticFeedback.lightImpact();
     await Clipboard.setData(ClipboardData(text: text));
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(l10n.copiedToClipboardMsg),
+        content: Text(successMessage ?? l10n.copiedToClipboardMsg),
         duration: const Duration(seconds: 2),
         behavior: SnackBarBehavior.floating,
       ),
@@ -357,8 +358,16 @@ class RecordCard extends StatelessWidget {
                                   width: 32,
                                   height: 32,
                                 ),
-                                onPressed: () =>
-                                    _handleCopy(context, copyableText, l10n),
+                                onPressed: () => _handleCopy(
+                                  context,
+                                  copyableText,
+                                  l10n,
+                                  successMessage:
+                                      templateType ==
+                                          RecordCardTemplateType.idDocument
+                                      ? l10n.docNumberCopied
+                                      : null,
+                                ),
                               ),
                             ],
                             const SizedBox(width: 4),
