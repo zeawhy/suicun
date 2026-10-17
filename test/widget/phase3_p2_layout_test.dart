@@ -158,9 +158,12 @@ void main() {
       expect(menuFinder, findsOneWidget);
       expect(find.byTooltip('设置'), findsOneWidget);
 
-      // FAB 为悬浮按钮，location 为 endFloat
-      expect(scaffold.floatingActionButtonLocation, FloatingActionButtonLocation.endFloat);
-      expect(scaffold.floatingActionButton, isNotNull);
+      // FAB 已移出 Scaffold，改为 Stack 中的 Positioned（Round 6 §2）
+      // 不再使用 floatingActionButton / floatingActionButtonLocation
+      expect(scaffold.floatingActionButton, isNull);
+      expect(scaffold.floatingActionButtonLocation, isNull);
+      // FAB 应在 Stack 中通过 Positioned 定位
+      expect(find.byType(Positioned), findsWidgets);
 
       // 点击菜单按钮打开设置抽屉
       await tester.tap(menuFinder);

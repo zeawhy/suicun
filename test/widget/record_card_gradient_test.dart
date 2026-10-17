@@ -151,7 +151,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(copiedData, '110101199003072345');
-      expect(find.text('已复制到剪贴板'), findsOneWidget);
+      expect(find.text('已复制证件号码'), findsOneWidget);
     });
 
     testWidgets('plain note does NOT show copy button and displays up to 2 lines summary',

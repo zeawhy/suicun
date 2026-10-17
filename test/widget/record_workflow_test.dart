@@ -188,7 +188,7 @@ void main() {
 
     // Gone from home, snackbar offers undo
     expect(find.text('Doomed'), findsNothing);
-    expect(find.text('Moved to trash'), findsOneWidget);
+    expect(find.text('Moved to Trash'), findsOneWidget);
 
     // Open trash via settings
     await tester.tap(find.byIcon(Icons.menu_rounded));

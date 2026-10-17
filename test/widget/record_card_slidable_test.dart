@@ -178,7 +178,7 @@ void main() {
 
     // Confirm dialog should be visible
     expect(find.text('删除这条记录？'), findsOneWidget);
-    expect(find.text('删除后可在回收站找回。'), findsOneWidget);
+    expect(find.text('删除后可以在回收站中恢复。'), findsOneWidget);
 
     // Tap cancel
     await tester.tap(find.text('取消'));
@@ -209,7 +209,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('删除这条记录？'), findsOneWidget);
-    expect(find.text('删除后可在回收站找回。'), findsOneWidget);
+    expect(find.text('删除后可以在回收站中恢复。'), findsOneWidget);
 
     // Tap confirm button
     await tester.tap(find.text('确认'));
