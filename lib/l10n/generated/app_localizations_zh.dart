@@ -1401,4 +1401,88 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get zoomInAction => '放大';
+
+  @override
+  String get idTypePassport => '护照';
+
+  @override
+  String get idTypeDriverLicense => '驾驶证';
+
+  @override
+  String get idTypeNationalId => '身份证';
+
+  @override
+  String get idTypeResidencePermit => '居留卡';
+
+  @override
+  String get idTypeSocialSecurity => '社保卡';
+
+  @override
+  String get idTypeHealthInsurance => '医保卡';
+
+  @override
+  String get idTypeStudentId => '学生证';
+
+  @override
+  String get idTypeCnResidentId => '中国居民身份证';
+
+  @override
+  String get idTypeHkMoPermit => '港澳通行证';
+
+  @override
+  String get idTypeTwPermit => '台湾通行证';
+
+  @override
+  String get idTypeOther => '其他证件';
+
+  @override
+  String get idTypeGroupChina => '中国证件';
+
+  @override
+  String get idFieldType => '证件类型';
+
+  @override
+  String get idFieldName => '姓名';
+
+  @override
+  String get idFieldNumber => '证件号码';
+
+  @override
+  String get idFieldIssuingCountry => '签发国家';
+
+  @override
+  String get idFieldIssueDate => '签发日期';
+
+  @override
+  String get idFieldExpiryDate => '有效期至';
+
+  @override
+  String get idNoExpiry => '长期';
+
+  @override
+  String get idPhotoFront => '正面照片';
+
+  @override
+  String get idPhotoBack => '反面照片';
+
+  @override
+  String get idPhotoAdd => '添加照片';
+
+  @override
+  String get idPhotoReplace => '更换';
+
+  @override
+  String get idPhotoRemove => '删除';
+
+  @override
+  String get idPhotoTake => '拍照';
+
+  @override
+  String get idPhotoPick => '从相册选择';
+
+  @override
+  String get idFieldNote => '备注';
+
+  @override
+  String get idNumberMaybeInvalid => '号码格式可能有误';
 }
