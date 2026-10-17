@@ -63,7 +63,7 @@ import 'app_localizations_zh.dart';
 /// property.
 abstract class AppLocalizations {
   AppLocalizations(String locale)
-      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -86,16 +86,16 @@ abstract class AppLocalizations {
   /// of delegates is preferred or required.
   static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
       <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('zh'),
-    Locale('en')
+    Locale('en'),
   ];
 
   /// No description provided for @about.
@@ -554,6 +554,12 @@ abstract class AppLocalizations {
   /// **'已复制到剪贴板'**
   String get copiedToClipboardMsg;
 
+  /// Snackbar message after copying an ID document number from a record card
+  ///
+  /// In zh, this message translates to:
+  /// **'已复制证件号码'**
+  String get docNumberCopied;
+
   /// No description provided for @copy.
   ///
   /// In zh, this message translates to:
@@ -595,6 +601,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'数据'**
   String get data;
+
+  /// Settings section header for ID document related options
+  ///
+  /// In zh, this message translates to:
+  /// **'证件'**
+  String get settingsGroupIdDocuments;
 
   /// No description provided for @defaultCategoryIdeas.
   ///
@@ -1877,7 +1889,7 @@ abstract class AppLocalizations {
   /// No description provided for @presentAutoBrightnessTitle.
   ///
   /// In zh, this message translates to:
-  /// **'出示时调高亮度'**
+  /// **'全屏查看时调高亮度'**
   String get presentAutoBrightnessTitle;
 
   /// No description provided for @presentBrightness.
@@ -2594,6 +2606,18 @@ abstract class AppLocalizations {
   /// **'已同步'**
   String get synced;
 
+  /// Tooltip for home page sync badge when sync is healthy
+  ///
+  /// In zh, this message translates to:
+  /// **'同步正常'**
+  String get syncStatusOk;
+
+  /// Tooltip for home page sync badge when last sync failed
+  ///
+  /// In zh, this message translates to:
+  /// **'同步出错'**
+  String get syncStatusError;
+
   /// No description provided for @syncedRecordCount.
   ///
   /// In zh, this message translates to:
@@ -3090,8 +3114,9 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   }
 
   throw FlutterError(
-      'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-      'an issue with the localizations generation tool. Please file an issue '
-      'on GitHub with a reproducible sample app and the gen-l10n configuration '
-      'that was used.');
+    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+    'an issue with the localizations generation tool. Please file an issue '
+    'on GitHub with a reproducible sample app and the gen-l10n configuration '
+    'that was used.',
+  );
 }
