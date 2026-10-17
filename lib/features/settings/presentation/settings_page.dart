@@ -2,6 +2,7 @@
 // Settings grouped per spec §4.5: Appearance / Data / Sync / Security / About.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -13,6 +14,8 @@ import 'package:suicun/features/settings/data/privacy_prefs.dart';
 import 'package:suicun/features/sync/sync_contract.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
 import 'package:suicun/shared/theme/theme_providers.dart';
+import 'package:suicun/shared/widgets/single_choice_sheet.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -57,68 +60,25 @@ class SettingsView extends ConsumerWidget {
     });
   }
 
-  void _showThemeSheet(
+  Future<void> _showThemeSheet(
     BuildContext context,
     WidgetRef ref,
     AppLocalizations l10n,
     AppThemeMode currentMode,
-  ) {
-    showModalBottomSheet<void>(
+  ) async {
+    final selected = await showSingleChoiceSheet<AppThemeMode>(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                  child: Text(
-                    l10n.theme,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                RadioGroup<AppThemeMode>(
-                  groupValue: currentMode,
-                  onChanged: (mode) {
-                    if (mode != null) {
-                      ref.read(themeModeProvider.notifier).setMode(mode);
-                    }
-                    if (ctx.mounted) Navigator.pop(ctx);
-                  },
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      RadioListTile<AppThemeMode>(
-                        title: Text(l10n.themeSystem),
-                        value: AppThemeMode.system,
-                      ),
-                      RadioListTile<AppThemeMode>(
-                        title: Text(l10n.themeLight),
-                        value: AppThemeMode.light,
-                      ),
-                      RadioListTile<AppThemeMode>(
-                        title: Text(l10n.themeDark),
-                        value: AppThemeMode.dark,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
+      title: l10n.theme,
+      selectedValue: currentMode,
+      options: [
+        SingleChoiceOption(value: AppThemeMode.system, label: l10n.themeSystem),
+        SingleChoiceOption(value: AppThemeMode.light, label: l10n.themeLight),
+        SingleChoiceOption(value: AppThemeMode.dark, label: l10n.themeDark),
+      ],
     );
+    if (selected != null) {
+      ref.read(themeModeProvider.notifier).setMode(selected);
+    }
   }
 
   Future<void> _handleClearAllData(
@@ -347,18 +307,44 @@ class SettingsView extends ConsumerWidget {
                 onTap: () => _push(context, ref, '/settings/privacy'),
               ),
               const Divider(height: 1, indent: 56, endIndent: 16),
-              ListTile(
-                leading: const Icon(Icons.info_outline),
-                title: Text(l10n.version),
-                subtitle: FutureBuilder<PackageInfo>(
-                  future: PackageInfo.fromPlatform(),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      return Text(snapshot.data!.version);
-                    }
-                    return const Text('...');
-                  },
-                ),
+              _navTile(
+                context,
+                icon: Icons.bug_report_outlined,
+                title: l10n.reportIssue,
+                onTap: () async {
+                  final uri = Uri.parse('https://github.com/zeawhy/suicun/issues');
+                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                },
+              ),
+              const Divider(height: 1, indent: 56, endIndent: 16),
+              FutureBuilder<PackageInfo>(
+                future: PackageInfo.fromPlatform(),
+                builder: (context, snapshot) {
+                  final versionText =
+                      snapshot.hasData ? snapshot.data!.version : '...';
+                  final fullVersion = snapshot.hasData
+                      ? (snapshot.data!.buildNumber.isNotEmpty
+                          ? '${snapshot.data!.version}+${snapshot.data!.buildNumber}'
+                          : snapshot.data!.version)
+                      : null;
+                  return ListTile(
+                    leading: const Icon(Icons.info_outline),
+                    title: Text(l10n.version),
+                    subtitle: Text(versionText),
+                    onLongPress: fullVersion != null
+                        ? () async {
+                            await Clipboard.setData(
+                              ClipboardData(text: fullVersion),
+                            );
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(l10n.copied)),
+                              );
+                            }
+                          }
+                        : null,
+                  );
+                },
               ),
             ],
           ),

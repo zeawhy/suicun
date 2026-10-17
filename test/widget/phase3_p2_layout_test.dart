@@ -16,7 +16,6 @@ import 'package:suicun/features/security/data/security_providers.dart';
 import 'package:suicun/features/settings/presentation/settings_page.dart';
 import 'package:suicun/features/sync/sync_contract.dart';
 import 'package:suicun/main.dart';
-import 'package:suicun/shared/theme/theme_providers.dart';
 import 'package:suicun/shared/widgets/record_card.dart';
 
 Future<void> pumpApp(
@@ -227,15 +226,15 @@ void main() {
       expect(find.text('外观'), findsOneWidget);
       expect(find.text('数据'), findsOneWidget);
 
-      // 主题 tile 点击弹窗
+      // 主题 tile 点击弹出底部单选 sheet
       expect(find.text('跟随系统'), findsOneWidget);
       await tester.tap(find.text('主题'));
       await tester.pumpAndSettle();
 
-      // 弹窗中有 3 个 RadioListTile
-      expect(find.byType(RadioListTile<AppThemeMode>), findsNWidgets(3));
+      // Sheet 中有 3 个选项，当前选中项带勾选图标
       expect(find.text('深色'), findsOneWidget);
       expect(find.text('浅色'), findsOneWidget);
+      expect(find.byIcon(Icons.check), findsOneWidget);
 
       // 选择深色模式
       await tester.tap(find.text('深色'));

@@ -1221,4 +1221,43 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get presentIdDocument => '出示证件';
+
+  @override
+  String get plaintextExportConfirmTitle => '未加密导出确认';
+
+  @override
+  String get plaintextExportConfirm => '导出的文件未加密，包含证件号和密码等敏感信息。确定继续？';
+
+  @override
+  String get fullBackup => '完整备份';
+
+  @override
+  String get exportEncryptedBackupRecommended => '导出加密备份（推荐）';
+
+  @override
+  String get exportEncryptedBackupSubtitle => '需设置密码，换设备恢复时使用';
+
+  @override
+  String get restoreBackup => '恢复备份';
+
+  @override
+  String get restoreBackupSubtitle => '支持加密备份与 JSON 备份';
+
+  @override
+  String get exportOtherFormats => '导出为其他格式';
+
+  @override
+  String get exportJsonUnencrypted => '导出 JSON（未加密）';
+
+  @override
+  String get exportJsonSubtitle => '明文，任何人可读取';
+
+  @override
+  String get importSectionTitle => '导入';
+
+  @override
+  String get importMarkdownOrTxt => '导入 Markdown / TXT';
+
+  @override
+  String get reportIssue => '反馈问题';
 }

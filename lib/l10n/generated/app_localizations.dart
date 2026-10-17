@@ -2419,6 +2419,84 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'出示证件'**
   String get presentIdDocument;
+
+  /// No description provided for @plaintextExportConfirmTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'未加密导出确认'**
+  String get plaintextExportConfirmTitle;
+
+  /// No description provided for @plaintextExportConfirm.
+  ///
+  /// In zh, this message translates to:
+  /// **'导出的文件未加密，包含证件号和密码等敏感信息。确定继续？'**
+  String get plaintextExportConfirm;
+
+  /// No description provided for @fullBackup.
+  ///
+  /// In zh, this message translates to:
+  /// **'完整备份'**
+  String get fullBackup;
+
+  /// No description provided for @exportEncryptedBackupRecommended.
+  ///
+  /// In zh, this message translates to:
+  /// **'导出加密备份（推荐）'**
+  String get exportEncryptedBackupRecommended;
+
+  /// No description provided for @exportEncryptedBackupSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'需设置密码，换设备恢复时使用'**
+  String get exportEncryptedBackupSubtitle;
+
+  /// No description provided for @restoreBackup.
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复备份'**
+  String get restoreBackup;
+
+  /// No description provided for @restoreBackupSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'支持加密备份与 JSON 备份'**
+  String get restoreBackupSubtitle;
+
+  /// No description provided for @exportOtherFormats.
+  ///
+  /// In zh, this message translates to:
+  /// **'导出为其他格式'**
+  String get exportOtherFormats;
+
+  /// No description provided for @exportJsonUnencrypted.
+  ///
+  /// In zh, this message translates to:
+  /// **'导出 JSON（未加密）'**
+  String get exportJsonUnencrypted;
+
+  /// No description provided for @exportJsonSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'明文，任何人可读取'**
+  String get exportJsonSubtitle;
+
+  /// No description provided for @importSectionTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'导入'**
+  String get importSectionTitle;
+
+  /// No description provided for @importMarkdownOrTxt.
+  ///
+  /// In zh, this message translates to:
+  /// **'导入 Markdown / TXT'**
+  String get importMarkdownOrTxt;
+
+  /// No description provided for @reportIssue.
+  ///
+  /// In zh, this message translates to:
+  /// **'反馈问题'**
+  String get reportIssue;
 }
 
 class _AppLocalizationsDelegate
