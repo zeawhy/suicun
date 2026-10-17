@@ -2,18 +2,22 @@
 // Formats an intelligent display title for records based on template data.
 
 import 'package:flutter/widgets.dart';
+import 'package:suicun/features/records/domain/id_doc_codec.dart';
+import 'package:suicun/features/records/domain/id_doc_data.dart';
 import 'package:suicun/features/records/domain/record_model.dart';
-import 'package:suicun/features/records/presentation/template_views/id_doc_type.dart';
+import 'package:suicun/features/records/presentation/id_doc_types.dart';
 import 'package:suicun/features/records/presentation/template_views/template_detector.dart';
+import 'package:suicun/l10n/generated/app_localizations.dart';
 
 /// Formats a display title for [RecordDetail].
 ///
 /// Rules:
 /// 1. If [r.title] is non-empty, returns [r.title].
-/// 2. If [r.body] matches ID document template, returns
-///    `"${docType}${name != null ? ' · $name' : ''}"`, where docType is
-///    localized via [localizedDocType] when [context] is given (falls back to
-///    the raw stored type name / [defaultDocType] without a context).
+/// 2. If [r.body] is an ID document body (new or legacy format), returns
+///    `"${docType}${name != null ? ' · $name' : ''}"`, where docType is the
+///    localized type name via [IdDocType.localizedName] when [context] is
+///    given (falls back to the storage key / [defaultDocType] without one).
+///    The JSON body itself is never shown.
 /// 3. If [r.body] matches password template and website/app is non-empty, returns website/app.
 /// 4. If [r.body] matches contact template and name is non-empty, returns contact name.
 /// 5. Otherwise returns [untitled].
@@ -44,24 +48,20 @@ String displayTitleFrom({
     return title;
   }
 
-  if (isIdDocumentTemplate(body)) {
-    final data = parseIdDocumentTemplate(body);
-    final docType = data?.docType?.trim();
-    final name = data?.name?.trim();
-    final String effectiveDocType;
-    if (context != null) {
-      effectiveDocType = localizedDocType(
-        context,
-        parseDocTypeKey(docType),
-        (docType != null && docType.isNotEmpty) ? docType : null,
-      );
-    } else {
-      effectiveDocType = (docType != null && docType.isNotEmpty)
-          ? docType
-          : (defaultDocType ?? '证件');
+  if (isIdDocBody(body)) {
+    final IdDocData? data = decodeIdDocBody(body);
+    if (data != null) {
+      final type = IdDocTypeStorage.fromStorageKey(data.type);
+      final String effectiveDocType;
+      if (context != null) {
+        effectiveDocType = type.localizedName(AppLocalizations.of(context));
+      } else {
+        effectiveDocType = defaultDocType ?? data.type;
+      }
+      final name = data.name?.trim() ?? '';
+      final namePart = name.isNotEmpty ? ' · $name' : '';
+      return '$effectiveDocType$namePart';
     }
-    final namePart = (name != null && name.isNotEmpty) ? ' · $name' : '';
-    return '$effectiveDocType$namePart';
   }
 
   if (isPasswordTemplate(body)) {

@@ -16,6 +16,7 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:suicun/features/records/domain/id_doc_data.dart';
 import 'package:suicun/features/records/domain/id_doc_expiry.dart';
+import 'package:suicun/features/records/presentation/id_doc_types.dart';
 import 'package:suicun/features/records/presentation/template_views/id_doc_type.dart';
 import 'package:suicun/features/records/presentation/template_views/id_expiry_pill.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
@@ -24,7 +25,7 @@ import 'package:suicun/shared/utils/mask_doc_number.dart';
 class IdCardView extends StatefulWidget {
   const IdCardView({
     super.key,
-    required this.docTypeKey,
+    required this.docType,
     required this.docTypeLabel,
     this.name,
     this.docNumber,
@@ -40,7 +41,7 @@ class IdCardView extends StatefulWidget {
   });
 
   /// Parsed document type key (drives gradient + icon).
-  final IdDocTypeKey docTypeKey;
+  final IdDocType docType;
 
   /// Localized document type name (custom "other" names shown as-is).
   final String docTypeLabel;
@@ -327,7 +328,7 @@ class _IdCardViewState extends State<IdCardView>
   Widget _buildCardShell(BuildContext context, List<Widget> children) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final gradientColors = kDocTypeGradients[widget.docTypeKey]!;
+    final gradientColors = kDocTypeGradients[widget.docType]!;
 
     return AspectRatio(
       aspectRatio: 85.6 / 54,
@@ -392,7 +393,7 @@ class _IdCardViewState extends State<IdCardView>
         child: Row(
           children: [
             Icon(
-              kDocTypeIcons[widget.docTypeKey],
+              widget.docType.icon,
               size: 18,
               color: Colors.white.withValues(alpha: 0.95),
             ),
