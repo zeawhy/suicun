@@ -322,7 +322,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('出示时调高亮度'), findsOneWidget);
+      expect(find.text('全屏查看时调高亮度'), findsOneWidget);
       expect(find.text('方便他人查看或扫码'), findsOneWidget);
     });
   });

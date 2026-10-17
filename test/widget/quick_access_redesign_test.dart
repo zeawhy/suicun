@@ -157,6 +157,7 @@ void main() {
         MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('zh'),
           home: IdPresentationPage(record: sampleRecord),
         ),
       );
