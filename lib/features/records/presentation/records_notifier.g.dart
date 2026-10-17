@@ -95,7 +95,7 @@ final class RecordsListProvider extends $FunctionalProvider<
   }
 }
 
-String _$recordsListHash() => r'ed6f80b5a6ba4a0cff8ae489372138cf33c30239';
+String _$recordsListHash() => r'8e6952f32f02caba59810321d652076e05e1ba1f';
 
 @ProviderFor(trashList)
 final trashListProvider = TrashListProvider._();

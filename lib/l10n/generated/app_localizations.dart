@@ -2767,6 +2767,24 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'放大'**
   String get zoomInAction;
+
+  /// No description provided for @cameraPermissionDenied.
+  ///
+  /// In zh, this message translates to:
+  /// **'需要相机权限才能拍照'**
+  String get cameraPermissionDenied;
+
+  /// No description provided for @openSettings.
+  ///
+  /// In zh, this message translates to:
+  /// **'去设置'**
+  String get openSettings;
+
+  /// No description provided for @allowIdScreenshots.
+  ///
+  /// In zh, this message translates to:
+  /// **'允许截屏证件页面'**
+  String get allowIdScreenshots;
 }
 
 class _AppLocalizationsDelegate

@@ -9,6 +9,7 @@ import 'package:suicun/features/records/data/quick_access_storage.dart';
 import 'package:suicun/features/records/domain/record_model.dart';
 import 'package:suicun/features/records/presentation/records_notifier.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
+import 'package:suicun/features/records/presentation/template_views/id_photo_storage.dart';
 import 'package:suicun/shared/widgets/record_list_tile.dart';
 
 class TrashPage extends ConsumerWidget {
@@ -43,6 +44,8 @@ class TrashPage extends ConsumerWidget {
     for (final r in records) {
       await repo.permanentDeleteRecord(r.id);
       await quickNotifier.removeEverywhere(r.id);
+      // Delete associated ID photo files from app private storage.
+      await deleteIdPhotosForRecord(r.id);
     }
     ref.invalidate(trashListProvider);
   }

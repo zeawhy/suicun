@@ -647,5 +647,8 @@
   "wizardTitle": "同步设置向导",
   "wrongPin": "PIN 错误，请重试",
   "yesterday": "昨天",
-  "zoomInAction": "放大"
+  "zoomInAction": "放大",
+  "cameraPermissionDenied": "需要相机权限才能拍照",
+  "openSettings": "去设置",
+  "allowIdScreenshots": "允许截屏证件页面"
 }

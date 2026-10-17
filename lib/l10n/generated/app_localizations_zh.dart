@@ -1401,4 +1401,13 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get zoomInAction => '放大';
+
+  @override
+  String get cameraPermissionDenied => '需要相机权限才能拍照';
+
+  @override
+  String get openSettings => '去设置';
+
+  @override
+  String get allowIdScreenshots => '允许截屏证件页面';
 }

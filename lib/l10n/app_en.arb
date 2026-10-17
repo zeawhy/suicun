@@ -647,5 +647,8 @@
   "wizardTitle": "Sync setup wizard",
   "wrongPin": "Wrong PIN, try again",
   "yesterday": "Yesterday",
-  "zoomInAction": "Zoom in"
+  "zoomInAction": "Zoom in",
+  "cameraPermissionDenied": "Camera access is needed to take photos",
+  "openSettings": "Open settings",
+  "allowIdScreenshots": "Allow screenshots of ID pages"
 }

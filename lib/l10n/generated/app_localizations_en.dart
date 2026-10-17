@@ -1435,4 +1435,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get zoomInAction => 'Zoom in';
+
+  @override
+  String get cameraPermissionDenied => 'Camera access is needed to take photos';
+
+  @override
+  String get openSettings => 'Open settings';
+
+  @override
+  String get allowIdScreenshots => 'Allow screenshots of ID pages';
 }
