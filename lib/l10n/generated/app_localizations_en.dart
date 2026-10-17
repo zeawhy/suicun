@@ -82,6 +82,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'Needed to restore on a new device. Keep it safe.';
 
   @override
+  String backupPhotoSizeWarn(int count, String size) {
+    return 'This backup includes $count ID photos (about $size)';
+  }
+
+  @override
   String get batchCategorize => 'Categorize';
 
   @override
@@ -411,6 +416,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exportOtherFormats => 'Export in Other Formats';
 
   @override
+  String get exportPlainNoPhotos => 'Plain exports don\'t include ID photos';
+
+  @override
   String get exportSuccess => 'Export successful';
 
   @override
@@ -591,6 +599,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get idNumberMaybeInvalid => 'Number format may be incorrect';
+
+  @override
+  String get idOriginalType => 'Original type';
 
   @override
   String get idPhotoAdd => 'Add photo';

@@ -4,6 +4,7 @@ import 'package:suicun/core/crypto/database_encryption_service.dart';
 import 'package:suicun/core/database/app_database.dart';
 import 'package:suicun/core/database/providers.dart';
 import 'package:suicun/core/router/app_router.dart';
+import 'package:suicun/features/records/data/id_doc_body_migration.dart';
 import 'package:suicun/features/security/presentation/app_lock_gate.dart';
 import 'package:suicun/features/sync/sync_contract.dart';
 import 'package:suicun/features/sync/sync_providers.dart';
@@ -52,6 +53,10 @@ Future<void> main() async {
   // the enqueuer hook installed) before the user can save anything. Otherwise
   // edits made before opening a sync page would silently skip the outbox.
   container.read(syncEngineProvider);
+
+  // Round 5 §1.2: one-time background migration of legacy ID document
+  // bodies to the structured format. Fire-and-forget; never blocks startup.
+  runIdDocBodyMigration(container);
 
   // The container lives for the whole process lifetime; the OS reclaims it on
   // exit (UncontrolledProviderScope does not dispose it).

@@ -23,6 +23,7 @@ import 'package:suicun/features/records/presentation/secret_line.dart';
 import 'package:suicun/features/records/presentation/template_views/blank_template_view.dart';
 import 'package:suicun/features/records/presentation/template_views/contact_template_view.dart';
 import 'package:suicun/features/records/presentation/template_views/id_document_template_view.dart';
+import 'package:suicun/features/records/domain/id_doc_codec.dart';
 import 'package:suicun/features/records/domain/id_doc_data.dart';
 import 'package:suicun/features/records/presentation/id_doc_form.dart';
 import 'package:suicun/features/records/presentation/id_doc_types.dart';
@@ -57,6 +58,7 @@ class EditRecordPage extends ConsumerStatefulWidget {
 
 class _EditRecordPageState extends ConsumerState<EditRecordPage> {
   late final TextEditingController _titleController;
+  String? _lastAutoIdTitle;
   late final TextEditingController _bodyController;
   late final FocusNode _bodyFocusNode;
   bool _initialized = false;
@@ -144,7 +146,7 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
 
   void _autoFillIdTitleIfEmpty() {
     if (_titleController.text.trim().isEmpty &&
-        isIdDocumentTemplate(_bodyController.text)) {
+        isIdDocBody(_bodyController.text)) {
       final autoTitle = displayTitleFrom(
         title: '',
         body: _bodyController.text,
@@ -471,21 +473,22 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
   Future<void> _openIdDocForm(
     BuildContext context,
     RecordDetail? record,
-    IdDocumentTemplateData? templateData,
   ) async {
     if (record == null) return;
     final l10n = AppLocalizations.of(context);
-    final initial = templateData == null
-        ? null
-        : IdDocData(
-            type: _mapOldDocTypeToNew(templateData.docType),
-            name: templateData.name,
-            number: templateData.docNumber,
-            expiryDate: _parseValidUntil(templateData.validUntil),
-            photoFront: templateData.photoFront,
-            photoBack: templateData.photoBack,
-            note: templateData.notes,
-          );
+    // Decode current body (new or legacy format). Null when creating.
+    final initial = decodeIdDocBody(
+      _bodyController.text,
+      origTypeLabel: l10n.idOriginalType,
+    );
+    // Remember the auto-generated title so _saveIdDocFormData only
+    // overwrites the title when the user hasn't customized it.
+    if (initial != null) {
+      final type = IdDocTypeStorage.fromStorageKey(initial.type);
+      _lastAutoIdTitle = generateIdDocTitle(l10n, type, initial.name);
+    } else {
+      _lastAutoIdTitle = null;
+    }
     await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => IdDocForm(
@@ -500,46 +503,19 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
     if (mounted) setState(() {});
   }
 
-  String _mapOldDocTypeToNew(String? oldType) {
-    if (oldType == null) return 'other';
-    final lower = oldType.toLowerCase().trim();
-    if (oldType == '身份证' || lower == 'id card') return 'national_id';
-    if (oldType == '护照' || lower == 'passport') return 'passport';
-    if (oldType == '驾驶证' || lower == 'driver license') return 'driver_license';
-    if (oldType == '社保卡' || lower == 'social security card') return 'social_security';
-    if (oldType == '港澳通行证' || lower.contains('hmt')) return 'hk_mo_permit';
-    return 'other';
-  }
-
-  DateTime? _parseValidUntil(String? validUntil) {
-    if (validUntil == null || validUntil.trim().isEmpty) return null;
-    try {
-      return DateTime.parse(validUntil.trim());
-    } catch (_) {
-      return null;
-    }
-  }
-
   Future<void> _saveIdDocFormData(IdDocData data, RecordDetail record) async {
     final l10n = AppLocalizations.of(context);
     final type = IdDocTypeStorage.fromStorageKey(data.type);
-    if (_titleController.text.trim().isEmpty) {
-      _titleController.text = generateIdDocTitle(l10n, type, data.name);
+    final newAutoTitle = generateIdDocTitle(l10n, type, data.name);
+    final current = _titleController.text.trim();
+    // Only auto-update the title when it is empty or still the last
+    // auto-generated title (i.e. the user hasn't customized it).
+    if (current.isEmpty || current == _lastAutoIdTitle) {
+      _titleController.text = newAutoTitle;
     }
-    final lines = <String>[];
-    final isZh = Localizations.localeOf(context).languageCode == 'zh';
-    lines.add('${isZh ? '证件类型' : 'Document type'}: ${type.localizedName(l10n)}');
-    if (data.name?.isNotEmpty ?? false) lines.add('${isZh ? '姓名' : 'Name'}: ${data.name}');
-    if (data.number?.isNotEmpty ?? false) lines.add('${isZh ? '证件号码' : 'Document number'}: ${data.number}');
-    if (data.expiryDate != null) {
-      lines.add('${isZh ? '有效期至' : 'Valid until'}: ${DateFormat('yyyy-MM-dd').format(data.expiryDate!)}');
-    } else if (data.noExpiry) {
-      lines.add('${isZh ? '有效期至' : 'Valid until'}: ${isZh ? '长期' : 'No expiry'}');
-    }
-    if (data.photoFront?.isNotEmpty ?? false) lines.add('${isZh ? '证件照片正面' : 'ID photo front'}: ${data.photoFront}');
-    if (data.photoBack?.isNotEmpty ?? false) lines.add('${isZh ? '证件照片反面' : 'ID photo back'}: ${data.photoBack}');
-    if (data.note?.isNotEmpty ?? false) lines.add('${isZh ? '备注' : 'Notes'}: ${data.note}');
-    _bodyController.text = lines.join('\n');
+    _lastAutoIdTitle = newAutoTitle;
+    // Structured storage: no localized text in the body.
+    _bodyController.text = encodeIdDocBody(data);
     _onChanged();
   }
 
@@ -625,34 +601,35 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
     final isEmptyInput =
         _titleController.text.isEmpty && _bodyController.text.isEmpty;
     final showPageTitle = _isNew && record == null && isEmptyInput;
-    final isPasswordTemplateRecord =
+    // ID document detection comes first (Round 5 §1.2): isIdDocBody covers
+    // both the new JSON format and legacy label:value text.
+    final isIdDocumentTemplateRecord =
+        isIdDocBody(_bodyController.text) && (_isNew || !_bodyEditing);
+    final isPasswordTemplateRecord = !isIdDocumentTemplateRecord &&
         parsePasswordTemplate(_bodyController.text) != null &&
             (_isNew || !_bodyEditing);
-    final isIdeaTemplateRecord = !isPasswordTemplateRecord &&
+    final isIdeaTemplateRecord = !isIdDocumentTemplateRecord &&
+        !isPasswordTemplateRecord &&
         parseIdeaTemplate(_bodyController.text) != null &&
         (_isNew || !_bodyEditing);
-    final isTodoTemplateRecord = !isPasswordTemplateRecord &&
+    final isTodoTemplateRecord = !isIdDocumentTemplateRecord &&
+        !isPasswordTemplateRecord &&
         !isIdeaTemplateRecord &&
         parseTodoTemplate(_bodyController.text) != null &&
         (_isNew || !_bodyEditing);
-    final isContactTemplateRecord = !isPasswordTemplateRecord &&
+    final isContactTemplateRecord = !isIdDocumentTemplateRecord &&
+        !isPasswordTemplateRecord &&
         !isIdeaTemplateRecord &&
         !isTodoTemplateRecord &&
         parseContactTemplate(_bodyController.text) != null &&
         (_isNew || !_bodyEditing);
-    final isIdDocumentTemplateRecord = !isPasswordTemplateRecord &&
-        !isIdeaTemplateRecord &&
-        !isTodoTemplateRecord &&
-        !isContactTemplateRecord &&
-        parseIdDocumentTemplate(_bodyController.text) != null &&
-        (_isNew || !_bodyEditing);
     final isBlankTemplateRecord = !_isNew &&
         !_bodyEditing &&
+        !isIdDocumentTemplateRecord &&
         !isPasswordTemplateRecord &&
         !isIdeaTemplateRecord &&
         !isTodoTemplateRecord &&
-        !isContactTemplateRecord &&
-        !isIdDocumentTemplateRecord;
+        !isContactTemplateRecord;
 
     Widget appBarTitle;
     if (showPageTitle) {
@@ -977,22 +954,10 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
                           ? SingleChildScrollView(
                               padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
                               child: IdDocumentTemplateView(
-                                data: parseIdDocumentTemplate(_bodyController.text) ??
-                                    const IdDocumentTemplateData(),
+                                data: decodeIdDocBody(_bodyController.text) ??
+                                    const IdDocData(type: 'other'),
                                 record: record,
-                                rawBody: _bodyController.text,
-                                isEditing: _isNew,
-                                titleController: _isNew ? _titleController : null,
-                                onTitleChanged: _isNew ? (_) => _onChanged() : null,
-                                onBodyChanged: (newBody) {
-                                  _bodyController.text = newBody;
-                                  _onChanged();
-                                },
-                                onEdit: () => _openIdDocForm(
-                                  context,
-                                  record,
-                                  parseIdDocumentTemplate(_bodyController.text),
-                                ),
+                                onEdit: () => _openIdDocForm(context, record),
                                 categoryRow: _buildCategoryRow(l10n, theme, colorScheme, record),
                                 suggestionRow: _buildSuggestionRow(l10n, theme, colorScheme),
                                 tagRow: _buildTagRow(l10n, theme, colorScheme, record),

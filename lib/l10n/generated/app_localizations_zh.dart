@@ -81,6 +81,11 @@ class AppLocalizationsZh extends AppLocalizations {
   String get backupPasswordHint => '换设备恢复需要此密码，请妥善保存';
 
   @override
+  String backupPhotoSizeWarn(int count, String size) {
+    return '备份包含 $count 张证件照片，文件约 $size';
+  }
+
+  @override
   String get batchCategorize => '批量分类';
 
   @override
@@ -396,6 +401,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get exportOtherFormats => '导出为其他格式';
 
   @override
+  String get exportPlainNoPhotos => '明文导出不包含证件照片';
+
+  @override
   String get exportSuccess => '导出成功';
 
   @override
@@ -575,6 +583,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get idNumberMaybeInvalid => '号码格式可能有误';
+
+  @override
+  String get idOriginalType => '原类型';
 
   @override
   String get idPhotoAdd => '添加照片';

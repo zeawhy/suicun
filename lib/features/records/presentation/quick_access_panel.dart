@@ -6,6 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:suicun/features/records/domain/record_model.dart';
 import 'package:suicun/features/records/presentation/id_presentation_page.dart';
 import 'package:suicun/features/records/presentation/template_views/template_detector.dart';
+import 'package:suicun/features/records/domain/id_doc_codec.dart';
+import 'package:suicun/features/records/presentation/id_doc_types.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
 import 'package:suicun/shared/theme/app_theme.dart';
 import 'package:suicun/shared/utils/display_title.dart';
@@ -175,14 +177,15 @@ String getQuickSubtitle(
     RecordDetail record, QuickRecordType type, AppLocalizations l10n) {
   switch (type) {
     case QuickRecordType.idDocument:
-      final idData = parseIdDocumentTemplate(record.body);
-      if (idData?.docNumber != null && idData!.docNumber!.trim().isNotEmpty) {
-        final raw = idData.docNumber!.trim();
+      final idData = decodeIdDocBody(record.body);
+      if (idData?.number != null && idData!.number!.trim().isNotEmpty) {
+        final raw = idData.number!.trim();
         if (raw.length <= 6) return '******';
         return l10n.idNumberLastDigits(raw.substring(raw.length - 4));
       }
-      if (idData?.docType != null && idData!.docType!.trim().isNotEmpty) {
-        return idData.docType!.trim();
+      if (idData != null) {
+        final type = IdDocTypeStorage.fromStorageKey(idData.type);
+        return type.localizedName(l10n);
       }
       return l10n.idDocumentInfo;
 

@@ -60,7 +60,20 @@ class _BackupPageState extends ConsumerState<BackupPage> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.plaintextExportConfirmTitle),
-        content: Text(l10n.plaintextExportConfirm),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l10n.plaintextExportConfirm),
+            const SizedBox(height: 8),
+            Text(
+              l10n.exportPlainNoPhotos,
+              style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(ctx).colorScheme.error,
+                  ),
+            ),
+          ],
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),

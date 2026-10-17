@@ -1,21 +1,24 @@
 // lib/features/records/presentation/template_views/id_document_template_view.dart
-// Reading & editing view for ID document template notes.
+
+// Read-only view for ID document template notes (Round 5 §1.4).
+//
+// Data source is [IdDocData] (structured). Editing is done exclusively via
+// [IdDocForm]; this view has no editing mode, no TextFields, and never
+// writes back to the body.
+
 
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gal/gal.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:suicun/features/records/domain/id_doc_data.dart';
 import 'package:suicun/features/records/domain/record_model.dart';
+import 'package:suicun/features/records/presentation/id_doc_types.dart';
 import 'package:suicun/features/records/presentation/id_presentation_page.dart';
 import 'package:suicun/features/records/presentation/template_views/id_card_view.dart';
-import 'package:suicun/features/records/presentation/template_views/id_doc_type.dart';
 import 'package:suicun/features/records/presentation/template_views/id_photo_storage.dart';
-import 'package:suicun/features/records/presentation/template_views/template_detector.dart';
 import 'package:suicun/features/records/presentation/template_views/template_header_card.dart';
 import 'package:suicun/features/records/presentation/template_views/updated_at_text.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
@@ -31,24 +34,14 @@ class IdDocumentTemplateView extends StatefulWidget {
     required this.categoryRow,
     required this.tagRow,
     this.suggestionRow,
-    this.isEditing = false,
-    this.titleController,
-    this.onTitleChanged,
-    this.onBodyChanged,
-    this.rawBody,
   });
 
-  final IdDocumentTemplateData data;
+  final IdDocData data;
   final RecordDetail? record;
   final VoidCallback onEdit;
   final Widget categoryRow;
   final Widget tagRow;
   final Widget? suggestionRow;
-  final bool isEditing;
-  final TextEditingController? titleController;
-  final ValueChanged<String>? onTitleChanged;
-  final ValueChanged<String>? onBodyChanged;
-  final String? rawBody;
 
   @override
   State<IdDocumentTemplateView> createState() => _IdDocumentTemplateViewState();
@@ -56,15 +49,6 @@ class IdDocumentTemplateView extends StatefulWidget {
 
 class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
   bool _obscureNumber = true;
-  late IdDocTypeKey _selectedDocTypeKey;
-  late final TextEditingController _customDocTypeController;
-  late final TextEditingController _nameController;
-  late final TextEditingController _numberController;
-  late final TextEditingController _validUntilController;
-  late final TextEditingController _notesController;
-
-  String? _photoFrontRel;
-  String? _photoBackRel;
 
   /// Resolved photo files for the read-mode card view (null = no photo).
   File? _cardFrontFile;
@@ -73,32 +57,15 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
   @override
   void initState() {
     super.initState();
-    // Block screenshots on ID detail/edit pages (unless user allowed in settings).
+    // Block screenshots on ID detail pages (unless user allowed in settings).
     SecureFlag.enableIfNeeded();
-    _selectedDocTypeKey = parseDocTypeKey(widget.data.docType);
-    final isCustomOther = _selectedDocTypeKey == IdDocTypeKey.other;
-    final customInitialText = isCustomOther &&
-            widget.data.docType != null &&
-            widget.data.docType != '其他' &&
-            widget.data.docType?.toLowerCase() != 'other'
-        ? widget.data.docType!
-        : '';
-    _customDocTypeController = TextEditingController(text: customInitialText);
-    _nameController = TextEditingController(text: widget.data.name ?? '');
-    _numberController =
-        TextEditingController(text: widget.data.docNumber ?? '');
-    _validUntilController =
-        TextEditingController(text: widget.data.validUntil ?? '');
-    _notesController = TextEditingController(text: widget.data.notes ?? '');
-    _photoFrontRel = widget.data.photoFront;
-    _photoBackRel = widget.data.photoBack;
     _resolveCardPhotos();
   }
 
   /// Resolves the stored relative photo paths to files for [IdCardView].
   Future<void> _resolveCardPhotos() async {
-    final front = await resolveIdPhoto(_photoFrontRel ?? '');
-    final back = await resolveIdPhoto(_photoBackRel ?? '');
+    final front = await resolveIdPhoto(widget.data.photoFront ?? '');
+    final back = await resolveIdPhoto(widget.data.photoBack ?? '');
     if (!mounted) return;
     setState(() {
       _cardFrontFile = front;
@@ -109,43 +76,9 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
   @override
   void didUpdateWidget(IdDocumentTemplateView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.isEditing) {
-      if (widget.data.name != null &&
-          widget.data.name != _nameController.text) {
-        _nameController.text = widget.data.name!;
-      }
-      if (widget.data.docNumber != null &&
-          widget.data.docNumber != _numberController.text) {
-        _numberController.text = widget.data.docNumber!;
-      }
-      if (widget.data.validUntil != null &&
-          widget.data.validUntil != _validUntilController.text) {
-        _validUntilController.text = widget.data.validUntil!;
-      }
-      if (widget.data.notes != null &&
-          widget.data.notes != _notesController.text) {
-        _notesController.text = widget.data.notes!;
-      }
-      if (widget.data.photoFront != _photoFrontRel) {
-        _photoFrontRel = widget.data.photoFront;
-        _resolveCardPhotos();
-      }
-      if (widget.data.photoBack != _photoBackRel) {
-        _photoBackRel = widget.data.photoBack;
-        _resolveCardPhotos();
-      }
-      if (widget.data.docType != null) {
-        final parsed = parseDocTypeKey(widget.data.docType);
-        if (parsed != _selectedDocTypeKey) {
-          _selectedDocTypeKey = parsed;
-          if (parsed == IdDocTypeKey.other) {
-            final dt = widget.data.docType!;
-            if (dt != '其他' && dt.toLowerCase() != 'other') {
-              _customDocTypeController.text = dt;
-            }
-          }
-        }
-      }
+    if (widget.data.photoFront != oldWidget.data.photoFront ||
+        widget.data.photoBack != oldWidget.data.photoBack) {
+      _resolveCardPhotos();
     }
   }
 
@@ -153,63 +86,7 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
   void dispose() {
     // Restore screenshot ability when leaving the ID page.
     SecureFlag.disable();
-    _customDocTypeController.dispose();
-    _nameController.dispose();
-    _numberController.dispose();
-    _validUntilController.dispose();
-    _notesController.dispose();
     super.dispose();
-  }
-
-  void _syncBody() {
-    final raw = widget.rawBody ?? '';
-    final isEnglish = raw.contains('Document type') ||
-        raw.contains('document type') ||
-        raw.contains('Document number') ||
-        raw.contains('document number') ||
-        raw.contains('Valid until') ||
-        raw.contains('ID photo front');
-
-    final String type;
-    if (_selectedDocTypeKey == IdDocTypeKey.other) {
-      final customText = _customDocTypeController.text.trim();
-      if (customText.isNotEmpty) {
-        type = customText;
-      } else {
-        type = isEnglish ? 'Other' : '其他';
-      }
-    } else {
-      type = isEnglish
-          ? kDocTypeEnglishLabels[_selectedDocTypeKey]!
-          : kDocTypeChineseLabels[_selectedDocTypeKey]!;
-    }
-
-    final name = _nameController.text;
-    final number = _numberController.text;
-    final valid = _validUntilController.text;
-    final frontRel = _photoFrontRel ?? '';
-    final backRel = _photoBackRel ?? '';
-    final notes = _notesController.text;
-
-    final String body;
-    if (isEnglish) {
-      body = 'Document type: $type\n'
-          'Name: $name\n'
-          'Document number: $number\n'
-          'Valid until: $valid\n'
-          'ID photo front: $frontRel\n'
-          'ID photo back: $backRel\n'
-          'Notes: $notes';
-    } else {
-      body = '证件类型：$type\n'
-          '姓名：$name\n'
-          '证件号码：$number\n'
-          '有效期至：$valid\n'
-          '证件照片正面：$frontRel\n'
-          '证件照片反面：$backRel\n'
-          '备注：$notes';
-    }
-    widget.onBodyChanged?.call(body);
   }
 
   void _toggleNumberVisibility() {
@@ -238,180 +115,7 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
     }
   }
 
-  Future<void> _pickPhoto({
-    required bool isFront,
-    required ImageSource source,
-  }) async {
-    if (source == ImageSource.camera) {
-      final prefs = await SharedPreferences.getInstance();
-      final shown = prefs.getBool('id_camera_rationale_shown') ?? false;
-      if (!shown) {
-        if (!mounted) return;
-        final l10n = AppLocalizations.of(context);
-        final agreed = await showDialog<bool>(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: Text(l10n.cameraRationaleTitle),
-            content: Text(l10n.cameraRationaleMessage),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(false),
-                child: Text(l10n.cancel),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.of(ctx).pop(true),
-                child: Text(l10n.confirm),
-              ),
-            ],
-          ),
-        );
-        if (agreed != true) return;
-        await prefs.setBool('id_camera_rationale_shown', true);
-      }
-
-      // Request camera permission only when user taps "take photo".
-      // If denied, show explanation with a "go to settings" entry.
-      if (!mounted) return;
-      final cameraStatus = await Permission.camera.request();
-      if (!cameraStatus.isGranted) {
-        if (!mounted) return;
-        final l10n = AppLocalizations.of(context);
-        await showDialog<void>(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: Text(l10n.cameraRationaleTitle),
-            content: Text(l10n.cameraPermissionDenied),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: Text(l10n.cancel),
-              ),
-              FilledButton(
-                onPressed: () {
-                  Navigator.of(ctx).pop();
-                  openAppSettings();
-                },
-                child: Text(l10n.openSettings),
-              ),
-            ],
-          ),
-        );
-        return;
-      }
-    }
-
-    try {
-      final picker = ImagePicker();
-      final picked = await picker.pickImage(source: source);
-      if (picked == null) return;
-
-      final recordId = widget.record?.id ?? 'new';
-      final relPath = await saveIdPhoto(
-        picked,
-        recordId: recordId,
-        isFront: isFront,
-      );
-      if (relPath != null && mounted) {
-        // Delete the old photo file when replacing.
-        final oldRel = isFront ? _photoFrontRel : _photoBackRel;
-        if (oldRel != null && oldRel.isNotEmpty && oldRel != relPath) {
-          await deleteIdPhotoFile(oldRel);
-        }
-        setState(() {
-          if (isFront) {
-            _photoFrontRel = relPath;
-          } else {
-            _photoBackRel = relPath;
-          }
-        });
-        _syncBody();
-      }
-    } catch (_) {
-      // Ignore pick failure or canceled
-    }
-  }
-
-  void _viewPhoto(BuildContext context, File file) {
-    final l10n = AppLocalizations.of(context);
-    showDialog(
-      context: context,
-      builder: (ctx) => Dialog.fullscreen(
-        child: Scaffold(
-          backgroundColor: Colors.black,
-          appBar: AppBar(
-            backgroundColor: Colors.black,
-            foregroundColor: Colors.white,
-            title: Text(l10n.viewPhoto),
-            leading: IconButton(
-              icon: const Icon(Icons.close),
-              onPressed: () => Navigator.of(ctx).pop(),
-            ),
-          ),
-          body: Center(
-            child: InteractiveViewer(
-              panEnabled: true,
-              minScale: 0.5,
-              maxScale: 4.0,
-              child: Image.file(file),
-            ),
-          ),
-          bottomNavigationBar: SafeArea(
-            child: Container(
-              color: Colors.black,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 24,
-                vertical: 12,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildViewerActionButton(
-                    key: const Key('id_photo_share_button'),
-                    icon: Icons.share_outlined,
-                    label: l10n.sharePhoto,
-                    onPressed: () => _sharePhoto(ctx, file),
-                  ),
-                  _buildViewerActionButton(
-                    key: const Key('id_photo_save_button'),
-                    icon: Icons.save_alt_outlined,
-                    label: l10n.saveToGallery,
-                    onPressed: () => _savePhotoToGallery(ctx, file),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildViewerActionButton({
-    required Key key,
-    required IconData icon,
-    required String label,
-    required VoidCallback onPressed,
-  }) {
-    return TextButton.icon(
-      key: key,
-      onPressed: onPressed,
-      icon: Icon(icon, color: Colors.white, size: 22),
-      label: Text(
-        label,
-        style: const TextStyle(color: Colors.white, fontSize: 14),
-      ),
-      style: TextButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        backgroundColor: Colors.white.withValues(alpha: 0.12),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-      ),
-    );
-  }
-
-  /// Shares the ID photo via the system share sheet (no decryption needed;
-  /// photos are stored unencrypted in the app's private directory).
+  /// Shares the ID photo via the system share sheet.
   Future<void> _sharePhoto(BuildContext context, File file) async {
     final shareText = AppLocalizations.of(context).sharePhoto;
     try {
@@ -426,77 +130,31 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
     }
   }
 
-  /// Saves the ID photo to the system gallery (Android 10+ scoped storage
-  /// via MediaStore; requests READ_MEDIA_IMAGES on Android 13+).
+  /// Saves the ID photo to the system gallery.
   Future<void> _savePhotoToGallery(BuildContext context, File file) async {
     final l10n = AppLocalizations.of(context);
     final messenger = ScaffoldMessenger.of(context);
-
-    // Request gallery permission (READ_MEDIA_IMAGES on Android 13+).
-    var status = await Permission.photos.status;
-    if (!context.mounted) return;
-    if (!status.isGranted) {
-      final agreed = await showDialog<bool>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: Text(l10n.galleryPermissionTitle),
-          content: Text(l10n.galleryPermissionMessage),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(false),
-              child: Text(l10n.cancel),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(ctx).pop(true),
-              child: Text(l10n.confirm),
-            ),
-          ],
-        ),
-      );
-      if (agreed != true || !context.mounted) return;
-      status = await Permission.photos.request();
-    }
-    if (!status.isGranted || !context.mounted) return;
-
     try {
-      await Gal.putImage(file.path, album: AppLocalizations.of(context).appName);
+      await Gal.putImage(file.path, album: l10n.appName);
       messenger.hideCurrentSnackBar();
       messenger.showSnackBar(
-        SnackBar(
-          content: Text(l10n.savedToGallery),
-          duration: const Duration(seconds: 2),
-        ),
+        SnackBar(content: Text(l10n.savedToGallery)),
       );
     } catch (_) {
       messenger.hideCurrentSnackBar();
       messenger.showSnackBar(
-        SnackBar(
-          content: Text(l10n.savePhotoFailed),
-          duration: const Duration(seconds: 2),
-        ),
+        SnackBar(content: Text(l10n.savePhotoFailed)),
       );
     }
   }
 
-  String _getDocTypeDisplay(AppLocalizations l10n, IdDocTypeKey key) {
-    switch (key) {
-      case IdDocTypeKey.idCard:
-        return l10n.docTypeIdCard;
-      case IdDocTypeKey.driverLicense:
-        return l10n.docTypeDriverLicense;
-      case IdDocTypeKey.vehicleLicense:
-        return l10n.docTypeVehicleLicense;
-      case IdDocTypeKey.passport:
-        return l10n.docTypePassport;
-      case IdDocTypeKey.hmtPermit:
-        return l10n.docTypeHmtPermit;
-      case IdDocTypeKey.socialCard:
-        return l10n.docTypeSocialCard;
-      case IdDocTypeKey.propertyCert:
-        return l10n.docTypePropertyCert;
-      case IdDocTypeKey.other:
-        return l10n.docTypeOther;
-    }
+  String _formatValidUntil(AppLocalizations l10n) {
+    final data = widget.data;
+    if (data.noExpiry) return l10n.idNoExpiry;
+    final d = data.expiryDate;
+    if (d == null) return l10n.notFilled;
+    return DateFormat.yMMMd(Localizations.localeOf(context).languageCode)
+        .format(d);
   }
 
   @override
@@ -505,10 +163,8 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    final name = widget.data.name;
-    final docNumber = widget.data.docNumber;
-    final validUntil = widget.data.validUntil;
-    final notes = widget.data.notes;
+    final data = widget.data;
+    final type = IdDocTypeStorage.fromStorageKey(data.type);
 
     final title = widget.record != null
         ? displayTitleFor(widget.record!,
@@ -517,70 +173,45 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
             context: context)
         : l10n.untitledRecord;
 
-    final docTypeKey = parseDocTypeKey(widget.data.docType);
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         // 1. Header card
         TemplateHeaderCard(
           title: title,
-          icon: Icons.badge_outlined,
+          icon: type.icon,
           onEdit: widget.onEdit,
-          titleController: widget.titleController,
-          onTitleChanged: widget.onTitleChanged,
         ),
         const SizedBox(height: 16),
 
-        // 2. Read mode: ID card view (card + hint + present button inside).
-        if (!widget.isEditing) ...[
-          IdCardView(
-            docTypeKey: docTypeKey,
-            docTypeLabel:
-                localizedDocType(context, docTypeKey, widget.data.docType),
-            name: name,
-            docNumber: docNumber,
-            validUntil: validUntil,
-            frontPhoto: _cardFrontFile,
-            backPhoto: _cardBackFile,
-            onPresent: () {
-              final rec = widget.record;
-              if (rec != null) IdPresentationPage.show(context, rec);
-            },
-            onSharePhoto: _sharePhoto,
-            onSavePhoto: _savePhotoToGallery,
-          ),
-          const SizedBox(height: 16),
-        ],
-
-        // 3. Field card (Surface container, rounded 16; doc-type row is
-        // edit-mode only — the card already shows the type in read mode)
-        _buildFieldsCard(
-          context,
-          name: name,
-          docNumber: docNumber,
-          validUntil: validUntil,
-          theme: theme,
-          colorScheme: colorScheme,
-          l10n: l10n,
+        // 2. ID card view
+        IdCardView(
+          docType: type,
+          docTypeLabel: type.localizedName(l10n),
+          name: data.name,
+          docNumber: data.number,
+          validUntil: _formatValidUntil(l10n),
+          frontPhoto: _cardFrontFile,
+          backPhoto: _cardBackFile,
+          issuingCountry: data.issuingCountry,
+          expiryDate: data.expiryDate,
+          noExpiry: data.noExpiry,
+          onPresent: () {
+            final rec = widget.record;
+            if (rec != null) IdPresentationPage.show(context, rec);
+          },
+          onSharePhoto: _sharePhoto,
+          onSavePhoto: _savePhotoToGallery,
         ),
+        const SizedBox(height: 16),
 
-        // 4. Photo card (front & back): edit mode only. In read mode the
-        // photos live on the card faces; share/save moved to the card ⋯ menu.
-        if (widget.isEditing) ...[
-          const SizedBox(height: 16),
-          _buildPhotosCard(
-            context,
-            theme: theme,
-            colorScheme: colorScheme,
-            l10n: l10n,
-          ),
-        ],
+        // 3. Field card (read-only)
+        _buildFieldsCard(context, theme, colorScheme, l10n),
 
-        // 4. Notes card (independent, hidden if empty when reading)
-        if (widget.isEditing || (notes != null && notes.isNotEmpty)) ...[
+        // 4. Notes card (hidden if empty)
+        if (data.note != null && data.note!.isNotEmpty) ...[
           const SizedBox(height: 16),
-          _buildNotesCard(context, notes ?? '', theme, colorScheme, l10n),
+          _buildNotesCard(context, data.note!, theme, colorScheme, l10n),
         ],
 
         const SizedBox(height: 16),
@@ -609,51 +240,43 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
           ),
         ),
 
-        // 6. Updated at relative time or auto-save hint
-        if (widget.isEditing)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(4, 10, 4, 14),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.cloud_done_outlined,
-                  size: 14,
-                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
-                ),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    l10n.autoSaveHint,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color:
-                          colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          )
-        else if (widget.record != null)
+        // 6. Updated at
+        if (widget.record != null)
           UpdatedAtText(dateTime: widget.record!.updatedAt),
       ],
     );
   }
 
   Widget _buildFieldsCard(
-    BuildContext context, {
-    required String? name,
-    required String? docNumber,
-    required String? validUntil,
-    required ThemeData theme,
-    required ColorScheme colorScheme,
-    required AppLocalizations l10n,
-  }) {
+    BuildContext context,
+    ThemeData theme,
+    ColorScheme colorScheme,
+    AppLocalizations l10n,
+  ) {
+    final data = widget.data;
     final divider = Divider(
       height: 1,
       indent: 16,
       endIndent: 16,
       color: colorScheme.outlineVariant.withValues(alpha: 0.5),
     );
+
+    Widget fieldValue(String? value) {
+      if (value != null && value.isNotEmpty) {
+        return SelectableText(
+          value,
+          style: theme.textTheme.bodyLarge?.copyWith(
+            color: colorScheme.onSurface,
+          ),
+        );
+      }
+      return Text(
+        l10n.notFilled,
+        style: theme.textTheme.bodyLarge?.copyWith(
+          color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+        ),
+      );
+    }
 
     return Container(
       decoration: BoxDecoration(
@@ -666,79 +289,7 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Field 1: Document Type (edit mode only; read mode shows it on
-          // the ID card).
-          if (widget.isEditing) ...[
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l10n.fieldDocType,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  DropdownButtonFormField<IdDocTypeKey>(
-                    key: const Key('id_doc_type_dropdown'),
-                    initialValue: _selectedDocTypeKey,
-                    isDense: true,
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      enabledBorder: InputBorder.none,
-                      focusedBorder: InputBorder.none,
-                      contentPadding: EdgeInsets.zero,
-                      filled: false,
-                    ),
-                    items: IdDocTypeKey.values.map((key) {
-                      return DropdownMenuItem(
-                        value: key,
-                        child: Text(_getDocTypeDisplay(l10n, key)),
-                      );
-                    }).toList(),
-                    onChanged: (newKey) {
-                      if (newKey != null) {
-                        setState(() {
-                          _selectedDocTypeKey = newKey;
-                        });
-                        _syncBody();
-                      }
-                    },
-                  ),
-                  if (_selectedDocTypeKey == IdDocTypeKey.other) ...[
-                    const SizedBox(height: 6),
-                    TextField(
-                      key: const Key('id_doc_type_custom_field'),
-                      controller: _customDocTypeController,
-                      decoration: InputDecoration(
-                        hintText: l10n.docTypeCustomHint,
-                        hintStyle: TextStyle(
-                          color: colorScheme.onSurfaceVariant
-                              .withValues(alpha: 0.5),
-                        ),
-                        border: InputBorder.none,
-                        enabledBorder: InputBorder.none,
-                        focusedBorder: InputBorder.none,
-                        filled: false,
-                        isDense: true,
-                        contentPadding: EdgeInsets.zero,
-                      ),
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        color: colorScheme.onSurface,
-                      ),
-                      textInputAction: TextInputAction.next,
-                      onChanged: (_) => _syncBody(),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            divider,
-          ],
-
-          // Field 2: Name
+          // Name
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Column(
@@ -751,50 +302,13 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
                   ),
                 ),
                 const SizedBox(height: 4),
-                if (widget.isEditing)
-                  TextField(
-                    key: const Key('id_doc_name_field'),
-                    controller: _nameController,
-                    decoration: InputDecoration(
-                      hintText: l10n.notFilled,
-                      hintStyle: TextStyle(
-                        color: colorScheme.onSurfaceVariant
-                            .withValues(alpha: 0.5),
-                      ),
-                      border: InputBorder.none,
-                      enabledBorder: InputBorder.none,
-                      focusedBorder: InputBorder.none,
-                      filled: false,
-                      isDense: true,
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color: colorScheme.onSurface,
-                    ),
-                    textInputAction: TextInputAction.next,
-                    onChanged: (_) => _syncBody(),
-                  )
-                else if (name != null && name.isNotEmpty)
-                  SelectableText(
-                    name,
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color: colorScheme.onSurface,
-                    ),
-                  )
-                else
-                  Text(
-                    l10n.notFilled,
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color:
-                          colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
-                    ),
-                  ),
+                fieldValue(data.name),
               ],
             ),
           ),
           divider,
 
-          // Field 3: Document Number (Masked by default)
+          // Document Number (masked by default)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Row(
@@ -810,31 +324,7 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
                         ),
                       ),
                       const SizedBox(height: 4),
-                      if (widget.isEditing)
-                        TextField(
-                          key: const Key('id_doc_number_field'),
-                          controller: _numberController,
-                          obscureText: _obscureNumber,
-                          decoration: InputDecoration(
-                            hintText: l10n.notFilled,
-                            hintStyle: TextStyle(
-                              color: colorScheme.onSurfaceVariant
-                                  .withValues(alpha: 0.5),
-                            ),
-                            border: InputBorder.none,
-                            enabledBorder: InputBorder.none,
-                            focusedBorder: InputBorder.none,
-                            filled: false,
-                            isDense: true,
-                            contentPadding: EdgeInsets.zero,
-                          ),
-                          style: theme.textTheme.bodyLarge?.copyWith(
-                            color: colorScheme.onSurface,
-                          ),
-                          textInputAction: TextInputAction.next,
-                          onChanged: (_) => _syncBody(),
-                        )
-                      else if (docNumber != null && docNumber.isNotEmpty)
+                      if (data.number != null && data.number!.isNotEmpty)
                         _obscureNumber
                             ? Text(
                                 '••••••',
@@ -846,7 +336,7 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
                                 ),
                               )
                             : SelectableText(
-                                docNumber,
+                                data.number!,
                                 key: const Key('id_doc_number_visible_text'),
                                 style: theme.textTheme.bodyLarge?.copyWith(
                                   color: colorScheme.onSurface,
@@ -863,22 +353,7 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
                     ],
                   ),
                 ),
-                if (widget.isEditing)
-                  IconButton(
-                    key: const Key('id_doc_number_toggle_obscure'),
-                    icon: Icon(
-                      _obscureNumber
-                          ? Icons.visibility_outlined
-                          : Icons.visibility_off_outlined,
-                      size: 20,
-                    ),
-                    tooltip: _obscureNumber
-                        ? l10n.showPassword
-                        : l10n.hidePassword,
-                    color: colorScheme.onSurfaceVariant,
-                    onPressed: _toggleNumberVisibility,
-                  )
-                else if (docNumber != null && docNumber.isNotEmpty) ...[
+                if (data.number != null && data.number!.isNotEmpty) ...[
                   IconButton(
                     key: const Key('id_doc_number_toggle_obscure'),
                     icon: Icon(
@@ -899,7 +374,7 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
                     tooltip: l10n.copy,
                     color: colorScheme.onSurfaceVariant,
                     onPressed: () =>
-                        _copyText(context, docNumber, l10n.copied),
+                        _copyText(context, data.number, l10n.copied),
                   ),
                 ],
               ],
@@ -907,7 +382,7 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
           ),
           divider,
 
-          // Field 4: Valid Until
+          // Valid Until
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Column(
@@ -920,348 +395,16 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
                   ),
                 ),
                 const SizedBox(height: 4),
-                if (widget.isEditing)
-                  TextField(
-                    key: const Key('id_doc_valid_until_field'),
-                    controller: _validUntilController,
-                    decoration: InputDecoration(
-                      hintText: l10n.notFilled,
-                      hintStyle: TextStyle(
-                        color: colorScheme.onSurfaceVariant
-                            .withValues(alpha: 0.5),
-                      ),
-                      border: InputBorder.none,
-                      enabledBorder: InputBorder.none,
-                      focusedBorder: InputBorder.none,
-                      filled: false,
-                      isDense: true,
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color: colorScheme.onSurface,
-                    ),
-                    textInputAction: TextInputAction.done,
-                    onChanged: (_) => _syncBody(),
-                  )
-                else if (validUntil != null && validUntil.isNotEmpty)
-                  SelectableText(
-                    validUntil,
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color: colorScheme.onSurface,
-                    ),
-                  )
-                else
-                  Text(
-                    l10n.notFilled,
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color:
-                          colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPhotosCard(
-    BuildContext context, {
-    required ThemeData theme,
-    required ColorScheme colorScheme,
-    required AppLocalizations l10n,
-  }) {
-    final divider = Divider(
-      height: 1,
-      indent: 16,
-      endIndent: 16,
-      color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-    );
-
-    return Container(
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.6),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Front photo section
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
                 Text(
-                  l10n.fieldPhotoFront,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
+                  _formatValidUntil(l10n),
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: colorScheme.onSurface,
                   ),
-                ),
-                const SizedBox(height: 8),
-                _buildPhotoSlot(
-                  context,
-                  isFront: true,
-                  relPath: _photoFrontRel,
-                  theme: theme,
-                  colorScheme: colorScheme,
-                  l10n: l10n,
-                ),
-              ],
-            ),
-          ),
-          divider,
-          // Back photo section
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.fieldPhotoBack,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                _buildPhotoSlot(
-                  context,
-                  isFront: false,
-                  relPath: _photoBackRel,
-                  theme: theme,
-                  colorScheme: colorScheme,
-                  l10n: l10n,
                 ),
               ],
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildPhotoSlot(
-    BuildContext context, {
-    required bool isFront,
-    required String? relPath,
-    required ThemeData theme,
-    required ColorScheme colorScheme,
-    required AppLocalizations l10n,
-  }) {
-    final hasPhoto = relPath != null && relPath.isNotEmpty;
-
-    if (hasPhoto) {
-      return FutureBuilder<File?>(
-        future: resolveIdPhoto(relPath),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Container(
-              height: 140,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: colorScheme.surfaceContainer,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Center(
-                child: SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-              ),
-            );
-          }
-
-          final file = snapshot.data;
-          if (file != null) {
-            return GestureDetector(
-              onTap: () => _viewPhoto(context, file),
-              child: Stack(
-                children: [
-                  Container(
-                    height: 160,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: colorScheme.outlineVariant
-                            .withValues(alpha: 0.5),
-                      ),
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: Image.file(
-                      file,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Center(
-                        child: Icon(
-                          Icons.broken_image_outlined,
-                          color: colorScheme.outline,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 8,
-                    right: 8,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.5),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: const Icon(
-                        Icons.zoom_in,
-                        color: Colors.white,
-                        size: 18,
-                      ),
-                    ),
-                  ),
-                  if (widget.isEditing)
-                    Positioned(
-                      top: 6,
-                      right: 6,
-                      child: Material(
-                        color: Colors.black.withValues(alpha: 0.6),
-                        shape: const CircleBorder(),
-                        child: InkWell(
-                          customBorder: const CircleBorder(),
-                          onTap: () {
-                            setState(() {
-                              if (isFront) {
-                                _photoFrontRel = null;
-                              } else {
-                                _photoBackRel = null;
-                              }
-                            });
-                            _syncBody();
-                          },
-                          child: const Padding(
-                            padding: EdgeInsets.all(4),
-                            child: Icon(
-                              Icons.close,
-                              color: Colors.white,
-                              size: 16,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            );
-          }
-
-          // File does not exist on disk
-          return Container(
-            height: 80,
-            width: double.infinity,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: colorScheme.surfaceContainer,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.broken_image_outlined, color: colorScheme.outline),
-                const SizedBox(width: 8),
-                Text(
-                  l10n.notFilled,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
-                  ),
-                ),
-                if (widget.isEditing) ...[
-                  const SizedBox(width: 8),
-                  IconButton(
-                    icon: const Icon(Icons.close, size: 16),
-                    onPressed: () {
-                      setState(() {
-                        if (isFront) {
-                          _photoFrontRel = null;
-                        } else {
-                          _photoBackRel = null;
-                        }
-                      });
-                      _syncBody();
-                    },
-                  ),
-                ],
-              ],
-            ),
-          );
-        },
-      );
-    }
-
-    // No photo
-    if (widget.isEditing) {
-      return Container(
-        height: 110,
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: colorScheme.surfaceContainer,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: colorScheme.outlineVariant.withValues(alpha: 0.4),
-          ),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.add_photo_alternate_outlined,
-              size: 26,
-              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                OutlinedButton.icon(
-                  key: Key(isFront
-                      ? 'id_photo_front_camera_button'
-                      : 'id_photo_back_camera_button'),
-                  onPressed: () => _pickPhoto(
-                    isFront: isFront,
-                    source: ImageSource.camera,
-                  ),
-                  icon: const Icon(Icons.camera_alt_outlined, size: 16),
-                  label: Text(l10n.takePhoto),
-                  style: OutlinedButton.styleFrom(
-                    visualDensity: VisualDensity.compact,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                OutlinedButton.icon(
-                  key: Key(isFront
-                      ? 'id_photo_front_gallery_button'
-                      : 'id_photo_back_gallery_button'),
-                  onPressed: () => _pickPhoto(
-                    isFront: isFront,
-                    source: ImageSource.gallery,
-                  ),
-                  icon: const Icon(Icons.photo_library_outlined, size: 16),
-                  label: Text(l10n.chooseFromGallery),
-                  style: OutlinedButton.styleFrom(
-                    visualDensity: VisualDensity.compact,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      );
-    }
-
-    return Text(
-      l10n.notFilled,
-      style: theme.textTheme.bodyLarge?.copyWith(
-        color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
       ),
     );
   }
@@ -1292,39 +435,13 @@ class _IdDocumentTemplateViewState extends State<IdDocumentTemplateView> {
             ),
           ),
           const SizedBox(height: 6),
-          if (widget.isEditing)
-            TextField(
-              key: const Key('id_doc_notes_field'),
-              controller: _notesController,
-              minLines: 2,
-              maxLines: null,
-              decoration: InputDecoration(
-                hintText: l10n.notFilled,
-                hintStyle: TextStyle(
-                  color: colorScheme.onSurfaceVariant
-                      .withValues(alpha: 0.5),
-                ),
-                border: InputBorder.none,
-                enabledBorder: InputBorder.none,
-                focusedBorder: InputBorder.none,
-                filled: false,
-                isDense: true,
-                contentPadding: EdgeInsets.zero,
-              ),
-              style: theme.textTheme.bodyLarge?.copyWith(
-                color: colorScheme.onSurface,
-                height: 1.5,
-              ),
-              onChanged: (_) => _syncBody(),
-            )
-          else
-            SelectableText(
-              notes,
-              style: theme.textTheme.bodyLarge?.copyWith(
-                color: colorScheme.onSurface,
-                height: 1.5,
-              ),
+          SelectableText(
+            notes,
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: colorScheme.onSurface,
+              height: 1.5,
             ),
+          ),
         ],
       ),
     );
