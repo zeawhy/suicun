@@ -97,7 +97,7 @@ class _PasswordTemplateViewState extends State<PasswordTemplateView> {
         raw.contains('website') ||
         raw.contains('Password:') ||
         raw.contains('Username:');
-    final String body;
+    String body;
     if (isEnglish) {
       body = 'Website/App: ${_websiteController.text}\n'
           'Username: ${_usernameController.text}\n'
@@ -108,6 +108,12 @@ class _PasswordTemplateViewState extends State<PasswordTemplateView> {
           '用户名：${_usernameController.text}\n'
           '密码：${_passwordController.text}\n'
           '备注：${_notesController.text}';
+    }
+    // Round 9: preserve user-added custom lines verbatim so editing through
+    // the template UI never drops them.
+    final extra = widget.data.extraLines;
+    if (extra.isNotEmpty) {
+      body = '$body\n${extra.join('\n')}';
     }
     widget.onBodyChanged?.call(body);
   }

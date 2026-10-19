@@ -102,7 +102,7 @@ class _ContactTemplateViewState extends State<ContactTemplateView> {
         raw.contains('name') ||
         raw.contains('Phone:') ||
         raw.contains('Email:');
-    final String body;
+    String body;
     if (isEnglish) {
       body = 'Name: ${_nameController.text}\n'
           'Phone: ${_phoneController.text}\n'
@@ -115,6 +115,12 @@ class _ContactTemplateViewState extends State<ContactTemplateView> {
           '邮箱：${_emailController.text}\n'
           '地址：${_addressController.text}\n'
           '备注：${_notesController.text}';
+    }
+    // Round 9: preserve user-added custom lines verbatim so editing through
+    // the template UI never drops them.
+    final extra = widget.data.extraLines;
+    if (extra.isNotEmpty) {
+      body = '$body\n${extra.join('\n')}';
     }
     widget.onBodyChanged?.call(body);
   }

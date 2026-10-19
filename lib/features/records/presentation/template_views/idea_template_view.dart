@@ -90,7 +90,7 @@ class _IdeaTemplateViewState extends State<IdeaTemplateView> {
         raw.contains('idea') ||
         raw.contains('Source:') ||
         raw.contains('Next action:');
-    final String body;
+    String body;
     if (isEnglish) {
       body = 'Idea: ${_ideaController.text}\n'
           'Source: ${_sourceController.text}\n'
@@ -99,6 +99,12 @@ class _IdeaTemplateViewState extends State<IdeaTemplateView> {
       body = '灵感：${_ideaController.text}\n'
           '来源：${_sourceController.text}\n'
           '下一步行动：${_nextActionController.text}';
+    }
+    // Round 9: preserve user-added custom lines verbatim so editing through
+    // the template UI never drops them.
+    final extra = widget.data.extraLines;
+    if (extra.isNotEmpty) {
+      body = '$body\n${extra.join('\n')}';
     }
     widget.onBodyChanged?.call(body);
   }
