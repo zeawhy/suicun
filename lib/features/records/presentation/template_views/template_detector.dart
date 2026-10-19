@@ -10,66 +10,60 @@ class PasswordTemplateData {
     this.username,
     this.password,
     this.notes,
+    this.extraLines = const [],
   });
 
   final String? website;
   final String? username;
   final String? password;
   final String? notes;
+
+  /// Custom `label: value` lines with labels outside the known template set,
+  /// preserved verbatim so the template UI never drops user-added fields
+  /// when re-saving (Round 9: tolerant parsing).
+  final List<String> extraLines;
 }
-
-/// Normalized password template field types.
-enum PasswordFieldType {
-  website,
-  username,
-  password,
-  notes,
-}
-
-/// Map of allowed label names (trimmed, lowercased for Latin) to their field types.
-const Map<String, PasswordFieldType> _kPasswordLabels = {
-  // Chinese labels
-  '网站/应用': PasswordFieldType.website,
-  '用户名': PasswordFieldType.username,
-  '密码': PasswordFieldType.password,
-  '备注': PasswordFieldType.notes,
-
-  // English labels
-  'website/app': PasswordFieldType.website,
-  'website': PasswordFieldType.website,
-  'app': PasswordFieldType.website,
-  'username': PasswordFieldType.username,
-  'password': PasswordFieldType.password,
-  'notes': PasswordFieldType.notes,
-};
 
 final _colonRegExp = RegExp(r'[:：]');
 
-/// Detects if [body] matches the password template structure.
+/// Shared line engine for `label: value` templates (password / idea / contact).
 ///
-/// Rule:
-/// 1. Body must not be empty.
-/// 2. Every non-empty line must match `label: value` (where colon can be `:` or `：`).
-/// 3. Every label must belong to the password template label set:
-///    {网站/应用, 用户名, 密码, 备注, Website/App, Website, App, Username, Password, Notes}.
-/// 4. At least one line must have a label for `密码` / `Password`.
-bool isPasswordTemplate(String body) {
-  return parsePasswordTemplate(body) != null;
-}
-
-/// Parses [body] into [PasswordTemplateData] if it matches the password template pattern.
-/// Returns `null` if [body] does not match the password template rules.
-PasswordTemplateData? parsePasswordTemplate(String body) {
+/// Round 9: tolerant recognition. Real-world template bodies often deviate
+/// slightly from the canonical generated text (user-added custom fields,
+/// multi-line notes/addresses, address-only contacts). The strict "every line
+/// must carry a known label" rule made such records fall back to the raw-text
+/// view on open, and worse, made [record_repository]'s template-loss guard
+/// reject legitimate edits with a save error.
+///
+/// Rules:
+/// 1. [body] must not be empty.
+/// 2. The first non-empty line must be a `label: value` line (colon `:`/`：`).
+///    A body starting with freeform text never matches.
+/// 3. A `label: value` line whose label is in [labelToKey] assigns the field;
+///    any other labeled line is tolerated and collected into [extraLines]
+///    (preserved verbatim by the template views on re-save).
+/// 4. A non-empty line without a colon continues the previous field's value
+///    only when that field is in [continuableKeys] (free-text fields such as
+///    notes/address). Otherwise the body does not match. This keeps genuine
+///    corruption (e.g. a mangled `密码 secret123` label after 用户名) rejected.
+/// 5. At least one field in [anchorKeys] must be present (label seen, value
+///    may be empty).
+///
+/// Returns the field-key -> value map, or `null` when the body does not match.
+Map<String, String?>? _parseLabelValueTemplate({
+  required String body,
+  required Map<String, String> labelToKey,
+  required Set<String> anchorKeys,
+  required Set<String> continuableKeys,
+  required List<String> extraLines,
+}) {
   if (body.trim().isEmpty) return null;
 
   final lines = body.replaceAll('\r\n', '\n').split('\n');
+  final fields = <String, String?>{};
   var hasNonEmptyLine = false;
-  var hasPassword = false;
-
-  String? website;
-  String? username;
-  String? password;
-  String? notes;
+  // Key of the most recent *known* labeled line; used for continuations.
+  String? lastKey;
 
   for (final rawLine in lines) {
     final line = rawLine.trim();
@@ -80,41 +74,82 @@ PasswordTemplateData? parsePasswordTemplate(String body) {
 
     final match = _colonRegExp.firstMatch(line);
     if (match == null) {
-      return null;
+      // Colon-less line: continuation only after a continuable field.
+      if (lastKey == null || !continuableKeys.contains(lastKey)) {
+        return null;
+      }
+      final prev = fields[lastKey] ?? '';
+      fields[lastKey] = prev.isEmpty ? line : '$prev\n$line';
+      continue;
     }
 
     final rawLabel = line.substring(0, match.start).trim();
     final value = line.substring(match.end).trim();
 
-    // Check label in allowed set
     final lookupKey = rawLabel.toLowerCase();
-    final fieldType = _kPasswordLabels[rawLabel] ?? _kPasswordLabels[lookupKey];
-    if (fieldType == null) {
-      return null;
+    final key = labelToKey[rawLabel] ?? labelToKey[lookupKey];
+    if (key == null) {
+      // Unknown labeled line: tolerated custom field, preserved verbatim.
+      // A colon-less line after this is NOT treated as a continuation.
+      extraLines.add(line);
+      lastKey = null;
+      continue;
     }
 
-    switch (fieldType) {
-      case PasswordFieldType.website:
-        website = value;
-      case PasswordFieldType.username:
-        username = value;
-      case PasswordFieldType.password:
-        password = value;
-        hasPassword = true;
-      case PasswordFieldType.notes:
-        notes = value;
-    }
+    fields[key] = value;
+    lastKey = key;
   }
 
-  if (!hasNonEmptyLine || !hasPassword) {
-    return null;
-  }
+  if (!hasNonEmptyLine) return null;
+  if (!anchorKeys.any(fields.containsKey)) return null;
+  return fields;
+}
+
+/// Detects if [body] matches the password template structure.
+///
+/// Rule (Round 9: tolerant):
+/// 1. Body must not be empty; the first non-empty line must be `label: value`.
+/// 2. Known labels assign fields; unknown `label: value` lines are tolerated
+///    as user-added custom fields (preserved on re-save).
+/// 3. A colon-less line continues the previous field's value only after the
+///    备注/Notes field; otherwise the body does not match.
+/// 4. At least one line must carry the `密码` / `Password` label.
+bool isPasswordTemplate(String body) {
+  return parsePasswordTemplate(body) != null;
+}
+
+/// Parses [body] into [PasswordTemplateData] if it matches the password template pattern.
+/// Returns `null` if [body] does not match the password template rules.
+PasswordTemplateData? parsePasswordTemplate(String body) {
+  final extraLines = <String>[];
+  final fields = _parseLabelValueTemplate(
+    body: body,
+    labelToKey: const {
+      // Chinese labels
+      '网站/应用': 'website',
+      '用户名': 'username',
+      '密码': 'password',
+      '备注': 'notes',
+      // English labels
+      'website/app': 'website',
+      'website': 'website',
+      'app': 'website',
+      'username': 'username',
+      'password': 'password',
+      'notes': 'notes',
+    },
+    anchorKeys: const {'password'},
+    continuableKeys: const {'notes'},
+    extraLines: extraLines,
+  );
+  if (fields == null) return null;
 
   return PasswordTemplateData(
-    website: website,
-    username: username,
-    password: password,
-    notes: notes,
+    website: fields['website'],
+    username: fields['username'],
+    password: fields['password'],
+    notes: fields['notes'],
+    extraLines: extraLines,
   );
 }
 
@@ -124,41 +159,28 @@ class IdeaTemplateData {
     this.idea,
     this.source,
     this.nextAction,
+    this.extraLines = const [],
   });
 
   final String? idea;
   final String? source;
   final String? nextAction;
+
+  /// Custom `label: value` lines with labels outside the known template set,
+  /// preserved verbatim so the template UI never drops user-added fields
+  /// when re-saving (Round 9: tolerant parsing).
+  final List<String> extraLines;
 }
-
-/// Normalized idea template field types.
-enum IdeaFieldType {
-  idea,
-  source,
-  nextAction,
-}
-
-/// Map of allowed label names (trimmed, lowercased for Latin) to their field types.
-const Map<String, IdeaFieldType> _kIdeaLabels = {
-  // Chinese labels
-  '灵感': IdeaFieldType.idea,
-  '来源': IdeaFieldType.source,
-  '下一步行动': IdeaFieldType.nextAction,
-
-  // English labels
-  'idea': IdeaFieldType.idea,
-  'source': IdeaFieldType.source,
-  'next action': IdeaFieldType.nextAction,
-};
 
 /// Detects if [body] matches the idea template structure.
 ///
-/// Rule:
-/// 1. Body must not be empty.
-/// 2. Every non-empty line must match `label: value` (where colon can be `:` or `：`).
-/// 3. Every label must belong to the idea template label set:
-///    {灵感, 来源, 下一步行动, Idea, Source, Next action}.
-/// 4. At least one line must have a label for `灵感` / `Idea`.
+/// Rule (Round 9: tolerant):
+/// 1. Body must not be empty; the first non-empty line must be `label: value`.
+/// 2. Known labels assign fields; unknown `label: value` lines are tolerated
+///    as user-added custom fields (preserved on re-save).
+/// 3. A colon-less line never continues a field here: it rejects the body
+///    (keeps mangled labels like `来源 test source` rejected).
+/// 4. At least one line must carry the `灵感` / `Idea` label.
 bool isIdeaTemplate(String body) {
   return parseIdeaTemplate(body) != null;
 }
@@ -166,57 +188,32 @@ bool isIdeaTemplate(String body) {
 /// Parses [body] into [IdeaTemplateData] if it matches the idea template pattern.
 /// Returns `null` if [body] does not match the idea template rules.
 IdeaTemplateData? parseIdeaTemplate(String body) {
-  if (body.trim().isEmpty) return null;
-
-  final lines = body.replaceAll('\r\n', '\n').split('\n');
-  var hasNonEmptyLine = false;
-  var hasIdea = false;
-
-  String? idea;
-  String? source;
-  String? nextAction;
-
-  for (final rawLine in lines) {
-    final line = rawLine.trim();
-    if (line.isEmpty) {
-      continue;
-    }
-    hasNonEmptyLine = true;
-
-    final match = _colonRegExp.firstMatch(line);
-    if (match == null) {
-      return null;
-    }
-
-    final rawLabel = line.substring(0, match.start).trim();
-    final value = line.substring(match.end).trim();
-
-    // Check label in allowed set
-    final lookupKey = rawLabel.toLowerCase();
-    final fieldType = _kIdeaLabels[rawLabel] ?? _kIdeaLabels[lookupKey];
-    if (fieldType == null) {
-      return null;
-    }
-
-    switch (fieldType) {
-      case IdeaFieldType.idea:
-        idea = value;
-        hasIdea = true;
-      case IdeaFieldType.source:
-        source = value;
-      case IdeaFieldType.nextAction:
-        nextAction = value;
-    }
-  }
-
-  if (!hasNonEmptyLine || !hasIdea) {
-    return null;
-  }
+  final extraLines = <String>[];
+  final fields = _parseLabelValueTemplate(
+    body: body,
+    labelToKey: const {
+      // Chinese labels
+      '灵感': 'idea',
+      '来源': 'source',
+      '下一步行动': 'nextAction',
+      // English labels
+      'idea': 'idea',
+      'source': 'source',
+      'next action': 'nextAction',
+    },
+    anchorKeys: const {'idea'},
+    // No continuable fields: a colon-less line after any idea field
+    // (e.g. a mangled `来源 test source`) must keep failing.
+    continuableKeys: const {},
+    extraLines: extraLines,
+  );
+  if (fields == null) return null;
 
   return IdeaTemplateData(
-    idea: idea,
-    source: source,
-    nextAction: nextAction,
+    idea: fields['idea'],
+    source: fields['source'],
+    nextAction: fields['nextAction'],
+    extraLines: extraLines,
   );
 }
 
@@ -297,6 +294,7 @@ class ContactTemplateData {
     this.email,
     this.address,
     this.notes,
+    this.extraLines = const [],
   });
 
   final String? name;
@@ -304,43 +302,24 @@ class ContactTemplateData {
   final String? email;
   final String? address;
   final String? notes;
+
+  /// Custom `label: value` lines with labels outside the known template set,
+  /// preserved verbatim so the template UI never drops user-added fields
+  /// when re-saving (Round 9: tolerant parsing).
+  final List<String> extraLines;
 }
-
-/// Normalized contact template field types.
-enum ContactFieldType {
-  name,
-  phone,
-  email,
-  address,
-  notes,
-}
-
-/// Map of allowed label names (trimmed, lowercased for Latin) to their field types.
-const Map<String, ContactFieldType> _kContactLabels = {
-  // Chinese labels
-  '姓名': ContactFieldType.name,
-  '电话': ContactFieldType.phone,
-  '邮箱': ContactFieldType.email,
-  '地址': ContactFieldType.address,
-  '备注': ContactFieldType.notes,
-
-  // English labels
-  'name': ContactFieldType.name,
-  'phone': ContactFieldType.phone,
-  'email': ContactFieldType.email,
-  'address': ContactFieldType.address,
-  'notes': ContactFieldType.notes,
-};
 
 /// Detects if [body] matches the contact template structure.
 ///
-/// Rule:
-/// 1. Body must not be empty.
-/// 2. Every non-empty line must match `label: value` (where colon can be `:` or `：`).
-/// 3. Every label must belong to the contact template label set:
-///    {姓名, 电话, 邮箱, 地址, 备注, Name, Phone, Email, Address, Notes}.
-/// 4. At least one line must have an anchor label:
-///    姓名 / Name / 电话 / Phone / 邮箱 / Email.
+/// Rule (Round 9: tolerant):
+/// 1. Body must not be empty; the first non-empty line must be `label: value`.
+/// 2. Known labels assign fields; unknown `label: value` lines are tolerated
+///    as user-added custom fields (preserved on re-save).
+/// 3. A colon-less line continues the previous field's value only after the
+///    地址/Address or 备注/Notes field; otherwise the body does not match.
+/// 4. At least one line must carry an anchor label:
+///    姓名 / Name / 电话 / Phone / 邮箱 / Email / 地址 / Address.
+///    (Round 9: 地址 is an anchor so address-only contacts show the template.)
 bool isContactTemplate(String body) {
   return parseContactTemplate(body) != null;
 }
@@ -348,67 +327,36 @@ bool isContactTemplate(String body) {
 /// Parses [body] into [ContactTemplateData] if it matches the contact template pattern.
 /// Returns `null` if [body] does not match the contact template rules.
 ContactTemplateData? parseContactTemplate(String body) {
-  if (body.trim().isEmpty) return null;
-
-  final lines = body.replaceAll('\r\n', '\n').split('\n');
-  var hasNonEmptyLine = false;
-  var hasAnchor = false;
-
-  String? name;
-  String? phone;
-  String? email;
-  String? address;
-  String? notes;
-
-  for (final rawLine in lines) {
-    final line = rawLine.trim();
-    if (line.isEmpty) {
-      continue;
-    }
-    hasNonEmptyLine = true;
-
-    final match = _colonRegExp.firstMatch(line);
-    if (match == null) {
-      return null;
-    }
-
-    final rawLabel = line.substring(0, match.start).trim();
-    final value = line.substring(match.end).trim();
-
-    // Check label in allowed set
-    final lookupKey = rawLabel.toLowerCase();
-    final fieldType = _kContactLabels[rawLabel] ?? _kContactLabels[lookupKey];
-    if (fieldType == null) {
-      return null;
-    }
-
-    switch (fieldType) {
-      case ContactFieldType.name:
-        name = value;
-        hasAnchor = true;
-      case ContactFieldType.phone:
-        phone = value;
-        hasAnchor = true;
-      case ContactFieldType.email:
-        email = value;
-        hasAnchor = true;
-      case ContactFieldType.address:
-        address = value;
-      case ContactFieldType.notes:
-        notes = value;
-    }
-  }
-
-  if (!hasNonEmptyLine || !hasAnchor) {
-    return null;
-  }
+  final extraLines = <String>[];
+  final fields = _parseLabelValueTemplate(
+    body: body,
+    labelToKey: const {
+      // Chinese labels
+      '姓名': 'name',
+      '电话': 'phone',
+      '邮箱': 'email',
+      '地址': 'address',
+      '备注': 'notes',
+      // English labels
+      'name': 'name',
+      'phone': 'phone',
+      'email': 'email',
+      'address': 'address',
+      'notes': 'notes',
+    },
+    anchorKeys: const {'name', 'phone', 'email', 'address'},
+    continuableKeys: const {'address', 'notes'},
+    extraLines: extraLines,
+  );
+  if (fields == null) return null;
 
   return ContactTemplateData(
-    name: name,
-    phone: phone,
-    email: email,
-    address: address,
-    notes: notes,
+    name: fields['name'],
+    phone: fields['phone'],
+    email: fields['email'],
+    address: fields['address'],
+    notes: fields['notes'],
+    extraLines: extraLines,
   );
 }
 
