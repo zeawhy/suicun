@@ -91,7 +91,35 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
   bool get _isPasswordStructured =>
       !_isIdDocStructured &&
       parsePasswordTemplate(_bodyController.text) != null;
-  bool get _isStructuredRecord => _isIdDocStructured || _isPasswordStructured;
+  bool get _isIdeaStructured =>
+      !_isIdDocStructured &&
+      !_isPasswordStructured &&
+      parseIdeaTemplate(_bodyController.text) != null;
+  bool get _isTodoStructured =>
+      !_isIdDocStructured &&
+      !_isPasswordStructured &&
+      !_isIdeaStructured &&
+      parseTodoTemplate(_bodyController.text) != null;
+  bool get _isContactStructured =>
+      !_isIdDocStructured &&
+      !_isPasswordStructured &&
+      !_isIdeaStructured &&
+      !_isTodoStructured &&
+      parseContactTemplate(_bodyController.text) != null;
+  bool get _isStructuredRecord =>
+      _isIdDocStructured ||
+      _isPasswordStructured ||
+      _isIdeaStructured ||
+      _isTodoStructured ||
+      _isContactStructured;
+  // For todo templates, the checklist toggle in raw-text mode is allowed
+  // (it's the only way to check items when editing raw text), but other
+  // format operations are still blocked.
+  bool get _isNonTodoStructuredRecord =>
+      _isIdDocStructured ||
+      _isPasswordStructured ||
+      _isIdeaStructured ||
+      _isContactStructured;
 
   /// 「⋯」按钮的 key，用来给气泡菜单定位。
   final GlobalKey _menuAnchorKey = GlobalKey();
@@ -1238,6 +1266,7 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
                   // Round 7 §3.1: structured records (ID doc / password)
                   // show the type label only — tapping must not splice
                   // template text into the structured body.
+                  // Round 8: extended to all templates (idea, todo, contact).
                   InkWell(
                     onTap: _isStructuredRecord
                         ? null
@@ -1590,7 +1619,8 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
   /// through the normal auto-save chain.
   void _toggleChecklistLine(int lineIndex) {
     // Round 7 §3.5: never mutate structured bodies through text ops.
-    if (_isStructuredRecord) return;
+    // Exception: todo templates allow checklist toggle (it's the core interaction).
+    if (_isNonTodoStructuredRecord) return;
     final newBody = toggleChecklistLineAt(_bodyController.text, lineIndex);
     if (newBody == _bodyController.text) return;
     _bodyController.text = newBody;

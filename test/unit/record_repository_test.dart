@@ -459,5 +459,88 @@ void main() {
       expect(updated.isFavorite, isTrue);
       expect(isIdDocBody(updated.body), isTrue);
     });
+
+    // Round 8: template protection for password, idea, todo, contact.
+    test('refuses to overwrite valid password template with unparseable body',
+        () async {
+      final created = await recordRepo.createRecord(
+        title: 'GitHub',
+        body: '网站/应用：https://github.com\n用户名：testuser\n密码：secret123\n备注：personal',
+      );
+      expect(
+        () => recordRepo.updateRecord(created.id, body: 'plain text now'),
+        throwsA(isA<DatabaseError>()),
+      );
+      // Database untouched.
+      final fetched = await recordRepo.getRecord(created.id);
+      expect(fetched!.body.contains('密码：secret123'), isTrue);
+    });
+
+    test('allows valid password template updates', () async {
+      final created = await recordRepo.createRecord(
+        title: 'GitHub',
+        body: '网站/应用：https://github.com\n用户名：testuser\n密码：secret123\n备注：',
+      );
+      final updated = await recordRepo.updateRecord(
+        created.id,
+        body: '网站/应用：https://github.com\n用户名：testuser\n密码：newpass456\n备注：updated',
+      );
+      expect(updated.body.contains('密码：newpass456'), isTrue);
+    });
+
+    test('refuses to overwrite valid idea template with unparseable body',
+        () async {
+      final created = await recordRepo.createRecord(
+        title: 'Idea',
+        body: '灵感：test idea\n来源：test source\n下一步行动：test action',
+      );
+      expect(
+        () => recordRepo.updateRecord(created.id, body: 'plain text now'),
+        throwsA(isA<DatabaseError>()),
+      );
+      final fetched = await recordRepo.getRecord(created.id);
+      expect(fetched!.body.contains('灵感：test idea'), isTrue);
+    });
+
+    test('refuses to overwrite valid todo template with unparseable body',
+        () async {
+      final created = await recordRepo.createRecord(
+        title: 'Todo',
+        body: '☐ 事项一\n☐ 事项二\n☑ 事项三',
+      );
+      expect(
+        () => recordRepo.updateRecord(created.id, body: 'plain text now'),
+        throwsA(isA<DatabaseError>()),
+      );
+      final fetched = await recordRepo.getRecord(created.id);
+      expect(fetched!.body.contains('☐ 事项一'), isTrue);
+    });
+
+    test('allows valid todo template updates (check/uncheck)', () async {
+      final created = await recordRepo.createRecord(
+        title: 'Todo',
+        body: '☐ 事项一\n☐ 事项二',
+      );
+      // Toggling a checkbox produces a valid todo body -> allowed.
+      final updated = await recordRepo.updateRecord(
+        created.id,
+        body: '☑ 事项一\n☐ 事项二',
+      );
+      expect(updated.body.contains('☑ 事项一'), isTrue);
+    });
+
+    test('refuses to overwrite valid contact template with unparseable body',
+        () async {
+      final created = await recordRepo.createRecord(
+        title: 'Contact',
+        body: '姓名：张三\n电话：13800138000\n邮箱：test@example.com',
+      );
+      expect(
+        () => recordRepo.updateRecord(created.id, body: 'plain text now'),
+        throwsA(isA<DatabaseError>()),
+      );
+      final fetched = await recordRepo.getRecord(created.id);
+      expect(fetched!.body.contains('姓名：张三'), isTrue);
+    });
   });
 }
