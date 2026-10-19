@@ -51,7 +51,8 @@ jobs:
 
       - name: Verify versionCode
         run: |
-          APK_VERSION=$(aapt dump badging build/app/outputs/flutter-apk/app-release.apk | grep -oP "versionCode='\K[0-9]+" || echo "0")
+          AAPT=$(find $ANDROID_HOME/build-tools -name aapt -type f | head -1)
+          APK_VERSION=$($AAPT dump badging build/app/outputs/flutter-apk/app-release.apk | grep -oP "versionCode='\K[0-9]+" || echo "0")
           echo "APK versionCode=$APK_VERSION, expected=${{ github.run_number }}"
           if [ "$APK_VERSION" != "${{ github.run_number }}" ]; then
             echo "::error::versionCode mismatch! APK has $APK_VERSION, expected ${{ github.run_number }}"
