@@ -21,8 +21,9 @@ android {
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
-        // 随存发版 versionCode 在此单独维护，每次发版 +1，不从 pubspec 读取
-        versionCode = 1
+        // 随存发版 versionCode：CI 从 VERSION_CODE 环境变量读取（GitHub run_number，
+        // 单调递增，满足 Play 要求每次发版 +1）；本地构建默认 1。
+        versionCode = System.getenv("VERSION_CODE")?.toIntOrNull() ?: 1
         versionName = flutter.versionName
     }
 

@@ -21,9 +21,22 @@ jobs:
 
       - name: Build release APK
         run: flutter build apk --release
+        env:
+          VERSION_CODE: ${{ github.run_number }}
 
       - name: Build release AAB (Google Play)
         run: flutter build appbundle --release
+        env:
+          VERSION_CODE: ${{ github.run_number }}
+
+      - name: Verify versionCode
+        run: |
+          APK_VERSION=$(aapt dump badging build/app/outputs/flutter-apk/app-release.apk | grep -oP "versionCode='\K[0-9]+" || echo "0")
+          echo "APK versionCode=$APK_VERSION, expected=${{ github.run_number }}"
+          if [ "$APK_VERSION" != "${{ github.run_number }}" ]; then
+            echo "::error::versionCode mismatch! APK has $APK_VERSION, expected ${{ github.run_number }}"
+            exit 1
+          fi
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
