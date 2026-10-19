@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SuiVault (随存) Privacy Policy</title>
+<meta name="description" content="SuiVault privacy policy: a local-first privacy note-taking app. Your data stays on your device.">
+<style>
+  :root { color-scheme: light dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                 "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+    line-height: 1.8;
+    color: #1a1a1a;
+    background: #ffffff;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 40px 20px 64px; }
+  header { border-bottom: 1px solid #e5e5e5; padding-bottom: 20px; margin-bottom: 28px; }
+  h1 { font-size: 1.75rem; margin: 0 0 8px; }
+  .meta { color: #666; font-size: 0.9rem; }
+  .lang { margin-top: 12px; font-size: 0.9rem; }
+  .lang a { color: #0b6bcb; text-decoration: none; }
+  .lang a:hover { text-decoration: underline; }
+  section { margin-bottom: 24px; }
+  h2 { font-size: 1.15rem; margin: 0 0 8px; }
+  p { margin: 0; white-space: pre-line; }
+  .lead { color: #444; }
+  footer {
+    margin-top: 40px; padding-top: 20px;
+    border-top: 1px solid #e5e5e5;
+    color: #888; font-size: 0.85rem;
+  }
+  footer a { color: #0b6bcb; text-decoration: none; }
+  @media (prefers-color-scheme: dark) {
+    body { color: #e8e8e8; background: #121212; }
+    header, footer { border-color: #2a2a2a; }
+    .meta, .lead, footer { color: #aaa; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>SuiVault (随存) Privacy Policy</h1>
+    <div class="meta">Effective date: 2026-10-19</div>
+    <div class="lang">中文版：<a href="index.html">隐私政策（中文）</a></div>
+  </header>
+
+  <section>
+    <p class="lead">SuiVault is a local-first privacy note-taking application.</p>
+  </section>
+
+  <section>
+    <h2>Data Storage</h2>
+    <p>All your records and photos are stored strictly locally on your device and are never uploaded to any server. We have no user account system and do not collect or store any of your personal information.</p>
+  </section>
+
+  <section>
+    <h2>Sync</h2>
+    <p>If you configure WebDAV sync, data is transferred directly between your device and your own server, and we cannot access it. Sync configuration information is stored locally only.</p>
+  </section>
+
+  <section>
+    <h2>Permissions</h2>
+    <p>Camera is used only to capture ID document photos (saved to the app's private directory); photo gallery is used only to select ID document photos; fingerprint/face recognition is used only to unlock the app lock (biometric information is managed by the operating system); network is used only when you enable WebDAV sync.</p>
+  </section>
+
+  <section>
+    <h2>Third Parties</h2>
+    <p>There are no ads, no third-party SDKs, and no analytics tracking or telemetry in the app.</p>
+  </section>
+
+  <section>
+    <h2>Data Deletion</h2>
+    <p>You can completely delete all local data at any time under "Settings → Clear all data".</p>
+  </section>
+
+  <footer>
+    This page mirrors the in-app Privacy Policy screen of SuiVault
+    (<code>lib/features/settings/presentation/privacy_policy_page.dart</code>).
+    When the privacy policy is updated, both copies must be updated together.
+  </footer>
+</div>
+</body>
+</html>
