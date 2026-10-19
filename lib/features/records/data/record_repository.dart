@@ -10,6 +10,7 @@ import 'package:suicun/core/errors/app_errors.dart';
 import 'package:suicun/features/categories/domain/category_model.dart';
 import 'package:suicun/features/records/domain/id_doc_codec.dart';
 import 'package:suicun/features/records/domain/record_model.dart';
+import 'package:suicun/features/records/presentation/template_views/template_detector.dart';
 import 'package:suicun/features/sync/sync_enqueuer.dart';
 import 'package:suicun/features/tags/domain/tag_model.dart';
 
@@ -127,6 +128,8 @@ class RecordRepository {
     // Round 7 §3.2: never overwrite a valid ID document body with content
     // that no longer parses. Any caller bug that mangles the body is
     // refused here instead of corrupting the database.
+    // Round 8: extended to all structured templates (password, idea, todo,
+    // contact) - same protection against accidental corruption.
     if (body != null) {
       final current = await getRecord(id);
       final oldBody = current?.record.body ?? '';
@@ -137,6 +140,54 @@ class RecordRepository {
         );
         throw DatabaseError(
           'Refusing to overwrite a valid ID document body with '
+          'unparseable content',
+        );
+      }
+      // Password template protection
+      if (parsePasswordTemplate(oldBody) != null &&
+          parsePasswordTemplate(body) == null) {
+        debugPrint(
+          '[record_repository] Refusing to overwrite valid password template '
+          'body for record $id: new body does not parse.',
+        );
+        throw DatabaseError(
+          'Refusing to overwrite a valid password template body with '
+          'unparseable content',
+        );
+      }
+      // Idea template protection
+      if (parseIdeaTemplate(oldBody) != null &&
+          parseIdeaTemplate(body) == null) {
+        debugPrint(
+          '[record_repository] Refusing to overwrite valid idea template '
+          'body for record $id: new body does not parse.',
+        );
+        throw DatabaseError(
+          'Refusing to overwrite a valid idea template body with '
+          'unparseable content',
+        );
+      }
+      // Todo template protection
+      if (parseTodoTemplate(oldBody) != null &&
+          parseTodoTemplate(body) == null) {
+        debugPrint(
+          '[record_repository] Refusing to overwrite valid todo template '
+          'body for record $id: new body does not parse.',
+        );
+        throw DatabaseError(
+          'Refusing to overwrite a valid todo template body with '
+          'unparseable content',
+        );
+      }
+      // Contact template protection
+      if (parseContactTemplate(oldBody) != null &&
+          parseContactTemplate(body) == null) {
+        debugPrint(
+          '[record_repository] Refusing to overwrite valid contact template '
+          'body for record $id: new body does not parse.',
+        );
+        throw DatabaseError(
+          'Refusing to overwrite a valid contact template body with '
           'unparseable content',
         );
       }
