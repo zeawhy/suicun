@@ -44,6 +44,11 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# Play upload signing — sensitive, never commit
+key.properties
+*.jks
+*.keystore
+
 # Widget Preview related
 .widget_preview/
 /android/build/
