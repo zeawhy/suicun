@@ -62,6 +62,16 @@ class _PasswordTemplateViewState extends State<PasswordTemplateView> {
   @override
   void didUpdateWidget(PasswordTemplateView oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (!oldWidget.isEditing && widget.isEditing) {
+      // Round 10 §3.5: reading→editing transition — re-seed every controller
+      // from the current body data so the form never shows stale values
+      // captured at initState (e.g. if the body changed while reading).
+      _websiteController.text = widget.data.website ?? '';
+      _usernameController.text = widget.data.username ?? '';
+      _passwordController.text = widget.data.password ?? '';
+      _notesController.text = widget.data.notes ?? '';
+      return;
+    }
     if (widget.isEditing) {
       if (widget.data.website != null &&
           widget.data.website != _websiteController.text) {
@@ -92,11 +102,25 @@ class _PasswordTemplateViewState extends State<PasswordTemplateView> {
   }
 
   void _syncBody() {
-    final raw = widget.rawBody ?? '';
-    final isEnglish = raw.contains('Website') ||
-        raw.contains('website') ||
-        raw.contains('Password:') ||
-        raw.contains('Username:');
+    // Round 10 §3.6: keep the body's original label language, determined by
+    // the first KNOWN label — never guess via contains(), so a note that
+    // mentions "Password:" can't flip a Chinese record to English labels.
+    // Brand-new records (no labels yet) fall back to the UI locale.
+    final lang = templateLabelLanguage(
+      widget.rawBody ?? '',
+      zhLabels: const {'网站/应用', '用户名', '密码', '备注'},
+      enLabels: const {
+        'website/app',
+        'website',
+        'app',
+        'username',
+        'password',
+        'notes',
+      },
+    );
+    final isEnglish = lang == null
+        ? Localizations.localeOf(context).languageCode == 'en'
+        : lang == 'en';
     String body;
     if (isEnglish) {
       body = 'Website/App: ${_websiteController.text}\n'

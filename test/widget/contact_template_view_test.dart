@@ -198,8 +198,13 @@ void main() {
       await tester.tap(find.byIcon(Icons.edit_outlined));
       await tester.pumpAndSettle();
 
-      expect(find.byType(ContactTemplateView), findsNothing);
-      expect(findByHint('Title (optional)'), findsOneWidget);
+      // Round 10: ✏️ must keep the template FORM (previously this asserted
+      // the template disappearing into the raw-text editor — that WAS the
+      // bug). The card form stays, now editable.
+      expect(find.byType(ContactTemplateView), findsOneWidget);
+      expect(find.byKey(const Key('template_title_field')), findsOneWidget);
+      expect(find.byKey(const Key('contact_name_field')), findsOneWidget);
+      expect(find.byKey(const Key('contact_phone_field')), findsOneWidget);
     });
 
     testWidgets(

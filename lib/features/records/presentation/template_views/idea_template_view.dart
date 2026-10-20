@@ -60,6 +60,14 @@ class _IdeaTemplateViewState extends State<IdeaTemplateView> {
   @override
   void didUpdateWidget(IdeaTemplateView oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (!oldWidget.isEditing && widget.isEditing) {
+      // Round 10 §3.5: reading→editing transition — re-seed every controller
+      // from the current body data so the form never shows stale values.
+      _ideaController.text = widget.data.idea ?? '';
+      _sourceController.text = widget.data.source ?? '';
+      _nextActionController.text = widget.data.nextAction ?? '';
+      return;
+    }
     if (widget.isEditing) {
       if (widget.data.idea != null &&
           widget.data.idea != _ideaController.text) {
@@ -85,11 +93,16 @@ class _IdeaTemplateViewState extends State<IdeaTemplateView> {
   }
 
   void _syncBody() {
-    final raw = widget.rawBody ?? '';
-    final isEnglish = raw.contains('Idea') ||
-        raw.contains('idea') ||
-        raw.contains('Source:') ||
-        raw.contains('Next action:');
+    // Round 10 §3.6: keep the body's original label language (first KNOWN
+    // label decides); never guess via contains(). New records use UI locale.
+    final lang = templateLabelLanguage(
+      widget.rawBody ?? '',
+      zhLabels: const {'灵感', '来源', '下一步行动'},
+      enLabels: const {'idea', 'source', 'next action'},
+    );
+    final isEnglish = lang == null
+        ? Localizations.localeOf(context).languageCode == 'en'
+        : lang == 'en';
     String body;
     if (isEnglish) {
       body = 'Idea: ${_ideaController.text}\n'

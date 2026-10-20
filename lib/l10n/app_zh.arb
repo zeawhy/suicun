@@ -280,6 +280,7 @@
   "closeAction": "关闭",
   "configSaved": "配置已保存",
   "confirm": "确认",
+  "doneButton": "完成",
   "confirmClearAllData": "我确认要删除全部数据",
   "confirmPassword": "确认密码",
   "confirmVaultPassword": "确认加密密码",

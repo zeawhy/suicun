@@ -280,6 +280,7 @@
   "closeAction": "Close",
   "configSaved": "Configuration saved",
   "confirm": "Confirm",
+  "doneButton": "Done",
   "confirmClearAllData": "I confirm to delete all data",
   "confirmPassword": "Confirm password",
   "confirmVaultPassword": "Confirm encryption password",

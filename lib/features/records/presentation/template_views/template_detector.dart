@@ -26,6 +26,34 @@ class PasswordTemplateData {
 
 final _colonRegExp = RegExp(r'[:：]');
 
+/// Language of a template body's labels (Round 10 §3.6).
+///
+/// Determined by the FIRST non-empty line whose label (the part before the
+/// first `:`/`：`) is a known label for the template — never by substring
+/// guessing, so a note containing a foreign word like `Password:` can never
+/// flip the label language of the whole record.
+///
+/// Returns `'zh'`, `'en'`, or `null` when no known label is found (e.g. a
+/// brand-new record). Purely additive — existing parse logic is untouched.
+String? templateLabelLanguage(
+  String body, {
+  required Set<String> zhLabels,
+  required Set<String> enLabels,
+}) {
+  final enLower = enLabels.map((l) => l.trim().toLowerCase()).toSet();
+  for (final rawLine in body.replaceAll('\r\n', '\n').split('\n')) {
+    final line = rawLine.trim();
+    if (line.isEmpty) continue;
+    final colon = line.indexOf(_colonRegExp);
+    if (colon <= 0) continue;
+    final label = line.substring(0, colon).trim();
+    if (label.isEmpty) continue;
+    if (zhLabels.contains(label)) return 'zh';
+    if (enLower.contains(label.toLowerCase())) return 'en';
+  }
+  return null;
+}
+
 /// Shared line engine for `label: value` templates (password / idea / contact).
 ///
 /// Round 9: tolerant recognition. Real-world template bodies often deviate

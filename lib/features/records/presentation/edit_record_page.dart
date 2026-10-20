@@ -39,6 +39,10 @@ import 'package:suicun/shared/theme/app_theme.dart';
 import 'package:suicun/shared/utils/display_title.dart';
 import 'package:suicun/shared/widgets/action_bubble.dart';
 
+/// Structured template kind of a record body (Round 10 §3.2).
+/// Detection order: idDoc → password → idea → todo → contact → blank.
+enum TemplateKind { idDoc, password, idea, todo, contact, blank }
+
 class EditRecordPage extends ConsumerStatefulWidget {
   const EditRecordPage({
     super.key,
@@ -72,6 +76,44 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
 
   /// Body shows rich text when not editing; tap to edit.
   late bool _bodyEditing;
+
+  /// Round 10 §3.1: form-editing state for structured templates
+  /// (password / idea / todo / contact). Completely separate from
+  /// [_bodyEditing] (plain-text editing): tapping ✏️ on a template record
+  /// enters form editing here instead of flipping the page into the raw
+  /// text editor.
+  bool _templateEditing = false;
+
+  /// Round 10 §3.2: template kind locked when entering [_templateEditing].
+  /// While editing, the body changes on every keystroke; using the locked
+  /// kind keeps the view from "jumping" to another template (or the plain
+  /// editor) when the user clears anchor fields mid-edit.
+  TemplateKind? _lockedTemplateKind;
+
+  /// Leaves template form editing (Round 10 §3.4). Changes were already
+  /// pushed through the normal [_onChanged] auto-save chain on every
+  /// keystroke, so exiting needs no extra save logic.
+  void _exitTemplateEditing() {
+    if (!_templateEditing) return;
+    setState(() {
+      _templateEditing = false;
+      _lockedTemplateKind = null;
+    });
+  }
+
+  /// Round 10 §3.2: the template kind is decided by the body text ONLY —
+  /// never by edit state. (Previously every `isXxxTemplateRecord` check ANDed
+  /// `(_isNew || !_bodyEditing)`, so tapping ✏️, which set `_bodyEditing`,
+  /// flipped every template check to false and dropped the page into the
+  /// plain-text editor.)
+  TemplateKind _detectTemplateKind(String body) {
+    if (isIdDocBody(body)) return TemplateKind.idDoc;
+    if (parsePasswordTemplate(body) != null) return TemplateKind.password;
+    if (parseIdeaTemplate(body) != null) return TemplateKind.idea;
+    if (parseTodoTemplate(body) != null) return TemplateKind.todo;
+    if (parseContactTemplate(body) != null) return TemplateKind.contact;
+    return TemplateKind.blank;
+  }
 
   /// Smart-suggestion wiring: up to two candidate categories are offered
   /// as tappable chips for the user to choose from (never auto-applied).
@@ -697,6 +739,9 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
       ),
     );
     if (confirmed != true || !mounted) return;
+    // Round 10 §3.4: leave template editing first so PopScope's canPop
+    // doesn't swallow the programmatic pop below.
+    _exitTemplateEditing();
     final repo = ref.read(recordRepositoryProvider);
     await ref.read(editRecordProvider(widget.recordId).notifier).flush();
     await repo.softDeleteRecord(record.id);
@@ -778,35 +823,24 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
     final isEmptyInput =
         _titleController.text.isEmpty && _bodyController.text.isEmpty;
     final showPageTitle = _isNew && record == null && isEmptyInput;
+    // Round 10 §3.2: template kind comes from the body alone (edit state no
+    // longer participates). While template-editing, the kind locked on
+    // entry wins so the view can't jump when fields are cleared mid-edit.
     // ID document detection comes first (Round 5 §1.2): isIdDocBody covers
     // both the new JSON format and legacy label:value text.
-    final isIdDocRecord =
-        isIdDocBody(_bodyController.text) && (_isNew || !_bodyEditing);
-    final isPasswordTemplateRecord = !isIdDocRecord &&
-        parsePasswordTemplate(_bodyController.text) != null &&
-            (_isNew || !_bodyEditing);
-    final isIdeaTemplateRecord = !isIdDocRecord &&
-        !isPasswordTemplateRecord &&
-        parseIdeaTemplate(_bodyController.text) != null &&
-        (_isNew || !_bodyEditing);
-    final isTodoTemplateRecord = !isIdDocRecord &&
-        !isPasswordTemplateRecord &&
-        !isIdeaTemplateRecord &&
-        parseTodoTemplate(_bodyController.text) != null &&
-        (_isNew || !_bodyEditing);
-    final isContactTemplateRecord = !isIdDocRecord &&
-        !isPasswordTemplateRecord &&
-        !isIdeaTemplateRecord &&
-        !isTodoTemplateRecord &&
-        parseContactTemplate(_bodyController.text) != null &&
-        (_isNew || !_bodyEditing);
-    final isBlankTemplateRecord = !_isNew &&
-        !_bodyEditing &&
-        !isIdDocRecord &&
-        !isPasswordTemplateRecord &&
-        !isIdeaTemplateRecord &&
-        !isTodoTemplateRecord &&
-        !isContactTemplateRecord;
+    final detectedKind = _detectTemplateKind(_bodyController.text);
+    final templateKind = (_templateEditing && _lockedTemplateKind != null)
+        ? _lockedTemplateKind!
+        : detectedKind;
+    final isIdDocRecord = templateKind == TemplateKind.idDoc;
+    final isPasswordTemplateRecord = templateKind == TemplateKind.password;
+    final isIdeaTemplateRecord = templateKind == TemplateKind.idea;
+    final isTodoTemplateRecord = templateKind == TemplateKind.todo;
+    final isContactTemplateRecord = templateKind == TemplateKind.contact;
+    // Blank notes are the only kind still using _bodyEditing (§3.3).
+    final isBlankTemplateRecord = templateKind == TemplateKind.blank &&
+        !_isNew &&
+        !_bodyEditing;
 
     Widget appBarTitle;
     if (showPageTitle) {
@@ -985,7 +1019,15 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
 
     return PopScope(
-      onPopInvokedWithResult: (_, __) async {
+      // Round 10 §3.4: while template-editing, the first back press only
+      // exits editing (changes are already auto-saved); the second leaves.
+      canPop: !_templateEditing,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (!didPop) {
+          _exitTemplateEditing();
+          await ref.read(editRecordProvider(widget.recordId).notifier).flush();
+          return;
+        }
         _autoFillIdTitleIfEmpty();
         await ref.read(editRecordProvider(widget.recordId).notifier).flush();
       },
@@ -994,6 +1036,13 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
         appBar: AppBar(
           title: appBarTitle,
           actions: [
+            // Round 10 §3.4: exit-form-editing button, visible only while
+            // template-editing, placed to the left of the star.
+            if (_templateEditing)
+              TextButton(
+                onPressed: _exitTemplateEditing,
+                child: Text(l10n.doneButton),
+              ),
             IconButton(
               icon: Icon(
                 record?.isFavorite == true ? Icons.star : Icons.star_border,
@@ -1024,16 +1073,21 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
                         const PasswordTemplateData(),
                     record: record,
                     rawBody: _bodyController.text,
-                    isEditing: _isNew,
-                    titleController: _isNew ? _titleController : null,
-                    onTitleChanged: _isNew ? (_) => _onChanged() : null,
+                    // Round 10 §3.3: ✏️ enters FORM editing (_templateEditing),
+                    // never the plain-text editor.
+                    isEditing: _isNew || _templateEditing,
+                    titleController:
+                        (_isNew || _templateEditing) ? _titleController : null,
+                    onTitleChanged: (_isNew || _templateEditing)
+                        ? (_) => _onChanged()
+                        : null,
                     onBodyChanged: (newBody) {
                       _bodyController.text = newBody;
                       _onChanged();
                     },
                     onEdit: () => setState(() {
-                      _bodyEditing = true;
-                      _bodyFocusNode.requestFocus();
+                      _templateEditing = true;
+                      _lockedTemplateKind = templateKind;
                     }),
                     categoryRow: _buildCategoryRow(l10n, theme, colorScheme, record),
                     suggestionRow: _buildSuggestionRow(l10n, theme, colorScheme),
@@ -1048,16 +1102,22 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
                             const IdeaTemplateData(),
                         record: record,
                         rawBody: _bodyController.text,
-                        isEditing: _isNew,
-                        titleController: _isNew ? _titleController : null,
-                        onTitleChanged: _isNew ? (_) => _onChanged() : null,
+                        // Round 10 §3.3: ✏️ enters FORM editing (_templateEditing),
+                        // never the plain-text editor.
+                        isEditing: _isNew || _templateEditing,
+                        titleController: (_isNew || _templateEditing)
+                            ? _titleController
+                            : null,
+                        onTitleChanged: (_isNew || _templateEditing)
+                            ? (_) => _onChanged()
+                            : null,
                         onBodyChanged: (newBody) {
                           _bodyController.text = newBody;
                           _onChanged();
                         },
                         onEdit: () => setState(() {
-                          _bodyEditing = true;
-                          _bodyFocusNode.requestFocus();
+                          _templateEditing = true;
+                          _lockedTemplateKind = templateKind;
                         }),
                         categoryRow: _buildCategoryRow(l10n, theme, colorScheme, record),
                         suggestionRow: _buildSuggestionRow(l10n, theme, colorScheme),
@@ -1072,16 +1132,23 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
                                 const TodoTemplateData(items: []),
                             record: record,
                             rawBody: _bodyController.text,
-                            isEditing: _isNew,
-                            titleController: _isNew ? _titleController : null,
-                            onTitleChanged: _isNew ? (_) => _onChanged() : null,
+                            // Round 10 §3.3: ✏️ enters FORM editing
+                            // (_templateEditing); the checklist toggle
+                            // interaction (onToggle) is unchanged.
+                            isEditing: _isNew || _templateEditing,
+                            titleController: (_isNew || _templateEditing)
+                                ? _titleController
+                                : null,
+                            onTitleChanged: (_isNew || _templateEditing)
+                                ? (_) => _onChanged()
+                                : null,
                             onBodyChanged: (newBody) {
                               _bodyController.text = newBody;
                               _onChanged();
                             },
                             onEdit: () => setState(() {
-                              _bodyEditing = true;
-                              _bodyFocusNode.requestFocus();
+                              _templateEditing = true;
+                              _lockedTemplateKind = templateKind;
                             }),
                             onToggle: _toggleChecklistLine,
                             categoryRow: _buildCategoryRow(l10n, theme, colorScheme, record),
@@ -1097,16 +1164,23 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
                                     const ContactTemplateData(),
                                 record: record,
                                 rawBody: _bodyController.text,
-                                isEditing: _isNew,
-                                titleController: _isNew ? _titleController : null,
-                                onTitleChanged: _isNew ? (_) => _onChanged() : null,
+                                // Round 10 §3.3: ✏️ enters FORM editing
+                                // (_templateEditing), never the plain-text
+                                // editor.
+                                isEditing: _isNew || _templateEditing,
+                                titleController: (_isNew || _templateEditing)
+                                    ? _titleController
+                                    : null,
+                                onTitleChanged: (_isNew || _templateEditing)
+                                    ? (_) => _onChanged()
+                                    : null,
                                 onBodyChanged: (newBody) {
                                   _bodyController.text = newBody;
                                   _onChanged();
                                 },
                                 onEdit: () => setState(() {
-                                  _bodyEditing = true;
-                                  _bodyFocusNode.requestFocus();
+                                  _templateEditing = true;
+                                  _lockedTemplateKind = templateKind;
                                 }),
                                 categoryRow: _buildCategoryRow(l10n, theme, colorScheme, record),
                                 suggestionRow: _buildSuggestionRow(l10n, theme, colorScheme),

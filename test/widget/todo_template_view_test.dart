@@ -182,8 +182,11 @@ void main() {
     await tester.tap(find.byIcon(Icons.edit_outlined));
     await tester.pumpAndSettle();
 
-    expect(find.byType(TodoTemplateView), findsNothing);
-    expect(findByHint('Title (optional)'), findsOneWidget);
+    // Round 10: ✏️ must keep the template FORM (previously this asserted
+    // the template disappearing into the raw-text editor — that WAS the
+    // bug). The card form stays, now editable.
+    expect(find.byType(TodoTemplateView), findsOneWidget);
+    expect(find.byKey(const Key('template_title_field')), findsOneWidget);
   });
 
   testWidgets('mixed text falls back to generic rendering', (tester) async {
