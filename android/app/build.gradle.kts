@@ -6,6 +6,7 @@ plugins {
 
 import java.io.FileInputStream
 import java.util.Properties
+import org.gradle.api.GradleException
 
 // Play 正式签名：从 android/key.properties 读取 upload key。
 // 文件不存在时回落到 debug 签名，保证本地开发和 CI 测试包流程不挂。
@@ -14,6 +15,13 @@ val keystoreProperties = Properties()
 val keystorePropertiesFile = rootProject.file("key.properties")
 if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
+
+// CI 正式发版守卫：REQUIRE_RELEASE_SIGNING=true（workflow 以 play_release=true
+// 运行时设置）且 key.properties 不存在 → 直接失败。正式包绝不允许静默回落
+// debug 签名；本地开发不设该环境变量，不受影响。
+if (System.getenv("REQUIRE_RELEASE_SIGNING") == "true" && !keystorePropertiesFile.exists()) {
+    throw GradleException("Release signing required but android/key.properties not found")
 }
 
 android {

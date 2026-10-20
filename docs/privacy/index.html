@@ -44,7 +44,7 @@
 <div class="wrap">
   <header>
     <h1>SuiVault（随存）隐私政策</h1>
-    <div class="meta">生效日期：2026-10-19</div>
+    <div class="meta">生效日期：2026-10-20</div>
     <div class="lang">English version: <a href="en.html">Privacy Policy (EN)</a></div>
   </header>
 
@@ -54,7 +54,7 @@
 
   <section>
     <h2>数据存储</h2>
-    <p>您的所有记录、照片均仅存储在您的设备本地，不上传到任何服务器。我们没有用户账号系统，不收集、不存储您的任何个人信息。</p>
+    <p>您的所有记录、照片均仅存储在您的设备本地，不上传到任何服务器。本地数据库已使用 SQLCipher 加密，证件照片以 AES-256-GCM 加密后保存在应用私有目录中。我们没有用户账号系统，不收集、不存储您的任何个人信息。</p>
   </section>
 
   <section>
@@ -63,8 +63,13 @@
   </section>
 
   <section>
+    <h2>备份与导出</h2>
+    <p>您可以主动导出加密备份文件，或导出 Markdown ZIP、TXT 文件；导出的文件保存到您自己选择的位置，应用不会上传。加密备份使用您设置的密码加密（Argon2id + AES-256-GCM），开发者无法解密；如果您忘记密码，备份将无法恢复。如果您启用了 WebDAV 自动备份/同步，数据会在端到端加密后，仅发送到您自己配置的服务器（强制使用 HTTPS）。</p>
+  </section>
+
+  <section>
     <h2>权限使用</h2>
-    <p>相机仅用于拍摄证件照片（保存到应用私有目录）；相册仅用于选择证件照片；指纹/面容仅用于应用锁解锁（生物信息由系统管理）；网络仅在您启用 WebDAV 同步时使用。</p>
+    <p>相机仅用于拍摄证件照片（保存到应用私有目录）；通过系统照片选择器选择证件照片，应用不申请存储权限，也不会把照片保存到系统相册；指纹/面容仅用于应用锁解锁（生物信息由系统管理）；网络仅在您启用 WebDAV 同步时使用。</p>
   </section>
 
   <section>
@@ -75,6 +80,11 @@
   <section>
     <h2>数据删除</h2>
     <p>您可随时在「设置 → 清除全部数据」中彻底删除本地所有数据。</p>
+  </section>
+
+  <section>
+    <h2>联系我们</h2>
+    <p>开发者：SuiVault（随存）<br>邮箱：<a href="mailto:yuliuslux@outlook.com">yuliuslux@outlook.com</a></p>
   </section>
 
   <footer>

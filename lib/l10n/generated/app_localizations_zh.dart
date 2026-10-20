@@ -961,7 +961,59 @@ class AppLocalizationsZh extends AppLocalizations {
   String get presentBrightness => '亮度';
 
   @override
+  String get privacyBackupBody =>
+      '您可以主动导出加密备份文件，或导出 Markdown ZIP、TXT 文件；导出的文件保存到您自己选择的位置，应用不会上传。加密备份使用您设置的密码加密（Argon2id + AES-256-GCM），开发者无法解密；如果您忘记密码，备份将无法恢复。如果您启用了 WebDAV 自动备份/同步，数据会在端到端加密后，仅发送到您自己配置的服务器（强制使用 HTTPS）。';
+
+  @override
+  String get privacyBackupTitle => '备份与导出';
+
+  @override
+  String get privacyContactBody => '开发者：SuiVault（随存）';
+
+  @override
+  String get privacyContactEmail => 'yuliuslux@outlook.com';
+
+  @override
+  String get privacyContactTitle => '联系我们';
+
+  @override
+  String get privacyDataStorageBody =>
+      '您的所有记录、照片均仅存储在您的设备本地，不上传到任何服务器。本地数据库已使用 SQLCipher 加密，证件照片以 AES-256-GCM 加密后保存在应用私有目录中。我们没有用户账号系统，不收集、不存储您的任何个人信息。';
+
+  @override
+  String get privacyDataStorageTitle => '数据存储';
+
+  @override
+  String get privacyDeletionBody => '您可随时在「设置 → 清除全部数据」中彻底删除本地所有数据。';
+
+  @override
+  String get privacyDeletionTitle => '数据删除';
+
+  @override
+  String get privacyIntro => '随存是一款本地优先的隐私笔记应用。';
+
+  @override
+  String get privacyPermissionsBody =>
+      '相机仅用于拍摄证件照片（保存到应用私有目录）；通过系统照片选择器选择证件照片，应用不申请存储权限，也不会把照片保存到系统相册；指纹/面容仅用于应用锁解锁（生物信息由系统管理）；网络仅在您启用 WebDAV 同步时使用。';
+
+  @override
+  String get privacyPermissionsTitle => '权限使用';
+
+  @override
   String get privacyPolicy => '隐私政策';
+
+  @override
+  String get privacySyncBody =>
+      '如您自行配置 WebDAV 同步，数据仅在您的设备与您自己的服务器之间直接传输，我们无法访问。同步配置信息仅保存在本地。';
+
+  @override
+  String get privacySyncTitle => '同步';
+
+  @override
+  String get privacyThirdPartiesBody => '应用内无广告、无第三方 SDK、无数据统计上报。';
+
+  @override
+  String get privacyThirdPartiesTitle => '第三方';
 
   @override
   String get probeInvalidConfig => '配置不完整';
