@@ -136,9 +136,12 @@ void main() {
     await tester.tap(find.byIcon(Icons.edit_outlined));
     await tester.pumpAndSettle();
 
-    // Should switch to edit mode (TextField with hint 'Title (optional)')
-    expect(find.byType(PasswordTemplateView), findsNothing);
-    expect(findByHint('Title (optional)'), findsOneWidget);
+    // Round 10: ✏️ must keep the template FORM (previously this asserted
+    // the template disappearing into the raw-text editor — that WAS the
+    // bug). The card form stays, now editable.
+    expect(find.byType(PasswordTemplateView), findsOneWidget);
+    expect(find.byKey(const Key('template_title_field')), findsOneWidget);
+    expect(find.byKey(const Key('password_website_field')), findsOneWidget);
   });
 
   testWidgets('non-template text falls back to generic rendering',

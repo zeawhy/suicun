@@ -126,9 +126,12 @@ void main() {
     await tester.tap(find.byIcon(Icons.edit_outlined));
     await tester.pumpAndSettle();
 
-    // Should switch to edit mode (TextField with hint 'Title (optional)')
-    expect(find.byType(IdeaTemplateView), findsNothing);
-    expect(findByHint('Title (optional)'), findsOneWidget);
+    // Round 10: ✏️ must keep the template FORM (previously this asserted
+    // the template disappearing into the raw-text editor — that WAS the
+    // bug). The card form stays, now editable.
+    expect(find.byType(IdeaTemplateView), findsOneWidget);
+    expect(find.byKey(const Key('template_title_field')), findsOneWidget);
+    expect(find.byKey(const Key('idea_idea_field')), findsOneWidget);
   });
 
   testWidgets('source URL is clickable and copies link with snackbar',

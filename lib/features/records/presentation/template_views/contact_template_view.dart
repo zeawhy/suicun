@@ -62,6 +62,16 @@ class _ContactTemplateViewState extends State<ContactTemplateView> {
   @override
   void didUpdateWidget(ContactTemplateView oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (!oldWidget.isEditing && widget.isEditing) {
+      // Round 10 §3.5: reading→editing transition — re-seed every controller
+      // from the current body data so the form never shows stale values.
+      _nameController.text = widget.data.name ?? '';
+      _phoneController.text = widget.data.phone ?? '';
+      _emailController.text = widget.data.email ?? '';
+      _addressController.text = widget.data.address ?? '';
+      _notesController.text = widget.data.notes ?? '';
+      return;
+    }
     if (widget.isEditing) {
       if (widget.data.name != null &&
           widget.data.name != _nameController.text) {
@@ -97,11 +107,16 @@ class _ContactTemplateViewState extends State<ContactTemplateView> {
   }
 
   void _syncBody() {
-    final raw = widget.rawBody ?? '';
-    final isEnglish = raw.contains('Name') ||
-        raw.contains('name') ||
-        raw.contains('Phone:') ||
-        raw.contains('Email:');
+    // Round 10 §3.6: keep the body's original label language (first KNOWN
+    // label decides); never guess via contains(). New records use UI locale.
+    final lang = templateLabelLanguage(
+      widget.rawBody ?? '',
+      zhLabels: const {'姓名', '电话', '邮箱', '地址', '备注'},
+      enLabels: const {'name', 'phone', 'email', 'address', 'notes'},
+    );
+    final isEnglish = lang == null
+        ? Localizations.localeOf(context).languageCode == 'en'
+        : lang == 'en';
     String body;
     if (isEnglish) {
       body = 'Name: ${_nameController.text}\n'
