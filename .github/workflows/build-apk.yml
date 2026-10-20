@@ -2,27 +2,49 @@ name: Build release (APK + AAB)
 
 on:
   workflow_dispatch:
+    inputs:
+      play_release:
+        description: '正式发版构建（true=必须用 Play upload key 签名，缺任一密钥直接失败；false=测试构建，允许回落 debug 签名）'
+        type: boolean
+        required: true
+        default: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      # play_release=true 时传给 Gradle：REQUIRE_RELEASE_SIGNING=true 且无
+      # key.properties 时构建直接抛错（见 android/app/build.gradle.kts），
+      # 正式包绝不静默回落 debug 签名。
+      REQUIRE_RELEASE_SIGNING: ${{ inputs.play_release && 'true' || 'false' }}
+      # 产物名后缀，区分正式签名 / debug 签名，避免误传 Play。
+      SIGNING_SUFFIX: ${{ inputs.play_release && 'upload-signed' || 'debug-signed' }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Prepare Play upload keystore (optional)
+      - name: Prepare Play upload keystore
         run: |
-          if [ -n "$UPLOAD_KEYSTORE_BASE64" ]; then
-            echo "$UPLOAD_KEYSTORE_BASE64" | base64 -d > android/app/upload-keystore.jks
-            cat > android/key.properties <<EOF
+          if [ "${{ inputs.play_release }}" != "true" ]; then
+            echo "::warning::play_release=false: test build — release artifacts will be signed with the Android DEBUG key. Do NOT upload them to Google Play."
+            exit 0
+          fi
+          missing=""
+          [ -z "$UPLOAD_KEYSTORE_BASE64" ] && missing="$missing UPLOAD_KEYSTORE_BASE64"
+          [ -z "$STORE_PASSWORD" ] && missing="$missing STORE_PASSWORD"
+          [ -z "$KEY_PASSWORD" ] && missing="$missing KEY_PASSWORD"
+          [ -z "$KEY_ALIAS" ] && missing="$missing KEY_ALIAS"
+          if [ -n "$missing" ]; then
+            echo "::error::play_release=true requires all Play signing secrets, missing:$missing"
+            exit 1
+          fi
+          echo "$UPLOAD_KEYSTORE_BASE64" | base64 -d > android/app/upload-keystore.jks
+          cat > android/key.properties <<EOF
           storePassword=$STORE_PASSWORD
           keyPassword=$KEY_PASSWORD
           keyAlias=$KEY_ALIAS
           storeFile=upload-keystore.jks
           EOF
-            echo "Play upload keystore prepared: release build will be signed with the upload key."
-          else
-            echo "No upload keystore secrets set: release build will fall back to debug signing."
-          fi
+          echo "Play upload keystore prepared: release build will be signed with the upload key."
         env:
           UPLOAD_KEYSTORE_BASE64: ${{ secrets.UPLOAD_KEYSTORE_BASE64 }}
           STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
@@ -59,16 +81,30 @@ jobs:
             exit 1
           fi
 
+      - name: Verify signing
+        run: |
+          APKSIGNER=$(find $ANDROID_HOME/build-tools -name apksigner -type f | sort -V | tail -1)
+          echo "Using apksigner: $APKSIGNER"
+          CERTS=$("$APKSIGNER" verify --print-certs build/app/outputs/flutter-apk/app-release.apk)
+          echo "$CERTS"
+          if [ "${{ inputs.play_release }}" = "true" ] && echo "$CERTS" | grep -q "CN=Android Debug"; then
+            echo "::error::play_release=true but the APK is signed with the Android Debug key. Refusing to produce a fake release build."
+            exit 1
+          fi
+          if [ "${{ inputs.play_release }}" != "true" ]; then
+            echo "::warning::Test build (play_release=false): APK signing certificate shown above (expected: Android Debug)."
+          fi
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: suicun-release-apk
+          name: suicun-release-apk-${{ env.SIGNING_SUFFIX }}
           path: build/app/outputs/flutter-apk/app-release.apk
           retention-days: 14
 
       - name: Upload AAB
         uses: actions/upload-artifact@v4
         with:
-          name: suicun-release-aab
+          name: suicun-release-aab-${{ env.SIGNING_SUFFIX }}
           path: build/app/outputs/bundle/release/app-release.aab
           retention-days: 14

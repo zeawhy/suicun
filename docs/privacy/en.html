@@ -44,7 +44,7 @@
 <div class="wrap">
   <header>
     <h1>SuiVault (随存) Privacy Policy</h1>
-    <div class="meta">Effective date: 2026-10-19</div>
+    <div class="meta">Effective date: 2026-10-20</div>
     <div class="lang">中文版：<a href="index.html">隐私政策（中文）</a></div>
   </header>
 
@@ -54,7 +54,7 @@
 
   <section>
     <h2>Data Storage</h2>
-    <p>All your records and photos are stored strictly locally on your device and are never uploaded to any server. We have no user account system and do not collect or store any of your personal information.</p>
+    <p>All your records and photos are stored strictly locally on your device and are never uploaded to any server. The local database is encrypted with SQLCipher, and ID document photos are encrypted with AES-256-GCM and stored in the app's private directory. We have no user account system and do not collect or store any of your personal information.</p>
   </section>
 
   <section>
@@ -63,8 +63,13 @@
   </section>
 
   <section>
+    <h2>Backup &amp; Export</h2>
+    <p>You can export an encrypted backup file, or export your data as a Markdown ZIP or TXT file. Exported files are saved to a location you choose; the app does not upload them. Encrypted backups are protected with a password you set (Argon2id + AES-256-GCM); the developer cannot decrypt them, and if you forget the password, the backup cannot be recovered. If you enable WebDAV automatic backup/sync, your data is end-to-end encrypted and sent only to the server you configured (HTTPS is enforced).</p>
+  </section>
+
+  <section>
     <h2>Permissions</h2>
-    <p>Camera is used only to capture ID document photos (saved to the app's private directory); photo gallery is used only to select ID document photos; fingerprint/face recognition is used only to unlock the app lock (biometric information is managed by the operating system); network is used only when you enable WebDAV sync.</p>
+    <p>Camera is used only to capture ID document photos (saved to the app's private directory); ID document photos are selected through the system photo picker — the app does not request storage permission and never saves photos to the system photo library; fingerprint/face recognition is used only to unlock the app lock (biometric information is managed by the operating system); network is used only when you enable WebDAV sync.</p>
   </section>
 
   <section>
@@ -75,6 +80,11 @@
   <section>
     <h2>Data Deletion</h2>
     <p>You can completely delete all local data at any time under "Settings → Clear all data".</p>
+  </section>
+
+  <section>
+    <h2>Contact Us</h2>
+    <p>Developer: SuiVault (随存)<br>Email: <a href="mailto:yuliuslux@outlook.com">yuliuslux@outlook.com</a></p>
   </section>
 
   <footer>

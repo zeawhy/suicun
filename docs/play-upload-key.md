@@ -58,8 +58,16 @@ storeFile=upload-keystore.jks
 
 ## 3. 把密钥存进 GitHub Secrets（CI 正式签名用）
 
-CI 构建时从 Secrets 还原 keystore，四个 Secret 全部配齐才走正式签名，
-缺任何一个都会安静地回落到 debug 签名（构建不挂）：
+CI 有两种构建模式，由 workflow 的 **`play_release` 参数**控制（Actions → Build release (APK + AAB) → Run workflow 时选择，默认 `true`）：
+
+| `play_release` | 含义 | 缺密钥时行为 | 产物名 |
+| --- | --- | --- | --- |
+| `true`（默认） | 正式发版构建 | **构建直接失败**（workflow 输出 `::error::` 列出缺哪个 Secret；Gradle 侧 `REQUIRE_RELEASE_SIGNING=true` 且无 key.properties 时抛 GradleException） | `suicun-release-apk-upload-signed` / `suicun-release-aab-upload-signed` |
+| `false` | 测试构建 | 允许回落 debug 签名，并输出 `::warning::` 提醒 | `suicun-release-apk-debug-signed` / `suicun-release-aab-debug-signed` |
+
+正式包绝不静默回落 debug 签名：四个 Secret 缺任何一个，`play_release=true` 的构建都会失败；
+构建完成后还有一步 `Verify signing` 用 apksigner 检查 APK 证书，若是 Android Debug 证书直接报错。
+日常测试包请显式选 `play_release=false`，产物名带 `debug-signed`，**切勿上传 Play**。
 
 1. 把 keystore 转成 base64（**注意**：不要把输出贴到聊天记录里，直接复制到 GitHub 页面）：
 
@@ -82,9 +90,10 @@ CI 构建时从 Secrets 还原 keystore，四个 Secret 全部配齐才走正式
    | `KEY_PASSWORD` | 密钥密码（同 `-keypass`） |
    | `STORE_PASSWORD` | keystore 密码（同 `-storepass`） |
 
-3. 配好后触发 `build-apk.yml` workflow（Actions → Build release (APK + AAB) → Run workflow），
+3. 配好后触发 `build-apk.yml` workflow（Actions → Build release (APK + AAB) → Run workflow，
+   `play_release` 保持默认 `true`），
    构建日志里会看到 `Play upload keystore prepared: release build will be signed with the upload key.`，
-   产出的 AAB 就是正式签名包，可直接上传 Play Console。
+   产出的 AAB（产物名 `suicun-release-aab-upload-signed`）就是正式签名包，可直接上传 Play Console。
 
 ## 4. ⚠️ 密钥备份警告（必读）
 

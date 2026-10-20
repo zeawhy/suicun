@@ -1922,11 +1922,107 @@ abstract class AppLocalizations {
   /// **'亮度'**
   String get presentBrightness;
 
+  /// No description provided for @privacyBackupBody.
+  ///
+  /// In zh, this message translates to:
+  /// **'您可以主动导出加密备份文件，或导出 Markdown ZIP、TXT 文件；导出的文件保存到您自己选择的位置，应用不会上传。加密备份使用您设置的密码加密（Argon2id + AES-256-GCM），开发者无法解密；如果您忘记密码，备份将无法恢复。如果您启用了 WebDAV 自动备份/同步，数据会在端到端加密后，仅发送到您自己配置的服务器（强制使用 HTTPS）。'**
+  String get privacyBackupBody;
+
+  /// No description provided for @privacyBackupTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'备份与导出'**
+  String get privacyBackupTitle;
+
+  /// No description provided for @privacyContactBody.
+  ///
+  /// In zh, this message translates to:
+  /// **'开发者：SuiVault（随存）'**
+  String get privacyContactBody;
+
+  /// No description provided for @privacyContactEmail.
+  ///
+  /// In zh, this message translates to:
+  /// **'yuliuslux@outlook.com'**
+  String get privacyContactEmail;
+
+  /// No description provided for @privacyContactTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'联系我们'**
+  String get privacyContactTitle;
+
+  /// No description provided for @privacyDataStorageBody.
+  ///
+  /// In zh, this message translates to:
+  /// **'您的所有记录、照片均仅存储在您的设备本地，不上传到任何服务器。本地数据库已使用 SQLCipher 加密，证件照片以 AES-256-GCM 加密后保存在应用私有目录中。我们没有用户账号系统，不收集、不存储您的任何个人信息。'**
+  String get privacyDataStorageBody;
+
+  /// No description provided for @privacyDataStorageTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'数据存储'**
+  String get privacyDataStorageTitle;
+
+  /// No description provided for @privacyDeletionBody.
+  ///
+  /// In zh, this message translates to:
+  /// **'您可随时在「设置 → 清除全部数据」中彻底删除本地所有数据。'**
+  String get privacyDeletionBody;
+
+  /// No description provided for @privacyDeletionTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'数据删除'**
+  String get privacyDeletionTitle;
+
+  /// No description provided for @privacyIntro.
+  ///
+  /// In zh, this message translates to:
+  /// **'随存是一款本地优先的隐私笔记应用。'**
+  String get privacyIntro;
+
+  /// No description provided for @privacyPermissionsBody.
+  ///
+  /// In zh, this message translates to:
+  /// **'相机仅用于拍摄证件照片（保存到应用私有目录）；通过系统照片选择器选择证件照片，应用不申请存储权限，也不会把照片保存到系统相册；指纹/面容仅用于应用锁解锁（生物信息由系统管理）；网络仅在您启用 WebDAV 同步时使用。'**
+  String get privacyPermissionsBody;
+
+  /// No description provided for @privacyPermissionsTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'权限使用'**
+  String get privacyPermissionsTitle;
+
   /// No description provided for @privacyPolicy.
   ///
   /// In zh, this message translates to:
   /// **'隐私政策'**
   String get privacyPolicy;
+
+  /// No description provided for @privacySyncBody.
+  ///
+  /// In zh, this message translates to:
+  /// **'如您自行配置 WebDAV 同步，数据仅在您的设备与您自己的服务器之间直接传输，我们无法访问。同步配置信息仅保存在本地。'**
+  String get privacySyncBody;
+
+  /// No description provided for @privacySyncTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'同步'**
+  String get privacySyncTitle;
+
+  /// No description provided for @privacyThirdPartiesBody.
+  ///
+  /// In zh, this message translates to:
+  /// **'应用内无广告、无第三方 SDK、无数据统计上报。'**
+  String get privacyThirdPartiesBody;
+
+  /// No description provided for @privacyThirdPartiesTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'第三方'**
+  String get privacyThirdPartiesTitle;
 
   /// No description provided for @probeInvalidConfig.
   ///

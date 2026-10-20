@@ -32,7 +32,7 @@ you configure yourself.
 ## Status
 
 - Android only for now (iOS is planned, not started)
-- Current version: 1.0.0 (versionCode 1)
+- Current version: 1.0.0 (versionCode 由 CI 的 run_number 自动递增)
 - Min/target SDK follows the Flutter stable default (targets API 36 for the Play release)
 
 ## Build
