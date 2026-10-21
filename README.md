@@ -57,6 +57,10 @@ Release builds are also produced by the `Build APK` GitHub Actions workflow
 Issues and PRs are welcome. Please keep PRs focused and run
 `flutter analyze` plus the test suite before submitting.
 
+## Security
+
+For vulnerability reporting instructions and our verified security design, please refer to [SECURITY.md](SECURITY.md).
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
