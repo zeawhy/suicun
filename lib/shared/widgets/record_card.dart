@@ -1,6 +1,5 @@
 // lib/shared/widgets/record_card.dart
 
-import 'dart:typed_data';
 import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/gestures.dart';
@@ -48,6 +47,7 @@ class RecordCard extends StatelessWidget {
     required this.onQuickAccessToggle,
     this.onAnySlideAction,
     this.showSwipeHint = false,
+    this.onSlideStateChanged,
     required this.onEdit,
     required this.onChangeCategory,
     required this.onDelete,
@@ -78,6 +78,9 @@ class RecordCard extends StatelessWidget {
 
   /// Whether to show the left-swipe indicator arrow hint.
   final bool showSwipeHint;
+
+  /// Callback when the card's slide/expanded state changes.
+  final ValueChanged<bool>? onSlideStateChanged;
 
   final VoidCallback onEdit;
 
@@ -257,8 +260,10 @@ class RecordCard extends StatelessWidget {
             ),
           ],
         ),
-        child: Stack(
-          children: [
+        child: _SlidableStateListener(
+          onSlideStateChanged: onSlideStateChanged,
+          child: Stack(
+            children: [
             Container(
           decoration: BoxDecoration(
             color: colorScheme.surfaceContainerLowest,
@@ -508,6 +513,7 @@ class RecordCard extends StatelessWidget {
       ],
     ),
   ),
+),
 );
   }
 
@@ -776,4 +782,70 @@ class RecordCard extends StatelessWidget {
       },
     );
   }
+}
+
+class _SlidableStateListener extends StatefulWidget {
+  const _SlidableStateListener({
+    required this.onSlideStateChanged,
+    required this.child,
+  });
+
+  final ValueChanged<bool>? onSlideStateChanged;
+  final Widget child;
+
+  @override
+  State<_SlidableStateListener> createState() => _SlidableStateListenerState();
+}
+
+class _SlidableStateListenerState extends State<_SlidableStateListener> {
+  SlidableController? _controller;
+  bool _isExpanded = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (widget.onSlideStateChanged == null) return;
+    final controller = Slidable.of(context);
+    if (controller != _controller) {
+      _controller?.animation.removeListener(_handleAnimation);
+      _controller = controller;
+      _controller?.animation.addListener(_handleAnimation);
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _SlidableStateListener oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.onSlideStateChanged != widget.onSlideStateChanged) {
+      if (widget.onSlideStateChanged == null) {
+        _controller?.animation.removeListener(_handleAnimation);
+        _controller = null;
+      } else if (oldWidget.onSlideStateChanged == null) {
+        _controller = Slidable.of(context);
+        _controller?.animation.addListener(_handleAnimation);
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller?.animation.removeListener(_handleAnimation);
+    if (_isExpanded) {
+      widget.onSlideStateChanged?.call(false);
+    }
+    super.dispose();
+  }
+
+  void _handleAnimation() {
+    final controller = _controller;
+    if (controller == null) return;
+    final isExpanded = controller.animation.value > 0;
+    if (isExpanded != _isExpanded) {
+      _isExpanded = isExpanded;
+      widget.onSlideStateChanged?.call(isExpanded);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }

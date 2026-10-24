@@ -1252,6 +1252,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get saving => 'Saving…';
 
   @override
+  String get pullToSearch => 'Pull to search';
+
+  @override
+  String get releaseToSearch => 'Release to search';
+
+  @override
   String get search => 'Search';
 
   @override
