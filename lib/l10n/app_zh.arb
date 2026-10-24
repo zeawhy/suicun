@@ -612,6 +612,8 @@
   "saved": "已保存",
   "savedToGallery": "已保存到相册",
   "saving": "保存中…",
+  "pullToSearch": "下拉搜索",
+  "releaseToSearch": "松开搜索",
   "search": "搜索",
   "searchEmpty": "没有找到相关信息",
   "searchEmptyHint": "试试其他关键词，或清除搜索条件",
