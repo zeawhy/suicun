@@ -74,6 +74,9 @@ Future<void> runStartup() async {
 
   // After a recovery reset, show the one-time restore prompt.
   final prefs = await SharedPreferences.getInstance();
+  if (!prefs.containsKey('first_launch_at')) {
+    await prefs.setInt('first_launch_at', DateTime.now().millisecondsSinceEpoch);
+  }
   final showRestorePrompt =
       prefs.getBool('show_restore_prompt_after_recovery') ?? false;
   if (showRestorePrompt) {

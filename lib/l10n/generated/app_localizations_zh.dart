@@ -72,6 +72,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get backup => '备份';
 
   @override
+  String get backupAction => '备份';
+
+  @override
   String get backupAndExport => '备份与导出';
 
   @override
@@ -89,7 +92,26 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get backupReminderText => '你的数据只保存在这台手机上，建议开启加密备份或同步。';
+  String get backupReminderDaysText => '已 30 天未备份';
+
+  @override
+  String get backupReminderText => '数据只存在这台手机上，建议备份';
+
+  @override
+  String get backupStatusAutoOn => '已开启自动备份';
+
+  @override
+  String backupStatusDaysAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '上次备份：$count 天前',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get backupStatusNever => '从未备份';
 
   @override
   String get batchCategorize => '批量分类';
@@ -320,6 +342,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get disableSyncConfirm => '关闭同步将停止网络任务，本地数据保留。确认吗？';
+
+  @override
+  String get dontRemindMe => '不再提醒';
 
   @override
   String get docTypeCustomHint => '请输入证件类型';

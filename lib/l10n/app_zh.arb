@@ -10,6 +10,13 @@
       }
     }
   },
+  "@backupStatusDaysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "@conflictCount": {
     "placeholders": {
       "count": {
@@ -241,12 +248,17 @@
   "backSide": "背面",
   "backToSync": "返回同步设置",
   "backup": "备份",
+  "backupAction": "备份",
   "backupAndExport": "备份与导出",
   "backupAndSync": "备份与同步",
   "backupPassword": "备份密码",
   "backupPasswordHint": "换设备恢复需要此密码，请妥善保存",
   "backupPhotoSizeWarn": "备份包含 {count} 张证件照片，文件约 {size}",
-  "backupReminderText": "你的数据只保存在这台手机上，建议开启加密备份或同步。",
+  "backupReminderDaysText": "已 30 天未备份",
+  "backupReminderText": "数据只存在这台手机上，建议备份",
+  "backupStatusAutoOn": "已开启自动备份",
+  "backupStatusDaysAgo": "{count, plural, other{上次备份：{count} 天前}}",
+  "backupStatusNever": "从未备份",
   "batchCategorize": "批量分类",
   "batchDelete": "批量删除",
   "batchFavorite": "批量收藏",
@@ -328,6 +340,7 @@
   "directoryInvalid": "同步目录须以 / 开头",
   "disableSync": "关闭同步",
   "disableSyncConfirm": "关闭同步将停止网络任务，本地数据保留。确认吗？",
+  "dontRemindMe": "不再提醒",
   "docTypeCustomHint": "请输入证件类型",
   "docTypeDriverLicense": "驾驶证",
   "docTypeHmtPermit": "港澳通行证",

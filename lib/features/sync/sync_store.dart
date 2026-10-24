@@ -10,6 +10,7 @@
 import 'dart:convert';
 
 import 'package:drift/drift.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:suicun/core/database/app_database.dart';
@@ -208,9 +209,14 @@ class SyncStore {
         );
   }
 
-  Future<void> setLastSuccess(DateTime at) =>
-      _db.update(_db.syncState).write(
-          SyncStateCompanion(lastSuccessAt: Value(at.toUtc())));
+  Future<void> setLastSuccess(DateTime at) async {
+    await _db.update(_db.syncState).write(
+        SyncStateCompanion(lastSuccessAt: Value(at.toUtc())));
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt('last_encrypted_backup_at', at.millisecondsSinceEpoch);
+    } catch (_) {}
+  }
 
   Future<void> setEnabled(bool enabled) => _db
       .update(_db.syncState)

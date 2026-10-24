@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:suicun/core/database/providers.dart';
+import 'package:suicun/features/backup/data/backup_providers.dart';
 import 'package:suicun/features/records/data/quick_access_storage.dart';
 import 'package:suicun/features/records/presentation/template_views/id_photo_storage.dart';
 import 'package:suicun/features/security/data/security_providers.dart';
@@ -56,6 +57,7 @@ class SettingsView extends ConsumerWidget {
     context.push(location).then((_) {
       if (context.mounted) {
         ref.invalidate(appLockEnabledProvider);
+        ref.invalidate(lastEncryptedBackupAtProvider);
       }
     });
   }
@@ -249,12 +251,32 @@ class SettingsView extends ConsumerWidget {
           margin: EdgeInsets.zero,
           child: Column(
             children: [
-              _navTile(
-                context,
-                icon: Icons.backup_outlined,
-                title: l10n.backupAndExport,
-                onTap: () => _push(context, ref, '/settings/backup'),
-              ),
+              () {
+                final syncOverview = ref.watch(syncOverviewProvider).value;
+                final lastBackupAsync = ref.watch(lastEncryptedBackupAtProvider);
+                final String backupSubtitle;
+                if (syncOverview?.enabled == true) {
+                  backupSubtitle = l10n.backupStatusAutoOn;
+                } else {
+                  final lastBackupAt = lastBackupAsync.value;
+                  if (lastBackupAt == null) {
+                    backupSubtitle = l10n.backupStatusNever;
+                  } else {
+                    final diff = DateTime.now().difference(
+                      DateTime.fromMillisecondsSinceEpoch(lastBackupAt),
+                    );
+                    final days = diff.inDays < 0 ? 0 : diff.inDays;
+                    backupSubtitle = l10n.backupStatusDaysAgo(days);
+                  }
+                }
+                return _navTile(
+                  context,
+                  icon: Icons.backup_outlined,
+                  title: l10n.backupAndExport,
+                  subtitle: backupSubtitle,
+                  onTap: () => _push(context, ref, '/settings/backup'),
+                );
+              }(),
               const Divider(height: 1, indent: 56, endIndent: 16),
               _navTile(
                 context,
@@ -412,12 +434,21 @@ class SettingsView extends ConsumerWidget {
     BuildContext context, {
     required IconData icon,
     required String title,
+    String? subtitle,
     String? trailingText,
     required VoidCallback onTap,
   }) {
     return ListTile(
       leading: Icon(icon),
       title: Text(title),
+      subtitle: subtitle != null
+          ? Text(
+              subtitle,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+            )
+          : null,
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [

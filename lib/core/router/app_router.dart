@@ -50,7 +50,12 @@ GoRouter appRouter(Ref ref) {
             routes: [
               GoRoute(
                 path: 'backup',
-                builder: (context, state) => const BackupPage(),
+                builder: (context, state) {
+                  final highlight =
+                      state.uri.queryParameters['highlight'] == 'true' ||
+                          state.extra == 'highlight';
+                  return BackupPage(highlightEncrypted: highlight);
+                },
               ),
               GoRoute(
                 path: 'categories',

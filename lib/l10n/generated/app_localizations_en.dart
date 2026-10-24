@@ -72,6 +72,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get backup => 'Backup';
 
   @override
+  String get backupAction => 'Back up';
+
+  @override
   String get backupAndExport => 'Backup and export';
 
   @override
@@ -90,8 +93,28 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get backupReminderDaysText => 'No backup in 30 days';
+
+  @override
   String get backupReminderText =>
-      'Your data is stored only on this phone. Turn on encrypted backup or sync to keep it safe.';
+      'Your data is only on this phone. Back it up.';
+
+  @override
+  String get backupStatusAutoOn => 'Auto backup on';
+
+  @override
+  String backupStatusDaysAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Last backup: $count days ago',
+      one: 'Last backup: 1 day ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get backupStatusNever => 'Never backed up';
 
   @override
   String get batchCategorize => 'Categorize';
@@ -330,6 +353,9 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get disableSyncConfirm =>
       'Disabling sync stops network tasks; local data is kept. Confirm?';
+
+  @override
+  String get dontRemindMe => 'Don\'t remind me';
 
   @override
   String get docTypeCustomHint => 'Enter document type';

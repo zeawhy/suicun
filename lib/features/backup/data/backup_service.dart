@@ -9,6 +9,7 @@ import 'package:archive/archive_io.dart';
 import 'package:drift/drift.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:suicun/core/crypto/backup_crypto.dart';
 import 'package:suicun/core/crypto/file_encryption_service.dart';
@@ -194,6 +195,11 @@ class BackupService {
       final ts = DateTime.now().toUtc().toIso8601String().replaceAll(':', '-');
       final file = File(p.join(dir.path, 'suicun_backup_$ts.encrypted.json'));
       await file.writeAsString(container, flush: true);
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setInt('last_encrypted_backup_at',
+            DateTime.now().millisecondsSinceEpoch);
+      } catch (_) {}
       return file;
     } on BackupCryptoError catch (e) {
       throw ExportError('Encrypted backup failed: ${e.message}');
