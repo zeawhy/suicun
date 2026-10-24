@@ -783,9 +783,13 @@ class _HomePageState extends ConsumerState<HomePage>
                 physics: const AlwaysScrollableScrollPhysics(),
                 slivers: [
                   _buildSliverAppBar(l10n, colorScheme),
-                  // §2.7: one-time backup reminder banner.
-                  const SliverToBoxAdapter(
-                    child: _BackupReminderBanner(),
+                  // §2.7: backup reminder banner.
+                  SliverToBoxAdapter(
+                    child: BackupReminderBanner(
+                      isSearching: _searchExpanded || isSearchOrFilterActive,
+                      isMultiSelect: _isMultiSelect,
+                      isSettingsOpen: _settingsOpen,
+                    ),
                   ),
                   if (showQuickAndRecent)
                     SliverToBoxAdapter(
@@ -2117,107 +2121,251 @@ class _EmptyState extends StatelessWidget {
   }
 }
 
-/// §2.7: one-time banner reminding the user to enable encrypted backup or sync.
-///
-/// Shows when (first ID doc saved OR >=3 records) AND (never exported an
-/// encrypted backup) AND (WebDAV sync not enabled) AND (not dismissed in
-/// the last 30 days).
-class _BackupReminderBanner extends ConsumerStatefulWidget {
-  const _BackupReminderBanner();
+enum ReminderType {
+  neverBackedUp,
+  over30Days,
+}
+
+class ReminderDecision {
+  const ReminderDecision({
+    required this.shouldShow,
+    this.type = ReminderType.neverBackedUp,
+    this.isSecondOrLater = false,
+  });
+
+  final bool shouldShow;
+  final ReminderType type;
+  final bool isSecondOrLater;
+}
+
+/// §2.7: compact backup reminder banner.
+class BackupReminderBanner extends ConsumerStatefulWidget {
+  const BackupReminderBanner({
+    super.key,
+    this.isSearching = false,
+    this.isMultiSelect = false,
+    this.isSettingsOpen = false,
+  });
+
+  final bool isSearching;
+  final bool isMultiSelect;
+  final bool isSettingsOpen;
 
   @override
-  ConsumerState<_BackupReminderBanner> createState() =>
+  ConsumerState<BackupReminderBanner> createState() =>
       _BackupReminderBannerState();
 }
 
-class _BackupReminderBannerState extends ConsumerState<_BackupReminderBanner> {
+class _BackupReminderBannerState extends ConsumerState<BackupReminderBanner> {
   bool _dismissed = false;
 
-  Future<bool> _shouldShow(int recordCount, bool syncEnabled) async {
-    if (_dismissed) return false;
+  Future<ReminderDecision> _decide(
+    List<RecordDetail> records,
+    bool syncEnabled,
+  ) async {
+    if (_dismissed) return const ReminderDecision(shouldShow: false);
+    if (widget.isSearching || widget.isMultiSelect || widget.isSettingsOpen) {
+      return const ReminderDecision(shouldShow: false);
+    }
+
     try {
       final prefs = await SharedPreferences.getInstance();
-      final dismissedAt = prefs.getInt('backup_reminder_dismissed_at');
-      if (dismissedAt != null &&
-          DateTime.now().millisecondsSinceEpoch - dismissedAt <
-              const Duration(days: 30).inMilliseconds) {
-        return false;
+
+      if (prefs.getBool('backup_reminder_never') == true) {
+        return const ReminderDecision(shouldShow: false);
       }
-      if (prefs.getInt('last_encrypted_backup_at') != null) return false;
-      if (syncEnabled) return false;
-      final idDocSaved = prefs.getBool('id_doc_saved_once') ?? false;
-      return idDocSaved || recordCount >= 3;
+
+      if (syncEnabled) {
+        return const ReminderDecision(shouldShow: false);
+      }
+
+      final shownCount = prefs.getInt('backup_reminder_shown_count') ?? 0;
+      if (shownCount >= 3) {
+        return const ReminderDecision(shouldShow: false);
+      }
+
+      final dismissedAt = prefs.getInt('backup_reminder_dismissed_at');
+      final nowMillis = DateTime.now().millisecondsSinceEpoch;
+      if (dismissedAt != null &&
+          nowMillis - dismissedAt < const Duration(days: 14).inMilliseconds) {
+        return const ReminderDecision(shouldShow: false);
+      }
+
+      final isSecondOrLater = shownCount >= 1 || dismissedAt != null;
+
+      final lastBackupAt = prefs.getInt('last_encrypted_backup_at');
+
+      if (lastBackupAt == null) {
+        int? firstLaunchAt = prefs.getInt('first_launch_at');
+        if (firstLaunchAt == null) {
+          firstLaunchAt = nowMillis;
+          await prefs.setInt('first_launch_at', firstLaunchAt);
+        }
+        final idDocSaved = prefs.getBool('id_doc_saved_once') ?? false;
+        final isInstalledOverOneDay =
+            (nowMillis - firstLaunchAt) >= const Duration(days: 1).inMilliseconds;
+
+        final meetsTrigger =
+            records.length >= 5 || (idDocSaved && isInstalledOverOneDay);
+        if (!meetsTrigger) {
+          return const ReminderDecision(shouldShow: false);
+        }
+
+        return ReminderDecision(
+          shouldShow: true,
+          type: ReminderType.neverBackedUp,
+          isSecondOrLater: isSecondOrLater,
+        );
+      } else {
+        final isOver30Days =
+            nowMillis - lastBackupAt >= const Duration(days: 30).inMilliseconds;
+        if (!isOver30Days) {
+          return const ReminderDecision(shouldShow: false);
+        }
+
+        final modifiedCount = records
+            .where((r) => r.updatedAt.millisecondsSinceEpoch > lastBackupAt)
+            .length;
+        if (modifiedCount < 5) {
+          return const ReminderDecision(shouldShow: false);
+        }
+
+        return ReminderDecision(
+          shouldShow: true,
+          type: ReminderType.over30Days,
+          isSecondOrLater: isSecondOrLater,
+        );
+      }
     } catch (_) {
-      return false;
+      return const ReminderDecision(shouldShow: false);
     }
   }
 
   Future<void> _dismiss() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setInt('backup_reminder_dismissed_at',
-          DateTime.now().millisecondsSinceEpoch);
+      final count = prefs.getInt('backup_reminder_shown_count') ?? 0;
+      await prefs.setInt('backup_reminder_shown_count', count + 1);
+      await prefs.setInt(
+        'backup_reminder_dismissed_at',
+        DateTime.now().millisecondsSinceEpoch,
+      );
     } catch (_) {}
     if (mounted) setState(() => _dismissed = true);
+  }
+
+  Future<void> _neverRemind() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('backup_reminder_never', true);
+    } catch (_) {}
+    if (mounted) setState(() => _dismissed = true);
+  }
+
+  void _onBackupTap() {
+    context.push('/settings/backup?highlight=true', extra: 'highlight');
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final reminderTheme = theme.backupReminder;
     final recordsAsync = ref.watch(recordsListProvider);
     final syncOverviewAsync = ref.watch(syncOverviewProvider);
-    final recordCount = recordsAsync.value?.length ?? 0;
+    final records = recordsAsync.value ?? const [];
     final syncEnabled = syncOverviewAsync.value?.enabled ?? false;
 
-    return FutureBuilder<bool>(
-      future: _shouldShow(recordCount, syncEnabled),
+    return FutureBuilder<ReminderDecision>(
+      future: _decide(records, syncEnabled),
       builder: (context, snapshot) {
-        if (snapshot.data != true) return const SizedBox.shrink();
-        return Container(
-          margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: colorScheme.tertiaryContainer,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.backup_outlined,
-                  color: colorScheme.onTertiaryContainer, size: 20),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.backupReminderText,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onTertiaryContainer,
+        final decision = snapshot.data;
+        final bool visible = decision?.shouldShow == true;
+
+        return AnimatedSize(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeInOut,
+          child: visible
+              ? Container(
+                  margin: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                  constraints: const BoxConstraints(minHeight: 48),
+                  padding: const EdgeInsets.only(
+                    left: 12,
+                    right: 4,
+                    top: 4,
+                    bottom: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: reminderTheme.background,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.backup_outlined,
+                        size: 20,
+                        color: reminderTheme.action,
                       ),
-                    ),
-                    const SizedBox(height: 6),
-                    InkWell(
-                      onTap: () => context.go('/settings/backup'),
-                      child: Text(
-                        l10n.setUp,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: colorScheme.primary,
-                          fontWeight: FontWeight.bold,
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          decision!.type == ReminderType.neverBackedUp
+                              ? l10n.backupReminderText
+                              : l10n.backupReminderDaysText,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: reminderTheme.text,
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w500,
+                            height: 1.3,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.close, size: 18),
-                onPressed: _dismiss,
-                tooltip: MaterialLocalizations.of(context).closeButtonLabel,
-              ),
-            ],
-          ),
+                      if (decision.isSecondOrLater)
+                        TextButton(
+                          style: TextButton.styleFrom(
+                            foregroundColor: reminderTheme.close,
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            minimumSize: const Size(48, 48),
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          onPressed: _neverRemind,
+                          child: Text(
+                            l10n.dontRemindMe,
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ),
+                      TextButton(
+                        style: TextButton.styleFrom(
+                          foregroundColor: reminderTheme.action,
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          minimumSize: const Size(48, 48),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        onPressed: _onBackupTap,
+                        child: Text(
+                          l10n.backupAction,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close, size: 18),
+                        color: reminderTheme.close,
+                        tooltip:
+                            MaterialLocalizations.of(context).closeButtonLabel,
+                        constraints:
+                            const BoxConstraints(minWidth: 48, minHeight: 48),
+                        padding: EdgeInsets.zero,
+                        onPressed: _dismiss,
+                      ),
+                    ],
+                  ),
+                )
+              : const SizedBox.shrink(),
         );
       },
     );

@@ -301,6 +301,7 @@ class AppTheme {
       extensions: const [
         SuiVaultColors.light,
         ActionBubbleTheme.light,
+        BackupReminderTheme.light,
       ],
     );
   }
@@ -477,6 +478,7 @@ class AppTheme {
       extensions: const [
         SuiVaultColors.dark,
         ActionBubbleTheme.dark,
+        BackupReminderTheme.dark,
       ],
     );
   }
@@ -684,6 +686,62 @@ class ActionBubbleTheme extends ThemeExtension<ActionBubbleTheme> {
   }
 }
 
+/// Theme extension defining colors for the home page backup reminder banner.
+@immutable
+class BackupReminderTheme extends ThemeExtension<BackupReminderTheme> {
+  const BackupReminderTheme({
+    required this.background,
+    required this.text,
+    required this.action,
+    required this.close,
+  });
+
+  final Color background;
+  final Color text;
+  final Color action;
+  final Color close;
+
+  static const BackupReminderTheme light = BackupReminderTheme(
+    background: Color(0xFFEEF3FD),
+    text: Color(0xFF3A4559),
+    action: Color(0xFF3265E5),
+    close: Color(0xFF5B6578),
+  );
+
+  static const BackupReminderTheme dark = BackupReminderTheme(
+    background: Color(0xFF1E2A44),
+    text: Color(0xFFC9D3E3),
+    action: Color(0xFF8FB0F5),
+    close: Color(0xFFA7B1C2),
+  );
+
+  @override
+  BackupReminderTheme copyWith({
+    Color? background,
+    Color? text,
+    Color? action,
+    Color? close,
+  }) {
+    return BackupReminderTheme(
+      background: background ?? this.background,
+      text: text ?? this.text,
+      action: action ?? this.action,
+      close: close ?? this.close,
+    );
+  }
+
+  @override
+  BackupReminderTheme lerp(ThemeExtension<BackupReminderTheme>? other, double t) {
+    if (other is! BackupReminderTheme) return this;
+    return BackupReminderTheme(
+      background: Color.lerp(background, other.background, t) ?? background,
+      text: Color.lerp(text, other.text, t) ?? text,
+      action: Color.lerp(action, other.action, t) ?? action,
+      close: Color.lerp(close, other.close, t) ?? close,
+    );
+  }
+}
+
 extension SuiVaultThemeDataX on ThemeData {
   SuiVaultColors get suiColors =>
       extension<SuiVaultColors>() ??
@@ -696,10 +754,18 @@ extension SuiVaultThemeDataX on ThemeData {
       (brightness == Brightness.dark
           ? ActionBubbleTheme.dark
           : ActionBubbleTheme.light);
+
+  BackupReminderTheme get backupReminder =>
+      extension<BackupReminderTheme>() ??
+      (brightness == Brightness.dark
+          ? BackupReminderTheme.dark
+          : BackupReminderTheme.light);
 }
 
 extension SuiVaultBuildContextX on BuildContext {
   SuiVaultColors get suiColors => Theme.of(this).suiColors;
 
   ActionBubbleTheme get actionBubble => Theme.of(this).actionBubble;
+
+  BackupReminderTheme get backupReminder => Theme.of(this).backupReminder;
 }

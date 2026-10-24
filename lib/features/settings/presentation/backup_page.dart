@@ -17,14 +17,53 @@ import 'package:suicun/features/records/presentation/records_notifier.dart';
 import 'package:suicun/l10n/generated/app_localizations.dart';
 
 class BackupPage extends ConsumerStatefulWidget {
-  const BackupPage({super.key});
+  const BackupPage({super.key, this.highlightEncrypted = false});
+
+  final bool highlightEncrypted;
 
   @override
   ConsumerState<BackupPage> createState() => _BackupPageState();
 }
 
-class _BackupPageState extends ConsumerState<BackupPage> {
+class _BackupPageState extends ConsumerState<BackupPage>
+    with SingleTickerProviderStateMixin {
   bool _busy = false;
+  AnimationController? _highlightController;
+  Animation<double>? _highlightAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.highlightEncrypted) {
+      _highlightController = AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: 1600),
+      );
+      _highlightAnimation = TweenSequence<double>([
+        TweenSequenceItem(
+          tween: Tween<double>(begin: 0.0, end: 1.0)
+              .chain(CurveTween(curve: Curves.easeIn)),
+          weight: 25,
+        ),
+        TweenSequenceItem(
+          tween: ConstantTween<double>(1.0),
+          weight: 50,
+        ),
+        TweenSequenceItem(
+          tween: Tween<double>(begin: 1.0, end: 0.0)
+              .chain(CurveTween(curve: Curves.easeOut)),
+          weight: 25,
+        ),
+      ]).animate(_highlightController!);
+      _highlightController!.forward();
+    }
+  }
+
+  @override
+  void dispose() {
+    _highlightController?.dispose();
+    super.dispose();
+  }
 
   Future<void> _runExport(
     AppLocalizations l10n,
@@ -469,12 +508,34 @@ class _BackupPageState extends ConsumerState<BackupPage> {
                 margin: EdgeInsets.zero,
                 child: Column(
                   children: [
-                    actionTile(
-                      icon: Icons.lock_outline,
-                      title: l10n.exportEncryptedBackupRecommended,
-                      subtitle: l10n.exportEncryptedBackupSubtitle,
-                      onTap: _busy ? null : () => _exportEncrypted(l10n),
-                    ),
+                    if (_highlightAnimation != null)
+                      AnimatedBuilder(
+                        animation: _highlightAnimation!,
+                        builder: (context, child) => Container(
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primary.withValues(
+                              alpha: 0.18 * _highlightAnimation!.value,
+                            ),
+                            borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(14),
+                            ),
+                          ),
+                          child: child,
+                        ),
+                        child: actionTile(
+                          icon: Icons.lock_outline,
+                          title: l10n.exportEncryptedBackupRecommended,
+                          subtitle: l10n.exportEncryptedBackupSubtitle,
+                          onTap: _busy ? null : () => _exportEncrypted(l10n),
+                        ),
+                      )
+                    else
+                      actionTile(
+                        icon: Icons.lock_outline,
+                        title: l10n.exportEncryptedBackupRecommended,
+                        subtitle: l10n.exportEncryptedBackupSubtitle,
+                        onTap: _busy ? null : () => _exportEncrypted(l10n),
+                      ),
                     const Divider(height: 1, indent: 56, endIndent: 16),
                     actionTile(
                       icon: Icons.restore_outlined,

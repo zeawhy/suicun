@@ -10,6 +10,13 @@
       }
     }
   },
+  "@backupStatusDaysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "@conflictCount": {
     "placeholders": {
       "count": {
@@ -241,12 +248,17 @@
   "backSide": "Back",
   "backToSync": "Back to sync settings",
   "backup": "Backup",
+  "backupAction": "Back up",
   "backupAndExport": "Backup and export",
   "backupAndSync": "Backup & sync",
   "backupPassword": "Backup password",
   "backupPasswordHint": "Needed to restore on a new device. Keep it safe.",
   "backupPhotoSizeWarn": "This backup includes {count} ID photos (about {size})",
-  "backupReminderText": "Your data is stored only on this phone. Turn on encrypted backup or sync to keep it safe.",
+  "backupReminderDaysText": "No backup in 30 days",
+  "backupReminderText": "Your data is only on this phone. Back it up.",
+  "backupStatusAutoOn": "Auto backup on",
+  "backupStatusDaysAgo": "{count, plural, =1{Last backup: 1 day ago} other{Last backup: {count} days ago}}",
+  "backupStatusNever": "Never backed up",
   "batchCategorize": "Categorize",
   "batchDelete": "Delete",
   "batchFavorite": "Favorite",
@@ -328,6 +340,7 @@
   "directoryInvalid": "Sync directory must start with /",
   "disableSync": "Disable sync",
   "disableSyncConfirm": "Disabling sync stops network tasks; local data is kept. Confirm?",
+  "dontRemindMe": "Don't remind me",
   "docTypeCustomHint": "Enter document type",
   "docTypeDriverLicense": "Driver License",
   "docTypeHmtPermit": "Exit-Entry Permit (HK/Macau)",

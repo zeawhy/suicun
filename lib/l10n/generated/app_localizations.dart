@@ -224,6 +224,12 @@ abstract class AppLocalizations {
   /// **'备份'**
   String get backup;
 
+  /// No description provided for @backupAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'备份'**
+  String get backupAction;
+
   /// No description provided for @backupAndExport.
   ///
   /// In zh, this message translates to:
@@ -254,11 +260,35 @@ abstract class AppLocalizations {
   /// **'备份包含 {count} 张证件照片，文件约 {size}'**
   String backupPhotoSizeWarn(int count, String size);
 
+  /// No description provided for @backupReminderDaysText.
+  ///
+  /// In zh, this message translates to:
+  /// **'已 30 天未备份'**
+  String get backupReminderDaysText;
+
   /// No description provided for @backupReminderText.
   ///
   /// In zh, this message translates to:
-  /// **'你的数据只保存在这台手机上，建议开启加密备份或同步。'**
+  /// **'数据只存在这台手机上，建议备份'**
   String get backupReminderText;
+
+  /// No description provided for @backupStatusAutoOn.
+  ///
+  /// In zh, this message translates to:
+  /// **'已开启自动备份'**
+  String get backupStatusAutoOn;
+
+  /// No description provided for @backupStatusDaysAgo.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count, plural, other{上次备份：{count} 天前}}'**
+  String backupStatusDaysAgo(int count);
+
+  /// No description provided for @backupStatusNever.
+  ///
+  /// In zh, this message translates to:
+  /// **'从未备份'**
+  String get backupStatusNever;
 
   /// No description provided for @batchCategorize.
   ///
@@ -709,6 +739,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'关闭同步将停止网络任务，本地数据保留。确认吗？'**
   String get disableSyncConfirm;
+
+  /// No description provided for @dontRemindMe.
+  ///
+  /// In zh, this message translates to:
+  /// **'不再提醒'**
+  String get dontRemindMe;
 
   /// No description provided for @docTypeCustomHint.
   ///
