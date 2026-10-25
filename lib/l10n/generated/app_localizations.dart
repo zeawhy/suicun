@@ -2450,6 +2450,18 @@ abstract class AppLocalizations {
   /// **'保存中…'**
   String get saving;
 
+  /// No description provided for @pullToSearch.
+  ///
+  /// In zh, this message translates to:
+  /// **'下拉搜索'**
+  String get pullToSearch;
+
+  /// No description provided for @releaseToSearch.
+  ///
+  /// In zh, this message translates to:
+  /// **'松开搜索'**
+  String get releaseToSearch;
+
   /// No description provided for @search.
   ///
   /// In zh, this message translates to:

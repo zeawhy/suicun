@@ -6,6 +6,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:go_router/go_router.dart';
@@ -27,6 +28,9 @@ import 'package:flutter/services.dart';
 import 'package:suicun/features/records/presentation/clipboard_sniffer.dart';
 import 'package:suicun/shared/theme/app_theme.dart';
 import 'package:suicun/shared/widgets/record_card.dart';
+
+/// The pull distance threshold in logical pixels required to trigger pull-to-search.
+const double kPullToSearchThreshold = 88.0;
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -82,6 +86,17 @@ class _HomePageState extends ConsumerState<HomePage>
   final Set<String> _selectedIds = {};
   bool _settingsOpen = false;
   bool _settingsMounted = false;
+  double _pullDistance = 0.0;
+  bool _dragStartedAtTop = false;
+  bool _hasTriggeredHaptic = false;
+  final Set<String> _expandedCardIds = {};
+
+  bool get _isPullToSearchBlocked =>
+      _isMultiSelect ||
+      _settingsOpen ||
+      _isSpeedDialOpen ||
+      _searchExpanded ||
+      _expandedCardIds.isNotEmpty;
 
   static const double _sidebarWidth = 320.0;
   static const Duration _sidebarAnimationDuration =
@@ -331,6 +346,9 @@ class _HomePageState extends ConsumerState<HomePage>
     final notifier = ref.read(recordsFilterProvider.notifier);
     notifier.setCategory(null);
     notifier.setFavoritesOnly(false);
+    _pullDistance = 0.0;
+    _dragStartedAtTop = false;
+    _hasTriggeredHaptic = false;
     HapticFeedback.selectionClick();
     setState(() {
       _searchExpanded = true;
@@ -361,6 +379,9 @@ class _HomePageState extends ConsumerState<HomePage>
     notifier.setCategory(_savedCategoryId);
     notifier.setFavoritesOnly(_savedFavoritesOnly);
     _searchFocus.unfocus();
+    _pullDistance = 0.0;
+    _dragStartedAtTop = false;
+    _hasTriggeredHaptic = false;
     setState(() {
       _searchExpanded = false;
     });
@@ -371,6 +392,68 @@ class _HomePageState extends ConsumerState<HomePage>
           _scrollController.position.maxScrollExtent,
         ),
       );
+    }
+  }
+
+  bool _handleScrollNotification(ScrollNotification notification) {
+    if (notification.depth != 0) return false;
+    if (notification.metrics.axis != Axis.vertical) return false;
+
+    if (notification is ScrollStartNotification) {
+      _dragStartedAtTop = notification.dragDetails != null &&
+          notification.metrics.pixels <= 0 &&
+          !_isPullToSearchBlocked;
+      _pullDistance = 0.0;
+      _hasTriggeredHaptic = false;
+    } else if (notification is OverscrollNotification) {
+      if (notification.dragDetails != null &&
+          _dragStartedAtTop &&
+          !_isPullToSearchBlocked) {
+        if (notification.overscroll < 0) {
+          _pullDistance += -notification.overscroll;
+          if (_pullDistance >= kPullToSearchThreshold && !_hasTriggeredHaptic) {
+            _hasTriggeredHaptic = true;
+            HapticFeedback.selectionClick();
+          }
+          if (mounted) setState(() {});
+        }
+      }
+    } else if (notification is ScrollUpdateNotification) {
+      if (notification.dragDetails != null &&
+          _dragStartedAtTop &&
+          _pullDistance > 0) {
+        final delta = notification.scrollDelta ?? 0.0;
+        if (delta > 0) {
+          _pullDistance = (_pullDistance - delta).clamp(0.0, double.infinity);
+          if (_pullDistance < kPullToSearchThreshold) {
+            _hasTriggeredHaptic = false;
+          }
+          if (mounted) setState(() {});
+        }
+      }
+    } else if (notification is ScrollEndNotification) {
+      _handleDragRelease();
+    } else if (notification is UserScrollNotification &&
+        notification.direction == ScrollDirection.idle &&
+        _dragStartedAtTop) {
+      _handleDragRelease();
+    }
+
+    return false;
+  }
+
+  void _handleDragRelease() {
+    final shouldOpen = _dragStartedAtTop &&
+        !_isPullToSearchBlocked &&
+        _pullDistance >= kPullToSearchThreshold;
+    _pullDistance = 0.0;
+    _dragStartedAtTop = false;
+    _hasTriggeredHaptic = false;
+    if (mounted) {
+      setState(() {});
+      if (shouldOpen) {
+        _openSearch(requestFocus: true);
+      }
     }
   }
 
@@ -410,6 +493,10 @@ class _HomePageState extends ConsumerState<HomePage>
     setState(() {
       _isMultiSelect = false;
       _selectedIds.clear();
+      _expandedCardIds.clear();
+      _pullDistance = 0.0;
+      _dragStartedAtTop = false;
+      _hasTriggeredHaptic = false;
     });
   }
 
@@ -750,6 +837,8 @@ class _HomePageState extends ConsumerState<HomePage>
       }
     }
 
+    _expandedCardIds.removeWhere((id) => !recordMap.containsKey(id));
+
     final showQuickAndRecent =
         !_searchExpanded && !isSearchOrFilterActive && !_isMultiSelect;
     final showQuickAdd = !isSearchOrFilterActive &&
@@ -764,19 +853,11 @@ class _HomePageState extends ConsumerState<HomePage>
           behavior: HitTestBehavior.translucent,
           onTap: _onSearchBlankTap,
           child: SlidableAutoCloseBehavior(
-            child: NotificationListener<OverscrollNotification>(
-              onNotification: (notification) {
-                if (notification.overscroll < 0 &&
-                    _scrollController.hasClients &&
-                    _scrollController.offset <= 0 &&
-                    !_searchExpanded) {
-                  if (mounted) {
-                    _openSearch(requestFocus: true);
-                  }
-                }
-                return false;
-              },
-              child: CustomScrollView(
+            child: Stack(
+              children: [
+                NotificationListener<ScrollNotification>(
+                  onNotification: _handleScrollNotification,
+                  child: CustomScrollView(
                 controller: _scrollController,
                 keyboardDismissBehavior:
                     ScrollViewKeyboardDismissBehavior.onDrag,
@@ -994,6 +1075,13 @@ class _HomePageState extends ConsumerState<HomePage>
                           },
                           showSwipeHint:
                               index == 0 && !swipeHintSeen && !_isMultiSelect,
+                          onSlideStateChanged: (expanded) {
+                            if (expanded) {
+                              _expandedCardIds.add(r.id);
+                            } else {
+                              _expandedCardIds.remove(r.id);
+                            }
+                          },
                           onEdit: () => _openRecord(r),
                           onChangeCategory: () =>
                               _showChangeCategoryDialog(r),
@@ -1079,10 +1167,13 @@ class _HomePageState extends ConsumerState<HomePage>
               ],
             ),
           ),
-        ),
+          _buildPullToSearchIndicator(l10n, colorScheme),
+        ],
       ),
     ),
-  );
+  ),
+),
+);
 
     final mainContent = Stack(
       children: [
@@ -1506,6 +1597,76 @@ class _HomePageState extends ConsumerState<HomePage>
                         size: 16,
                         color: colorScheme.onSurfaceVariant,
                       ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPullToSearchIndicator(
+    AppLocalizations l10n,
+    ColorScheme colorScheme,
+  ) {
+    if (_pullDistance <= 0 || _searchExpanded || _isPullToSearchBlocked) {
+      return const SizedBox.shrink();
+    }
+
+    final double opacity =
+        (_pullDistance / kPullToSearchThreshold).clamp(0.0, 1.0);
+    final bool reached = _pullDistance >= kPullToSearchThreshold;
+
+    return Positioned(
+      top: 12,
+      left: 0,
+      right: 0,
+      child: IgnorePointer(
+        child: Center(
+          child: Opacity(
+            opacity: opacity,
+            child: Container(
+              key: const Key('pull_to_search_indicator'),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+              decoration: BoxDecoration(
+                color:
+                    colorScheme.surfaceContainerHighest.withValues(alpha: 0.95),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: reached
+                      ? colorScheme.primary.withValues(alpha: 0.5)
+                      : colorScheme.outlineVariant.withValues(alpha: 0.5),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.08),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.search_rounded,
+                    size: 16,
+                    color: reached
+                        ? colorScheme.primary
+                        : colorScheme.onSurfaceVariant,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    reached ? l10n.releaseToSearch : l10n.pullToSearch,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: reached
+                          ? colorScheme.primary
+                          : colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],

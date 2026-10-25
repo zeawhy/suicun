@@ -625,6 +625,8 @@
   "saved": "Saved",
   "savedToGallery": "Saved to gallery",
   "saving": "Saving…",
+  "pullToSearch": "Pull to search",
+  "releaseToSearch": "Release to search",
   "search": "Search",
   "searchEmpty": "No matching info found",
   "searchEmptyHint": "Try different keywords or clear search",
