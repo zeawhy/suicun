@@ -95,10 +95,25 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
   /// keystroke, so exiting needs no extra save logic.
   void _exitTemplateEditing() {
     if (!_templateEditing) return;
+    FocusScope.of(context).unfocus();
     setState(() {
       _templateEditing = false;
       _lockedTemplateKind = null;
     });
+  }
+
+  /// Exits edit mode for any editing state (Round 10 §3.4 for template forms,
+  /// and Round 11 for blank / raw-text notes).
+  void _exitEditing() {
+    FocusScope.of(context).unfocus();
+    if (_templateEditing) {
+      _exitTemplateEditing();
+    } else if (_bodyEditing && !_isNew) {
+      setState(() {
+        _bodyEditing = false;
+        _lockedTemplateKind = null;
+      });
+    }
   }
 
   /// Round 10 §3.2: the template kind is decided by the body text ONLY —
@@ -173,19 +188,15 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
     _bodyController = TextEditingController();
     _bodyFocusNode = FocusNode();
     _bodyEditing = _isNew;
-    _bodyFocusNode.addListener(() {
-      // On the edit page, losing focus collapses back to rich text.
-      // On the new page the body stays editable (matches the mockup).
-      if (!_bodyFocusNode.hasFocus && _bodyEditing && !_isNew && mounted) {
-        setState(() => _bodyEditing = false);
-      }
-    });
 
     if (widget.autofocus) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           setState(() {
             _bodyEditing = true;
+            if (!_isNew) {
+              _lockedTemplateKind = TemplateKind.blank;
+            }
           });
           _bodyFocusNode.requestFocus();
         }
@@ -829,7 +840,8 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
     // ID document detection comes first (Round 5 §1.2): isIdDocBody covers
     // both the new JSON format and legacy label:value text.
     final detectedKind = _detectTemplateKind(_bodyController.text);
-    final templateKind = (_templateEditing && _lockedTemplateKind != null)
+    final isEditingMode = _templateEditing || (_bodyEditing && !_isNew);
+    final templateKind = (isEditingMode && _lockedTemplateKind != null)
         ? _lockedTemplateKind!
         : detectedKind;
     final isIdDocRecord = templateKind == TemplateKind.idDoc;
@@ -1019,12 +1031,13 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
 
     return PopScope(
-      // Round 10 §3.4: while template-editing, the first back press only
-      // exits editing (changes are already auto-saved); the second leaves.
-      canPop: !_templateEditing,
+      // Round 10 §3.4 & Round 11: while editing (template form or blank note),
+      // the first back press only exits editing (changes are already auto-saved);
+      // the second leaves the page.
+      canPop: !isEditingMode,
       onPopInvokedWithResult: (didPop, _) async {
         if (!didPop) {
-          _exitTemplateEditing();
+          _exitEditing();
           await ref.read(editRecordProvider(widget.recordId).notifier).flush();
           return;
         }
@@ -1036,11 +1049,17 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
         appBar: AppBar(
           title: appBarTitle,
           actions: [
-            // Round 10 §3.4: exit-form-editing button, visible only while
-            // template-editing, placed to the left of the star.
-            if (_templateEditing)
+            // Round 10 §3.4 & Round 11: exit-editing button, visible while
+            // template-editing OR while editing an existing blank / raw-text record,
+            // placed to the left of the star.
+            if (_templateEditing || (_bodyEditing && !_isNew))
               TextButton(
-                onPressed: _exitTemplateEditing,
+                onPressed: () async {
+                  _exitEditing();
+                  await ref
+                      .read(editRecordProvider(widget.recordId).notifier)
+                      .flush();
+                },
                 child: Text(l10n.doneButton),
               ),
             IconButton(
@@ -1064,7 +1083,10 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
             ),
           ],
         ),
-        body: SafeArea(
+        body: GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: SafeArea(
           child: isPasswordTemplateRecord
               ? SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
@@ -1213,10 +1235,12 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
                                     isEmptyBody: _bodyController.text.isEmpty,
                                     onEdit: () => setState(() {
                                       _bodyEditing = true;
+                                      _lockedTemplateKind = TemplateKind.blank;
                                       _bodyFocusNode.requestFocus();
                                     }),
                                     onTapBody: () => setState(() {
                                       _bodyEditing = true;
+                                      _lockedTemplateKind = TemplateKind.blank;
                                       _bodyFocusNode.requestFocus();
                                     }),
                                     categoryRow: _buildCategoryRow(l10n, theme, colorScheme, record),
@@ -1243,6 +1267,7 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
                                 ),
                               ),
                             TextField(
+                              key: const Key('record_title_field'),
                               controller: _titleController,
                               decoration: InputDecoration(
                                 hintText: l10n.titleHint,
@@ -1315,6 +1340,7 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
                     ),
                   ],
                 ),
+          ),
         ),
         bottomNavigationBar: AnimatedPadding(
           duration: const Duration(milliseconds: 120),
@@ -1396,7 +1422,12 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
                           const BoxConstraints(minWidth: 36, minHeight: 36),
                       onPressed: () {
                         if (!_bodyEditing) {
-                          setState(() => _bodyEditing = true);
+                          setState(() {
+                            _bodyEditing = true;
+                            if (!_isNew) {
+                              _lockedTemplateKind = TemplateKind.blank;
+                            }
+                          });
                         }
                         _applyLineFormat(toggleCheckboxAt);
                       },
@@ -1462,6 +1493,7 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
           if (!_isStructuredRecord)
             _buildFormatToolbar(l10n, theme, colorScheme),
           TextField(
+            key: const Key('record_body_field'),
             controller: _bodyController,
             focusNode: _bodyFocusNode,
             autofocus: _isNew,
@@ -1489,6 +1521,9 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
       return GestureDetector(
         onTap: () => setState(() {
           _bodyEditing = true;
+          if (!_isNew) {
+            _lockedTemplateKind = TemplateKind.blank;
+          }
           _bodyFocusNode.requestFocus();
         }),
         behavior: HitTestBehavior.opaque,
@@ -1508,6 +1543,9 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
     return GestureDetector(
       onTap: () => setState(() {
         _bodyEditing = true;
+        if (!_isNew) {
+          _lockedTemplateKind = TemplateKind.blank;
+        }
         _bodyFocusNode.requestFocus();
       }),
       behavior: HitTestBehavior.opaque,
