@@ -203,13 +203,22 @@ class SnapshotApplier {
     }
     final s = rev.snapshot;
 
-    // Drop references to entities that do not exist locally (FK safety).
+    // Drop references to entities that do not exist locally (FK safety), and
+    // resolve soft-deleted/merged category aliases to the active same-name
+    // survivor so notes never lose their category on deduplication.
     String? categoryId = s['category_id'] as String?;
     if (categoryId != null) {
       final cat = await (_db.select(_db.categories)
             ..where((c) => c.id.equals(categoryId!)))
           .getSingleOrNull();
-      if (cat == null) categoryId = null;
+      if (cat == null) {
+        categoryId = null;
+      } else if (cat.deletedAt != null) {
+        final survivor = await _findActiveCategoryByName(cat.name);
+        if (survivor != null) {
+          categoryId = survivor.id;
+        }
+      }
     }
     final wantedTags = (s['tag_ids']! as List).cast<String>();
     final knownTagRows = wantedTags.isEmpty
@@ -244,24 +253,70 @@ class SnapshotApplier {
   }
 
   static List<String>? _findDefaultKeywords(String name) {
-    final lower = name.trim().toLowerCase();
+    final lower = CategoryRepository.normalizeName(name);
     for (final def in CategoryRepository.defaultCategories) {
-      if (def.name.trim().toLowerCase() == lower) {
+      if (CategoryRepository.normalizeName(def.name) == lower) {
         return def.keywords;
       }
     }
     return null;
   }
 
+  /// Finds an active (non-deleted) category matching [name] after trim +
+  /// lowercase normalization, optionally excluding [excludeId].
+  Future<Category?> _findActiveCategoryByName(
+    String name, {
+    String? excludeId,
+  }) async {
+    final target = CategoryRepository.normalizeName(name);
+    final active = await (_db.select(_db.categories)
+          ..where((c) => c.deletedAt.isNull())
+          ..orderBy([(c) => OrderingTerm(expression: c.id)]))
+        .get();
+    for (final c in active) {
+      if (excludeId != null && c.id == excludeId) continue;
+      if (CategoryRepository.normalizeName(c.name) == target) {
+        return c;
+      }
+    }
+    return null;
+  }
+
+  Future<void> _backfillKeywordsIfEmpty(
+    Category target,
+    List<String>? seedKeywords,
+  ) async {
+    if (seedKeywords == null) return;
+    if (CategoryRepository.decodeKeywords(target.keywords).isNotEmpty) return;
+    await (_db.update(_db.categories)..where((c) => c.id.equals(target.id)))
+        .write(CategoriesCompanion(
+      keywords: Value(CategoryRepository.encodeKeywords(seedKeywords)),
+    ));
+  }
+
   Future<void> _applyCategory(ParsedRevision rev) async {
     final id = rev.entityId;
     if (rev.deleted) {
-      await (_db.update(_db.records)..where((r) => r.categoryId.equals(id)))
-          .write(const RecordsCompanion(categoryId: Value(null)));
+      final existing = await (_db.select(_db.categories)
+            ..where((c) => c.id.equals(id)))
+          .getSingleOrNull();
+      final survivor = existing == null
+          ? null
+          : await _findActiveCategoryByName(existing.name, excludeId: id);
+      if (survivor != null) {
+        // Sync-safe tombstone: another active category with the same
+        // normalized name exists, so reassign records instead of nullifying.
+        await (_db.update(_db.records)..where((r) => r.categoryId.equals(id)))
+            .write(RecordsCompanion(categoryId: Value(survivor.id)));
+      } else {
+        await (_db.update(_db.records)..where((r) => r.categoryId.equals(id)))
+            .write(const RecordsCompanion(categoryId: Value(null)));
+      }
       await (_db.update(_db.categories)..where((c) => c.id.equals(id)))
           .write(CategoriesCompanion(deletedAt: Value(rev.createdAt)));
       return;
     }
+
     final s = rev.snapshot;
     final name = s['name']! as String;
     final color = s['color']! as String;
@@ -269,6 +324,35 @@ class SnapshotApplier {
     final existing = await (_db.select(_db.categories)
           ..where((c) => c.id.equals(id)))
         .getSingleOrNull();
+    final sameNameActive =
+        await _findActiveCategoryByName(name, excludeId: id);
+
+    if (sameNameActive != null) {
+      // A non-deleted category with the same normalized name already exists:
+      // merge into it instead of creating or resurrecting a duplicate.
+      await _backfillKeywordsIfEmpty(sameNameActive, seedKeywords);
+      if (existing == null) {
+        // Keep a soft-deleted alias row so incoming records referencing [id]
+        // pass FK checks and resolve to [sameNameActive.id].
+        await _db.into(_db.categories).insert(CategoriesCompanion.insert(
+              id: id,
+              name: name,
+              color: Value(color),
+              deletedAt: Value(rev.createdAt),
+            ));
+      } else {
+        await (_db.update(_db.records)..where((r) => r.categoryId.equals(id)))
+            .write(RecordsCompanion(categoryId: Value(sameNameActive.id)));
+        await (_db.update(_db.categories)..where((c) => c.id.equals(id)))
+            .write(CategoriesCompanion(
+          name: Value(name),
+          color: Value(color),
+          deletedAt: Value(existing.deletedAt ?? rev.createdAt),
+        ));
+      }
+      return;
+    }
+
     if (existing == null) {
       await _db.into(_db.categories).insert(CategoriesCompanion.insert(
             id: id,

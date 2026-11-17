@@ -84,5 +84,41 @@ void main() {
           cats.firstWhere((c) => c.name == '我的收藏');
       expect(await repo.getKeywords(custom.id), isEmpty);
     });
+
+    test('uses deterministic IDs identical across separate databases', () async {
+      final db2 = AppDatabase(NativeDatabase.memory());
+      final repo2 = CategoryRepository(db2);
+      try {
+        await repo.ensureDefaultCategories();
+        await repo2.ensureDefaultCategories();
+
+        final cats1 = await repo.getAllCategories();
+        final cats2 = await repo2.getAllCategories();
+        expect(cats1.length, CategoryRepository.defaultCategories.length);
+        expect(cats2.length, CategoryRepository.defaultCategories.length);
+
+        final map1 = {for (final c in cats1) c.name: c.id};
+        final map2 = {for (final c in cats2) c.name: c.id};
+        expect(map1, equals(map2));
+        for (final def in CategoryRepository.defaultCategories) {
+          expect(map1[def.name], CategoryRepository.defaultCategoryId(def.name));
+        }
+      } finally {
+        await db2.close();
+      }
+    });
+
+    test('does not crash if a deterministic default category was soft-deleted',
+        () async {
+      await repo.ensureDefaultCategories();
+      final workId = CategoryRepository.defaultCategoryId('工作');
+      await repo.deleteCategory(workId);
+
+      // Re-seeding must not throw a UNIQUE constraint error or resurrect it.
+      await repo.ensureDefaultCategories();
+      final cats = await repo.getAllCategories();
+      expect(cats.any((c) => c.name == '工作'), isFalse);
+      expect(cats.length, CategoryRepository.defaultCategories.length - 1);
+    });
   });
 }

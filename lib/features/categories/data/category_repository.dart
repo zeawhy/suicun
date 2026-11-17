@@ -128,12 +128,23 @@ class CategoryRepository {
     }
   }
 
+  /// Normalizes a category name for case-insensitive, whitespace-trimmed
+  /// matching.
+  static String normalizeName(String name) => name.trim().toLowerCase();
+
+  /// Deterministic UUID v5 for a default category name so every device and
+  /// fresh install derives the same ID for each built-in category.
+  static String defaultCategoryId(String name) => _uuid.v5(
+        Namespace.url.value,
+        'suicun:default-category:${normalizeName(name)}',
+      );
+
   /// Returns true if a non-deleted category with [name] exists (case-insensitive).
   Future<bool> nameExists(String name, {String? excludeId}) async {
-    final lower = name.trim().toLowerCase();
+    final lower = normalizeName(name);
     final cats = await getAllCategories();
     return cats.any((c) =>
-        c.name.toLowerCase() == lower &&
+        normalizeName(c.name) == lower &&
         (excludeId == null || c.id != excludeId));
   }
 
@@ -187,7 +198,7 @@ class CategoryRepository {
   /// Idempotent first-run seeding for the auto-category engine.
   ///
   /// - Fresh install (no categories): creates [defaultCategories] with
-  ///   their starter keywords.
+  ///   deterministic IDs derived from their names and starter keywords.
   /// - Upgrade (user already has categories): backfills keywords for
   ///   default-named categories that have none yet.
   ///
@@ -198,21 +209,29 @@ class CategoryRepository {
       final existingByName = <String, List<CategoryModel>>{};
       for (final c in existing) {
         existingByName
-            .putIfAbsent(c.name.trim().toLowerCase(), () => [])
+            .putIfAbsent(normalizeName(c.name), () => [])
             .add(c);
       }
       for (final def in defaultCategories) {
-        final defKey = def.name.trim().toLowerCase();
+        final defKey = normalizeName(def.name);
         final matches = existingByName[defKey];
         if (matches == null || matches.isEmpty) {
-          await _db.into(_db.categories).insert(
-                CategoriesCompanion.insert(
-                  id: _uuid.v4(),
-                  name: def.name,
-                  color: Value(def.color),
-                  keywords: Value(encodeKeywords(def.keywords)),
-                ),
-              );
+          final defId = defaultCategoryId(def.name);
+          // Skip insert if the deterministic row already exists (e.g. soft-deleted
+          // by the user), avoiding a primary-key conflict or resurrection.
+          final existingById = await (_db.select(_db.categories)
+                ..where((c) => c.id.equals(defId)))
+              .getSingleOrNull();
+          if (existingById == null) {
+            await _db.into(_db.categories).insert(
+                  CategoriesCompanion.insert(
+                    id: defId,
+                    name: def.name,
+                    color: Value(def.color),
+                    keywords: Value(encodeKeywords(def.keywords)),
+                  ),
+                );
+          }
         } else {
           for (final match in matches) {
             if ((await getKeywords(match.id)).isEmpty) {
@@ -223,6 +242,113 @@ class CategoryRepository {
       }
     } catch (e) {
       throw DatabaseError('Failed to seed default categories', e);
+    }
+  }
+
+  /// Merges duplicate non-deleted categories that share the same normalized
+  /// name (trim + lowercase) into a single surviving row.
+  ///
+  /// - Picks a deterministic survivor per duplicate group (preferring the
+  ///   deterministic default ID if present, then the category referenced by
+  ///   the most records, then non-empty keywords, then exact trimmed name, then
+  ///   lexicographically smallest id).
+  /// - Unions non-empty keywords across the group onto the survivor.
+  /// - Reassigns all records (live and trashed) pointing to merged duplicates
+  ///   so they point to the survivor instead.
+  /// - Soft-deletes redundant rows locally WITHOUT enqueuing sync tombstones,
+  ///   preventing remote peers from nullifying record categories when syncing.
+  ///
+  /// Idempotent: returns the number of duplicate category rows merged (0 when
+  /// already clean).
+  Future<int> deduplicateCategories() async {
+    try {
+      return await _db.transaction(() async {
+        final activeRows = await (_db.select(_db.categories)
+              ..where((c) => c.deletedAt.isNull()))
+            .get();
+        if (activeRows.length <= 1) return 0;
+
+        final groups = <String, List<Category>>{};
+        for (final row in activeRows) {
+          groups.putIfAbsent(normalizeName(row.name), () => []).add(row);
+        }
+
+        final duplicateGroups =
+            groups.values.where((g) => g.length > 1).toList();
+        if (duplicateGroups.isEmpty) return 0;
+
+        // Count all record references (including trashed records so restoring
+        // from trash never leaves a record pointing at a deleted category).
+        final allRecords = await _db.select(_db.records).get();
+        final recordCounts = <String, int>{};
+        for (final r in allRecords) {
+          final cid = r.categoryId;
+          if (cid != null) {
+            recordCounts[cid] = (recordCounts[cid] ?? 0) + 1;
+          }
+        }
+
+        final now = DateTime.now().toUtc();
+        var mergedCount = 0;
+
+        for (final group in duplicateGroups) {
+          final groupKey = normalizeName(group.first.name);
+          final expectedDefaultId = defaultCategoryId(group.first.name);
+          final isDefaultGroup = defaultCategories
+              .any((d) => normalizeName(d.name) == groupKey);
+
+          group.sort((a, b) {
+            if (isDefaultGroup) {
+              final aIsDef = a.id == expectedDefaultId ? 1 : 0;
+              final bIsDef = b.id == expectedDefaultId ? 1 : 0;
+              if (aIsDef != bIsDef) return bIsDef.compareTo(aIsDef);
+            }
+            final aCount = recordCounts[a.id] ?? 0;
+            final bCount = recordCounts[b.id] ?? 0;
+            if (aCount != bCount) return bCount.compareTo(aCount);
+
+            final aHasKw = decodeKeywords(a.keywords).isNotEmpty ? 1 : 0;
+            final bHasKw = decodeKeywords(b.keywords).isNotEmpty ? 1 : 0;
+            if (aHasKw != bHasKw) return bHasKw.compareTo(aHasKw);
+
+            final aTrimmed = a.name == a.name.trim() ? 1 : 0;
+            final bTrimmed = b.name == b.name.trim() ? 1 : 0;
+            if (aTrimmed != bTrimmed) return bTrimmed.compareTo(aTrimmed);
+
+            return a.id.compareTo(b.id);
+          });
+
+          final survivor = group.first;
+          final redundant = group.sublist(1);
+          final redundantIds = redundant.map((c) => c.id).toList();
+
+          final mergedKeywords = <String>[];
+          for (final c in group) {
+            mergedKeywords.addAll(decodeKeywords(c.keywords));
+          }
+          if (mergedKeywords.isNotEmpty) {
+            await (_db.update(_db.categories)
+                  ..where((c) => c.id.equals(survivor.id)))
+                .write(CategoriesCompanion(
+              keywords: Value(encodeKeywords(mergedKeywords)),
+            ));
+          }
+
+          await (_db.update(_db.records)
+                ..where((r) => r.categoryId.isIn(redundantIds)))
+              .write(RecordsCompanion(categoryId: Value(survivor.id)));
+
+          await (_db.update(_db.categories)
+                ..where((c) => c.id.isIn(redundantIds)))
+              .write(CategoriesCompanion(deletedAt: Value(now)));
+
+          mergedCount += redundant.length;
+        }
+
+        return mergedCount;
+      });
+    } catch (e) {
+      throw DatabaseError('Failed to deduplicate categories', e);
     }
   }
 

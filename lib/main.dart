@@ -8,6 +8,7 @@ import 'package:suicun/core/crypto/database_encryption_service.dart';
 import 'package:suicun/core/database/app_database.dart';
 import 'package:suicun/core/database/providers.dart';
 import 'package:suicun/core/router/app_router.dart';
+import 'package:suicun/features/categories/data/category_dedup_migration.dart';
 import 'package:suicun/features/records/data/id_doc_body_migration.dart';
 import 'package:suicun/features/security/presentation/app_lock_gate.dart';
 import 'package:suicun/features/security/presentation/startup_recovery_page.dart';
@@ -63,6 +64,12 @@ Future<void> runStartup() async {
       syncActionsProvider.overrideWith((ref) => ref.watch(syncEngineProvider)),
     ],
   );
+  final prefs = await SharedPreferences.getInstance();
+
+  // One-time local deduplication of categories duplicated by prior syncs.
+  // Awaited before sync engine init and runApp so categories are clean first.
+  await runCategoryDedupMigration(container, prefs: prefs);
+
   // The engine is lazy; create it now so the vault session is restored (and
   // the enqueuer hook installed) before the user can save anything. Otherwise
   // edits made before opening a sync page would silently skip the outbox.
@@ -73,7 +80,6 @@ Future<void> runStartup() async {
   runIdDocBodyMigration(container);
 
   // After a recovery reset, show the one-time restore prompt.
-  final prefs = await SharedPreferences.getInstance();
   if (!prefs.containsKey('first_launch_at')) {
     await prefs.setInt('first_launch_at', DateTime.now().millisecondsSinceEpoch);
   }
