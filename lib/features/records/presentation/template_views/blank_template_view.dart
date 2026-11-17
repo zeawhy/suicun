@@ -2,6 +2,7 @@
 // Reading view for blank template notes.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:suicun/features/records/domain/record_model.dart';
 import 'package:suicun/features/records/presentation/template_views/template_header_card.dart';
 import 'package:suicun/features/records/presentation/template_views/updated_at_text.dart';
@@ -18,6 +19,7 @@ class BlankTemplateView extends StatelessWidget {
     required this.categoryRow,
     required this.tagRow,
     this.suggestionRow,
+    this.bodyText,
   });
 
   final RecordDetail? record;
@@ -28,6 +30,24 @@ class BlankTemplateView extends StatelessWidget {
   final Widget categoryRow;
   final Widget tagRow;
   final Widget? suggestionRow;
+  final String? bodyText;
+
+  void _copyText(
+    BuildContext context,
+    String? text,
+    String successMessage,
+  ) {
+    final value = text ?? '';
+    if (value.isEmpty) return;
+    Clipboard.setData(ClipboardData(text: value));
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(successMessage),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,6 +58,8 @@ class BlankTemplateView extends StatelessWidget {
     final title = record?.title.isNotEmpty == true
         ? record!.title
         : l10n.untitledRecord;
+    final rawBodyText = bodyText ?? record?.body ?? '';
+    final showCopyButton = !isEmptyBody && rawBodyText.isNotEmpty;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -55,7 +77,9 @@ class BlankTemplateView extends StatelessWidget {
           onTap: onTapBody,
           behavior: HitTestBehavior.opaque,
           child: Container(
-            padding: const EdgeInsets.all(16),
+            padding: showCopyButton
+                ? const EdgeInsets.fromLTRB(16, 8, 8, 16)
+                : const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: colorScheme.surfaceContainerLowest,
               borderRadius: BorderRadius.circular(16),
@@ -72,14 +96,39 @@ class BlankTemplateView extends StatelessWidget {
                       height: 1.5,
                     ),
                   )
-                : Text.rich(
-                    TextSpan(
-                      children: bodySpans,
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        color: colorScheme.onSurface,
-                        height: 1.5,
+                : Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Padding(
+                          padding: showCopyButton
+                              ? const EdgeInsets.only(top: 8)
+                              : EdgeInsets.zero,
+                          child: Text.rich(
+                            TextSpan(
+                              children: bodySpans,
+                              style: theme.textTheme.bodyLarge?.copyWith(
+                                color: colorScheme.onSurface,
+                                height: 1.5,
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
+                      if (showCopyButton) ...[
+                        const SizedBox(width: 4),
+                        IconButton(
+                          icon: const Icon(Icons.copy_rounded, size: 20),
+                          tooltip: l10n.copy,
+                          color: colorScheme.onSurfaceVariant,
+                          onPressed: () => _copyText(
+                            context,
+                            rawBodyText,
+                            l10n.copiedToClipboardMsg,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
           ),
         ),

@@ -1210,6 +1210,7 @@ class _EditRecordPageState extends ConsumerState<EditRecordPage> {
                                   child: BlankTemplateView(
                                     record: record,
                                     bodySpans: _buildBodySpans(_bodyController.text, l10n, theme, colorScheme),
+                                    bodyText: _bodyController.text,
                                     isEmptyBody: _bodyController.text.isEmpty,
                                     onEdit: () => setState(() {
                                       _bodyEditing = true;
