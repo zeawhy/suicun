@@ -8,6 +8,7 @@
 
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -217,5 +218,79 @@ void main() {
       findByHint("Write down info you'll want to find later…"),
       findsOneWidget,
     );
+  });
+
+  testWidgets(
+      'quick-copy button copies raw body text and shows SnackBar without entering edit mode',
+      (tester) async {
+    String? copiedText;
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (call) async {
+        if (call.method == 'Clipboard.setData') {
+          copiedText = (call.arguments as Map)['text'] as String?;
+          return null;
+        }
+        return null;
+      },
+    );
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, null),
+    );
+
+    await pumpApp(tester);
+
+    // 1. Create a blank note with title and body
+    await openEditor(tester);
+
+    await tester.enterText(findByHint('Title (optional)'), 'Copy Body Test');
+    await tester.enterText(
+      findByHint("Write down info you'll want to find later…"),
+      'Raw body text 124356789',
+    );
+
+    await tester.pump(const Duration(milliseconds: 700));
+    await tester.pumpAndSettle();
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+
+    // 2. Open in reading mode
+    await tester.tap(find.text('Copy Body Test'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(BlankTemplateView), findsOneWidget);
+    final copyButton = find.widgetWithIcon(IconButton, Icons.copy_rounded);
+    expect(copyButton, findsOneWidget);
+
+    // 3. Tap copy button -> copies body only, shows SnackBar, stays in reading mode
+    await tester.tap(copyButton);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(copiedText, 'Raw body text 124356789');
+    expect(find.text('Copied to clipboard'), findsOneWidget);
+    expect(find.byType(BlankTemplateView), findsOneWidget);
+    expect(findByHint('Title (optional)'), findsNothing);
+  });
+
+  testWidgets('quick-copy button is hidden when body is empty', (tester) async {
+    await pumpApp(tester);
+
+    await openEditor(tester);
+    await tester.enterText(findByHint('Title (optional)'), 'No Copy Button');
+
+    await tester.pump(const Duration(milliseconds: 700));
+    await tester.pumpAndSettle();
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('No Copy Button'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(BlankTemplateView), findsOneWidget);
+    expect(find.widgetWithIcon(IconButton, Icons.copy_rounded), findsNothing);
   });
 }
